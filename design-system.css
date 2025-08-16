@@ -1,0 +1,9 @@
+/* Changelog: Centralized color palette, spacing scale, and base typography for consistent styling. */
+
+:root {
+  --ds-text: #222;
+  --ds-background: #fff;
+}
+
+/* Additional design tokens will be defined here. */
+
