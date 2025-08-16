@@ -71,6 +71,12 @@
     .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
     details{border:1px dashed #e5e7eb;border-radius:12px;background:#fff;margin:10px 0;padding:8px 10px;}
     summary{cursor:pointer;font-weight:700}
+    .stepper{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+    .stepper button{
+      border:1px solid #e5e7eb;border-radius:8px;padding:6px 8px;background:#fff;cursor:pointer;
+    }
+    .stepper button[aria-current="step"]{background:var(--brand-yellow);font-weight:700}
+    .stepper button:focus-visible{outline:2px solid var(--brand-red);outline-offset:2px}
     table{width:100%;border-collapse:collapse}
     th,td{border:1px solid #e5e7eb;padding:8px 10px;font-size:14px}
     th{background:#fafafa;text-align:left}
@@ -132,12 +138,25 @@
               <input id="temperature" type="number" step="0.1" min="0" max="2" value="0.2" />
             </div>
           </div>
-          <label for="policy">Admin guidance to include in prompt (optional)</label>
-          <textarea id="policy" placeholder="Tone, style, sensitivities, risk items, do-not-mentions..."></textarea>
-        </details>
+        <label for="policy">Admin guidance to include in prompt (optional)</label>
+        <textarea id="policy" placeholder="Tone, style, sensitivities, risk items, do-not-mentions..."></textarea>
+      </details>
 
-        <details open>
-          <summary>Step 1 — Identify communication requirements</summary>
+      <nav class="stepper" aria-label="Plan steps">
+        <button data-step="1" aria-current="step">1. Identify requirements</button>
+        <button data-step="2">2. Analyze situation</button>
+        <button data-step="3">3. Audience</button>
+        <button data-step="4">4. Goals</button>
+        <button data-step="5">5. Strategy</button>
+        <button data-step="6">6. Budget</button>
+        <button data-step="7">7. Action plan</button>
+        <button data-step="8">8. Implementation</button>
+        <button data-step="9">9. Measurement</button>
+        <button data-step="10">10. Evaluate/Update</button>
+      </nav>
+
+      <details open>
+        <summary>Step 1 — Identify communication requirements</summary>
           <label for="issue">Issue statement</label>
           <textarea id="issue" placeholder="Define the issue, scope, and required support."></textarea>
           <label for="requirements">Requirements</label>
