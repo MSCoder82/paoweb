@@ -454,6 +454,14 @@
     function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
     function cssEscape(s){ return s.replace(/["\\]/g, '\\$&'); }
 
+    function debounce(fn, wait=300){
+      let t;
+      return (...args)=>{
+        clearTimeout(t);
+        t = setTimeout(()=>fn.apply(this,args), wait);
+      };
+    }
+
     // ======= Grab elements =======
     const els = {
       apiKey: document.getElementById('apiKey'),
@@ -558,6 +566,43 @@
 
     const stepButtons = Array.from(els.stepper.querySelectorAll('button'));
     const stepPanes = Array.from(document.querySelectorAll('.step-pane'));
+
+    stepPanes.forEach(pane=>{
+      const sid = pane.id;
+      pane.querySelectorAll('input, textarea, select').forEach(field=>{
+        if(!field.id) return;
+        const key = `app:${sid}:${field.id}`;
+        const saved = localStorage.getItem(key);
+        if(saved !== null){
+          if(field.type === 'checkbox') field.checked = saved === 'true';
+          else field.value = saved;
+        }
+        const saver = debounce(()=>{
+          const val = field.type === 'checkbox' ? field.checked : field.value;
+          localStorage.setItem(key, val);
+        }, 300);
+        field.addEventListener('input', saver);
+        field.addEventListener('change', saver);
+      });
+
+      const reset = document.createElement('button');
+      reset.type = 'button';
+      reset.textContent = 'Reset section';
+      reset.className = 'btn ghost';
+      reset.style.marginTop = '10px';
+      reset.addEventListener('click', ()=>{
+        if(!confirm('Clear inputs for this section?')) return;
+        pane.querySelectorAll('input, textarea, select').forEach(field=>{
+          if(!field.id) return;
+          const key = `app:${sid}:${field.id}`;
+          localStorage.removeItem(key);
+          if(field.type === 'checkbox') field.checked = field.defaultChecked || false;
+          else field.value = field.defaultValue || '';
+        });
+      });
+      pane.appendChild(reset);
+    });
+
     let currentStep = 1;
 
     function showStep(n){

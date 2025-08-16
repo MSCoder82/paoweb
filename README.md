@@ -13,6 +13,7 @@ This is a self-contained web application that:
 - Progress tracking (monthly, quarterly, yearly)
 - JSON import/export
 - AI integration with real-time browser fetch
+- Auto-saves form inputs per section with one-click section reset
 
 ## 🚀 Deployment
 You can host this as a static page:
