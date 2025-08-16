@@ -4,15 +4,16 @@ This is a self-contained web application that:
 
 ✅ Tracks staff metrics (outputs, outcomes, outtakes)  
 ✅ Stores user data and API keys **locally** in the browser (`localStorage`)  
-✅ Lets admins enter API keys for **OpenAI, Gemini, CamoGPT, and AskSage**
-✅ Allows staff and admins to **ask AI** using the selected provider
+✅ Lets PAO chiefs enter API keys for **OpenAI, Gemini, CamoGPT, and AskSage**
+✅ Allows staff and PAO chiefs to **ask AI** using the selected provider
 ✅ No backend required
 
 ## 📦 Features
-- PIN-based staff and admin login
+- PIN-based staff, PAO chief, and admin login
 - Progress tracking (monthly, quarterly, yearly)
 - JSON import/export
 - AI integration with real-time browser fetch
+- Per-unit workspaces separating data by unit
 
 ## 🚀 Deployment
 You can host this as a static page:

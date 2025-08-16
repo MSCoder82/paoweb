@@ -110,7 +110,7 @@
       </div>
       <div class="tabs" role="tablist" aria-label="Role selector">
         <button id="tab-staff" class="tab active" role="tab" aria-selected="true">Staff view</button>
-        <button id="tab-admin" class="tab" role="tab" aria-selected="false">Admin view</button>
+        <button id="tab-chief" class="tab" role="tab" aria-selected="false">PAO Chief view</button>
       </div>
     </header>
 
@@ -322,7 +322,7 @@
 
         <hr style="margin:18px 0;border:none;border-top:1px solid #eee" />
 
-        <div id="adminGate">
+        <div id="chiefGate">
           <h2>Admin view</h2>
           <div class="help">PIN required.</div>
           <div class="row">
@@ -331,7 +331,7 @@
           </div>
         </div>
 
-        <div id="adminPanel" class="card" style="display:none;margin-top:14px">
+        <div id="chiefPanel" class="card" style="display:none;margin-top:14px">
           <h3>Admin controls</h3>
           <label for="newPin">Set new PIN</label>
           <div class="row">
@@ -353,7 +353,7 @@
             <button class="btn ghost" id="exportAll">Export all drafts (JSON)</button>
             <button class="btn ghost" id="wipeAll">Wipe all localStorage</button>
           </div>
-          <div id="adminMsg" class="help"></div>
+          <div id="chiefMsg" class="help"></div>
         </div>
       </section>
     </div>
@@ -536,9 +536,9 @@
       output: document.getElementById('output'),
 
       tabStaff: document.getElementById('tab-staff'),
-      tabAdmin: document.getElementById('tab-admin'),
-      adminGate: document.getElementById('adminGate'),
-      adminPanel: document.getElementById('adminPanel'),
+      tabChief: document.getElementById('tab-chief'),
+      chiefGate: document.getElementById('chiefGate'),
+      chiefPanel: document.getElementById('chiefPanel'),
       pin: document.getElementById('pin'),
       pinEnter: document.getElementById('pinEnter'),
       newPin: document.getElementById('newPin'),
@@ -549,7 +549,7 @@
       resetTemplate: document.getElementById('resetTemplate'),
       exportAll: document.getElementById('exportAll'),
       wipeAll: document.getElementById('wipeAll'),
-      adminMsg: document.getElementById('adminMsg'),
+      chiefMsg: document.getElementById('chiefMsg'),
     };
 
     // Prefill API key from parent if available
@@ -649,34 +649,34 @@
     const activateTab = (which) => {
       const staff = document.getElementById('panel-inputs');
       const out = document.getElementById('panel-output');
-      if(which === 'admin'){
-        els.tabAdmin.classList.add('active'); els.tabAdmin.setAttribute('aria-selected', 'true');
+      if(which === 'chief'){
+        els.tabChief.classList.add('active'); els.tabChief.setAttribute('aria-selected', 'true');
         els.tabStaff.classList.remove('active'); els.tabStaff.setAttribute('aria-selected', 'false');
         window.scrollTo({top: out.offsetTop - 10, behavior:'smooth'});
       } else {
         els.tabStaff.classList.add('active'); els.tabStaff.setAttribute('aria-selected', 'true');
-        els.tabAdmin.classList.remove('active'); els.tabAdmin.setAttribute('aria-selected', 'false');
+        els.tabChief.classList.remove('active'); els.tabChief.setAttribute('aria-selected', 'false');
         window.scrollTo({top: staff.offsetTop - 10, behavior:'smooth'});
       }
     };
     els.tabStaff.addEventListener('click', () => activateTab('staff'));
-    els.tabAdmin.addEventListener('click', () => activateTab('admin'));
+    els.tabChief.addEventListener('click', () => activateTab('chief'));
 
-    const PIN_KEY = 'nww_rpie_admin_pin';
+    const PIN_KEY = 'nww_rpie_chief_pin';
     const defaultPin = localStorage.getItem(PIN_KEY) || '1234';
-    let adminOK = false;
+    let chiefOK = false;
     els.pinEnter.addEventListener('click', () => {
       if(els.pin.value === (localStorage.getItem(PIN_KEY) || defaultPin)){
-        adminOK = true;
-        els.adminPanel.style.display = 'block';
-        els.adminGate.style.display = 'none';
-        status('Admin unlocked', 'ok');
+        chiefOK = true;
+        els.chiefPanel.style.display = 'block';
+        els.chiefGate.style.display = 'none';
+        status('PAO Chief unlocked', 'ok');
       } else {
         status('Invalid PIN', 'err');
       }
     });
     els.setPin.addEventListener('click', () => {
-      if(!adminOK) return status('Unlock admin first', 'warn');
+      if(!chiefOK) return status('Unlock PAO Chief first', 'warn');
       if(!els.newPin.value) return status('Enter a new PIN', 'warn');
       localStorage.setItem(PIN_KEY, els.newPin.value.trim());
       status('PIN updated', 'ok');
@@ -703,7 +703,7 @@ Style: concise headings, bullet lists, table for action matrix, professional ton
 Only include facts provided in inputs.`;
     els.sysPrompt.value = localStorage.getItem(TPL_KEY) || defaultTemplate;
     els.saveTemplate.addEventListener('click', () => {
-      if(!adminOK) return status('Unlock admin first', 'warn');
+      if(!chiefOK) return status('Unlock PAO Chief first', 'warn');
       localStorage.setItem(TPL_KEY, els.sysPrompt.value);
       status('Template saved', 'ok');
     });
@@ -712,7 +712,7 @@ Only include facts provided in inputs.`;
       status('Template loaded', 'ok');
     });
     els.resetTemplate.addEventListener('click', () => {
-      if(!adminOK) return status('Unlock admin first', 'warn');
+      if(!chiefOK) return status('Unlock PAO Chief first', 'warn');
       els.sysPrompt.value = defaultTemplate;
       localStorage.setItem(TPL_KEY, defaultTemplate);
       status('Template reset', 'ok');
@@ -1032,18 +1032,18 @@ ${d.step10.evaluation || 'n/a'}
     }
 
     els.exportAll.addEventListener('click', ()=>{
-      if(!adminOK) return status('Unlock admin first', 'warn');
+      if(!chiefOK) return status('Unlock PAO Chief first', 'warn');
       const all = {};
-      ['nww_rpie_admin_pin','nww_rpie_template','nww_rpie_draft'].forEach(k=> all[k] = localStorage.getItem(k));
+      ['nww_rpie_chief_pin','nww_rpie_template','nww_rpie_draft'].forEach(k=> all[k] = localStorage.getItem(k));
       const blob = new Blob([JSON.stringify(all, null, 2)], {type:'application/json'});
       download(blob, 'nww_rpie_all.json');
     });
     els.wipeAll.addEventListener('click', ()=>{
-      if(!adminOK) return status('Unlock admin first', 'warn');
+      if(!chiefOK) return status('Unlock PAO Chief first', 'warn');
       localStorage.removeItem('nww_rpie_draft');
       localStorage.removeItem('nww_rpie_template');
       status('Draft and template cleared', 'ok');
-      els.adminMsg.textContent = 'Draft and template cleared. PIN retained.';
+      els.chiefMsg.textContent = 'Draft and template cleared. PIN retained.';
     });
 
     els.generate.addEventListener('click', async ()=>{

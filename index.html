@@ -126,15 +126,18 @@
   </div>
 
   <!-- ROLE PICK -->
-  <section id="screenRole" class="grid grid-3" style="margin-top:18px">
+  <section id="screenRole" class="grid grid-2" style="margin-top:18px">
     <button class="card" style="background:var(--accent3);color:#281a07; cursor:pointer" data-role="viewer">
       <div style="font-size:22px;font-weight:800">Viewer</div><div class="mini">See progress & click product links</div>
     </button>
     <button class="card" style="background:var(--accent4);color:#041d13; cursor:pointer" data-role="staff">
       <div style="font-size:22px;font-weight:800">Staff</div><div class="mini">Enter my work & links (PIN protected)</div>
     </button>
-    <button class="card" style="background:var(--accent2);color:#1d0c16; cursor:pointer" data-role="admin">
-      <div style="font-size:22px;font-weight:800">Admin</div><div class="mini">Set goals, staff & PINs, manage templates</div>
+    <button class="card" style="background:var(--accent2);color:#1d0c16; cursor:pointer" data-role="chief">
+      <div style="font-size:22px;font-weight:800">PAO Chief</div><div class="mini">Set goals, staff & PINs, manage templates</div>
+    </button>
+    <button class="card" style="background:var(--accent1);color:#0a141c; cursor:pointer" data-role="admin">
+      <div style="font-size:22px;font-weight:800">Admin</div><div class="mini">Manage all units</div>
     </button>
   </section>
 
@@ -142,11 +145,22 @@
   <section id="screenStaffAuth" class="card hide" style="margin-top:18px">
     <h3>Staff Sign‑In</h3>
     <div class="grid" style="grid-template-columns:1fr">
+      <div><label>Unit</label><input id="staffUnit" class="input" placeholder="e.g., Unit A" /></div>
       <div><label>Select your name</label><select id="staffUser" class="input"></select></div>
       <div><label>Your PIN</label><input id="staffPIN" type="password" class="input" placeholder="••••" /></div>
       <div><button class="cta" id="btnStaffLogin" style="margin-top:8px">Sign in</button></div>
     </div>
-    <div class="mini" style="margin-top:8px">Need to be added? Admin can create you in Settings.</div>
+    <div class="mini" style="margin-top:8px">Need to be added? PAO Chief can create you in Settings.</div>
+  </section>
+
+  <!-- PAO CHIEF AUTH -->
+  <section id="screenChiefAuth" class="card hide" style="margin-top:18px">
+    <h3>PAO Chief Sign‑In</h3>
+    <div class="grid" style="grid-template-columns:1fr">
+      <div><label>Unit</label><input id="chiefUnit" class="input" placeholder="e.g., Unit A" /></div>
+      <div><label>PAO PIN</label><input id="chiefPIN" type="password" class="input" placeholder="Default 0000 (change in Settings)" /></div>
+      <div><button class="cta" id="btnChiefLogin" style="margin-top:8px">Sign in</button></div>
+    </div>
   </section>
 
   <!-- ADMIN AUTH -->
@@ -279,27 +293,27 @@
     </div>
   </section>
 
-  <!-- ADMIN -->
-  <section id="screenAdmin" class="hide">
+  <!-- PAO CHIEF -->
+  <section id="screenChief" class="hide">
     <div class="row" style="margin-top:18px; flex-direction:column">
       <div class="col">
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <h3>Admin • Settings & Staff</h3>
+            <h3>PAO Chief • Settings & Staff</h3>
             <span class="badge"><span class="mini">Timeframe</span>
-              <select id="tfAdmin" class="input" style="width:auto; margin-left:8px">
+              <select id="tfChief" class="input" style="width:auto; margin-left:8px">
                 <option value="M">Monthly</option><option value="Q">Quarterly</option><option value="Y">Annual</option>
               </select>
-              <span id="tfAdminPick"></span>
+              <span id="tfChiefPick"></span>
             </span>
           </div>
           <div class="divider"></div>
           <div class="grid" style="grid-template-columns:1fr">
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
-              <h3>Admin PIN & Staff</h3>
+              <h3>PAO PIN & Staff</h3>
               <div class="grid" style="grid-template-columns:1fr">
-                <div><label>Set Admin PIN</label><input id="setAdminPIN" type="password" class="input" placeholder="New PIN"></div>
-                <div><button class="cta" id="btnSaveAdminPIN" style="margin-top:8px">Save PIN</button></div>
+                <div><label>Set PAO PIN</label><input id="setChiefPIN" type="password" class="input" placeholder="New PIN"></div>
+                <div><button class="cta" id="btnSaveChiefPIN" style="margin-top:8px">Save PIN</button></div>
               </div>
               <div class="divider"></div>
               <div class="grid" style="grid-template-columns:1fr">
@@ -354,7 +368,7 @@
           </div>
         </div>
       </div>
-      <!-- Goals & admin dashboard -->
+      <!-- Goals & chief dashboard -->
       <div class="col">
         <div class="card" style="background:var(--accent3); color:#24160a">
           <h3>Set Goals (Counts & Outcomes)</h3>
@@ -373,7 +387,7 @@
               <div><label>Description (optional)</label><input id="ocmDesc" class="input" placeholder="Short context"/></div>
               <div><button class="cta" id="btnAddOcm" style="margin-top:8px">Add Metric</button></div>
             </div>
-            <div id="ocmAdminList" class="scroll" style="margin-top:10px"></div>
+            <div id="ocmChiefList" class="scroll" style="margin-top:10px"></div>
           </div>
           <div style="display:flex; gap:10px; margin-top:12px"><button class="cta" id="btnSaveGoals">Save All Goals</button></div>
         </div>
@@ -381,17 +395,29 @@
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3>Admin Dashboard</h3>
+      <h3>PAO Chief Dashboard</h3>
       <div class="grid grid-3">
-        <div class="card" style="background:var(--accent4); color:#0d1e19"><div class="mini">Outputs</div><div style="font-size:30px;font-weight:900" id="adminOutPct">0%</div><div class="mini" id="adminOutCounts">0 / 0</div></div>
-        <div class="card" style="background:var(--accent1); color:#0a141c"><div class="mini">Outtakes</div><div style="font-size:30px;font-weight:900" id="adminOtkPct">0%</div><div class="mini" id="adminOtkCounts">0 / 0</div></div>
-        <div class="card" style="background:var(--accent2); color:#1d0c16"><div class="mini">Outcomes (avg)</div><div style="font-size:30px;font-weight:900" id="adminOcmPct">0%</div><div class="mini" id="adminOcmCounts">—</div></div>
+        <div class="card" style="background:var(--accent4); color:#0d1e19"><div class="mini">Outputs</div><div style="font-size:30px;font-weight:900" id="chiefOutPct">0%</div><div class="mini" id="chiefOutCounts">0 / 0</div></div>
+        <div class="card" style="background:var(--accent1); color:#0a141c"><div class="mini">Outtakes</div><div style="font-size:30px;font-weight:900" id="chiefOtkPct">0%</div><div class="mini" id="chiefOtkCounts">0 / 0</div></div>
+        <div class="card" style="background:var(--accent2); color:#1d0c16"><div class="mini">Outcomes (avg)</div><div style="font-size:30px;font-weight:900" id="chiefOcmPct">0%</div><div class="mini" id="chiefOcmCounts">—</div></div>
       </div>
       <div class="divider"></div>
       <div class="grid grid-2">
-        <div class="card"><h3>Outputs by Product</h3><div class="scroll" id="adminTblOutputs"></div></div>
-        <div class="card"><h3>Outtakes by Type</h3><div class="scroll" id="adminTblOuttakes"></div></div>
+        <div class="card"><h3>Outputs by Product</h3><div class="scroll" id="chiefTblOutputs"></div></div>
+        <div class="card"><h3>Outtakes by Type</h3><div class="scroll" id="chiefTblOuttakes"></div></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ADMIN (global) -->
+  <section id="screenAdmin" class="card hide" style="margin-top:18px">
+    <h3>Admin Dashboard</h3>
+    <div class="grid" style="grid-template-columns:1fr">
+      <div><label>Select Unit</label><select id="adminUnit" class="input"></select></div>
+      <div><button class="cta" id="btnAdminOpen" style="margin-top:8px">Open Unit</button></div>
+      <div class="divider"></div>
+      <div><label>Set Admin PIN</label><input id="setGlobalPIN" type="password" class="input" placeholder="New PIN" /></div>
+      <div><button class="ghost small" id="btnSaveGlobalPIN" style="margin-top:8px">Save PIN</button></div>
     </div>
   </section>
 
@@ -434,7 +460,12 @@
 
 <script>
 /* ================= DATA ================= */
-const STORAGE_KEY='nww_pao_metrics_onepage_v1';
+const STORAGE_KEY_BASE='nww_pao_metrics_onepage_v1';
+const UNITS_KEY='nww_pao_units';
+const GLOBAL_PIN_KEY='nww_pao_global_pin';
+let currentUnit='default';
+let STORAGE_KEY=`${STORAGE_KEY_BASE}_${currentUnit}`;
+let globalAdminPIN = localStorage.getItem(GLOBAL_PIN_KEY) || '0000';
 const ONBOARD_KEY='nww_onboard_done';
 const defaultOutcomes=[
   {name:'Awareness lift', desc:''},
@@ -450,7 +481,7 @@ const defaultOutcomes=[
   {name:'Stakeholder collaboration actions', desc:''}
 ];
 const def={
-  adminPIN:'0000',
+  chiefPIN:'0000',
   staff:[], // {id,name,pin}
   templates:{
     outputs:[
@@ -509,8 +540,15 @@ const def={
   checklists:[], // pre-release
   apiKeys:{ facebook:'', instagram:'', x:'', linkedin:'', openai:'', gemini:'', camogpt:'', asksage:'' }
 };
-let db = load();
-function load(){
+let db = load(currentUnit);
+function ensureUnitList(unit){
+  const list = JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
+  if(!list.includes(unit)){ list.push(unit); localStorage.setItem(UNITS_KEY, JSON.stringify(list)); }
+}
+function load(unit){
+  currentUnit = unit;
+  STORAGE_KEY = `${STORAGE_KEY_BASE}_${unit}`;
+  ensureUnitList(unit);
   try{
     const raw=localStorage.getItem(STORAGE_KEY);
     let data = raw? JSON.parse(raw) : (localStorage.setItem(STORAGE_KEY, JSON.stringify(def)), structuredClone(def));
@@ -526,7 +564,7 @@ function load(){
     return structuredClone(def);
   }
 }
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); ensureUnitList(currentUnit); }
 
 /* ================= HELPERS ================= */
 const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
@@ -571,37 +609,50 @@ inputLoadProgress.addEventListener('change', e=>{
   fr.readAsText(f); inputLoadProgress.value='';
 });
 function show(which){
-  ['screenRole','screenStaffAuth','screenAdminAuth','screenViewer','screenStaff','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist','modRpie'].forEach(id=> $('#'+id).classList.add('hide'));
+  ['screenRole','screenStaffAuth','screenChiefAuth','screenAdminAuth','screenViewer','screenStaff','screenChief','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist','modRpie'].forEach(id=> $('#'+id).classList.add('hide'));
   $('#askAIModule')?.classList.add('hide');
   if(which==='role'){role=null;user=null;whoPill.textContent='Not signed in'; btnHamburger.style.display='none'; btnSaveProgress.style.display='none'; lblLoadProgress.style.display='none'; $('#screenRole').classList.remove('hide'); return;}
   if(which==='viewer') $('#screenViewer').classList.remove('hide');
   if(which==='staffAuth') $('#screenStaffAuth').classList.remove('hide');
+  if(which==='chiefAuth') $('#screenChiefAuth').classList.remove('hide');
   if(which==='adminAuth') $('#screenAdminAuth').classList.remove('hide');
   if(which==='staff'){ $('#screenStaff').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); }
-  if(which==='admin'){ $('#screenAdmin').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); }
+  if(which==='chief'){ $('#screenChief').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); }
+  if(which==='admin') $('#screenAdmin').classList.remove('hide');
   if(which.startsWith('mod')) $('#'+which).classList.remove('hide');
 }
 $('#screenRole').addEventListener('click', e=>{
   const card=e.target.closest('[data-role]'); if(!card) return;
   const r=card.dataset.role;
   if(r==='viewer'){ role='viewer'; whoPill.textContent='Viewer'; buildViewer(); show('viewer'); }
-  if(r==='staff'){ role='staff'; whoPill.textContent='Staff — sign in'; populateStaffList(); show('staffAuth'); }
+  if(r==='staff'){ role='staff'; whoPill.textContent='Staff — sign in'; show('staffAuth'); }
+  if(r==='chief'){ role='chief'; whoPill.textContent='PAO Chief — sign in'; show('chiefAuth'); }
   if(r==='admin'){ role='admin'; whoPill.textContent='Admin — sign in'; show('adminAuth'); }
 });
 
 /* ================= AUTH ================= */
 const staffUserSel=$('#staffUser');
 function populateStaffList(){ staffUserSel.innerHTML=''; db.staff.forEach(s=>{const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; staffUserSel.appendChild(o);}); }
+$('#staffUnit').addEventListener('change', ()=>{ const unit=$('#staffUnit').value.trim()||'default'; db=load(unit); populateStaffList(); });
 $('#btnStaffLogin').addEventListener('click', ()=>{
+  const unit=$('#staffUnit').value.trim()||'default'; db=load(unit);
   const id=staffUserSel.value; const pin=$('#staffPIN').value.trim(); const rec=db.staff.find(s=>s.id===id);
   if(!rec) return alert('Select your name'); if(rec.pin!==pin) return alert('Incorrect PIN');
-  user={id:rec.id, name:rec.name}; whoPill.textContent=`Staff: ${rec.name}`; btnHamburger.style.display='inline-flex';
+  user={id:rec.id, name:rec.name}; whoPill.textContent=`Staff: ${rec.name} (${unit})`; btnHamburger.style.display='inline-flex';
   btnSaveProgress.style.display='inline-flex'; lblLoadProgress.style.display='inline-flex';
   $('#staffPIN').value='';
   buildStaff(); show('staff');
 });
+$('#btnChiefLogin').addEventListener('click', ()=>{
+  const unit=$('#chiefUnit').value.trim()||'default'; db=load(unit);
+  const pin=$('#chiefPIN').value.trim(); if(pin!==db.chiefPIN) return alert('Incorrect PAO PIN');
+  user={id:'chief', name:'PAO Chief'}; whoPill.textContent=`PAO Chief (${unit})`; btnHamburger.style.display='inline-flex';
+  btnSaveProgress.style.display='inline-flex'; lblLoadProgress.style.display='inline-flex';
+  $('#chiefPIN').value='';
+  buildChief(); show('chief');
+});
 $('#btnAdminLogin').addEventListener('click', ()=>{
-  const pin=$('#adminPIN').value.trim(); if(pin!==db.adminPIN) return alert('Incorrect Admin PIN');
+  const pin=$('#adminPIN').value.trim(); if(pin!==globalAdminPIN) return alert('Incorrect Admin PIN');
   user={id:'admin', name:'Admin'}; whoPill.textContent='Admin'; btnHamburger.style.display='inline-flex';
   btnSaveProgress.style.display='inline-flex'; lblLoadProgress.style.display='inline-flex';
   $('#adminPIN').value='';
@@ -619,7 +670,8 @@ function buildMenu(){
     {id:'brand', label:'Branding Governance', dot:'grad1', group:'Staff'},
     {id:'check', label:'Pre‑Release Checklist', dot:'grad2', group:'Staff'},
     {id:'rpie', label:'R-PIE Planner', dot:'grad1', group:'Staff'},
-    ...(role==='admin' ? [{id:'admin', label:'Admin (Goals, Staff, Templates)', dot:'grad2', group:'Admin'}] : [])
+    ...(role==='chief' ? [{id:'chief', label:'PAO Chief (Goals, Staff, Templates)', dot:'grad2', group:'PAO Chief'}] : []),
+    ...(role==='admin' ? [{id:'admin', label:'Admin (Manage Units)', dot:'grad2', group:'Admin'}] : [])
   ];
   const groups={}; const ungrouped=[];
   items.forEach(it=>{ if(it.group) (groups[it.group] ||= []).push(it); else ungrouped.push(it); });
@@ -636,6 +688,7 @@ function buildMenu(){
       if(it.id==='brand'){ buildBrand(); show('modBrand'); }
       if(it.id==='check'){ buildChecklist(); show('modChecklist'); }
       if(it.id==='rpie'){ show('modRpie'); }
+      if(it.id==='chief'){ buildChief(); show('chief'); }
       if(it.id==='admin'){ buildAdmin(); show('admin'); }
     });
     return el;
@@ -795,12 +848,12 @@ function refreshStaff(){
 }
 function refreshViewerIf(){ if(!$('#screenViewer').classList.contains('hide')) refreshViewer(); }
 
-/* ===== Admin ===== */
-const tfAdminSel=$('#tfAdmin'), tfAdminPick=$('#tfAdminPick');
-tfAdminSel?.addEventListener('change', ()=> buildTfPicker(tfAdminPick, tfAdminSel.value, key=>{cur.tf=tfAdminSel.value; cur.key=key; buildGoalsEditors(); refreshAdminDash();}));
-function buildAdmin(){
+/* ===== PAO Chief ===== */
+const tfChiefSel=$('#tfChief'), tfChiefPick=$('#tfChiefPick');
+tfChiefSel?.addEventListener('change', ()=> buildTfPicker(tfChiefPick, tfChiefSel.value, key=>{cur.tf=tfChiefSel.value; cur.key=key; buildGoalsEditors(); refreshChiefDash();}));
+function buildChief(){
   $('#tplOutputs').value=db.templates.outputs.map(t=>t.name).join('\n'); $('#tplOuttakes').value=db.templates.outtakes.map(t=>t.name).join('\n');
-  buildTfPicker(tfAdminPick, tfAdminSel.value, key=>{cur.key=key; buildGoalsEditors(); refreshAdminDash();});
+  buildTfPicker(tfChiefPick, tfChiefSel.value, key=>{cur.key=key; buildGoalsEditors(); refreshChiefDash();});
   renderStaffList();
   if(db.apiKeys){
     $('#apiKeyFacebook').value = db.apiKeys.facebook || '';
@@ -830,7 +883,7 @@ function buildAdmin(){
     save();
     alert('AI API Keys saved');
   };
-  $('#btnSaveAdminPIN').onclick=()=>{ const p=$('#setAdminPIN').value.trim(); if(!p) return alert('Enter a PIN'); db.adminPIN=p; save(); $('#setAdminPIN').value=''; alert('Admin PIN updated'); };
+  $('#btnSaveChiefPIN').onclick=()=>{ const p=$('#setChiefPIN').value.trim(); if(!p) return alert('Enter a PIN'); db.chiefPIN=p; save(); $('#setChiefPIN').value=''; alert('PAO PIN updated'); };
 }
   $('#btnAddStaff').onclick=()=>{ const name=$('#staffName').value.trim(), pin=$('#staffNewPIN').value.trim(); if(!name||!pin) return alert('Name & PIN required'); let rec=db.staff.find(s=>s.name.toLowerCase()===name.toLowerCase()); if(rec) rec.pin=pin; else db.staff.push({id:uid(),name,pin}); save(); $('#staffName').value=''; $('#staffNewPIN').value=''; renderStaffList(); };
   $('#btnSaveTemplates').onclick=()=>{
@@ -867,31 +920,39 @@ function buildGoalsEditors(){
     r.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="chip">${name}</span></div><div style="min-width:180px"><input type="range" min="0" max="50" value="${val}" data-name="${name}" class="goalOtkRange"><div class="mini"><span class="val">${val}</span> events/qty</div></div></div>`;
     gt.appendChild(r);
   });
-  renderAdminOutcomes();
+  renderChiefOutcomes();
   go.querySelectorAll('.goalOutRange').forEach(r=> r.addEventListener('input', e=> e.target.parentElement.querySelector('.val').textContent=e.target.value));
   gt.querySelectorAll('.goalOtkRange').forEach(r=> r.addEventListener('input', e=> e.target.parentElement.querySelector('.val').textContent=e.target.value));
 }
-function renderAdminOutcomes(){
-  const box=$('#ocmAdminList'); const arr=db.goals[cur.tf].outcomes||[]; box.innerHTML= arr.length? '' : '<div class="mini">No outcome metrics yet.</div>';
+function renderChiefOutcomes(){
+  const box=$('#ocmChiefList'); const arr=db.goals[cur.tf].outcomes||[]; box.innerHTML= arr.length? '' : '<div class="mini">No outcome metrics yet.</div>';
   arr.forEach((o,idx)=>{
     const row=document.createElement('div'); row.className='card'; row.style.cssText='background:#0e1124;border-color:#2f355e;display:flex;justify-content:space-between;align-items:center;gap:8px;';
     row.innerHTML=`<div><strong>${o.name}</strong><div class="mini">${o.desc||''}</div></div><div><button class="danger small" data-del="${idx}">Remove</button></div>`;
     box.appendChild(row);
   });
-  box.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{ const i=+e.target.dataset.del; db.goals[cur.tf].outcomes.splice(i,1); save(); renderAdminOutcomes(); refreshAdminDash(); }));
+  box.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{ const i=+e.target.dataset.del; db.goals[cur.tf].outcomes.splice(i,1); save(); renderChiefOutcomes(); refreshChiefDash(); }));
 }
-$('#btnAddOcm')?.addEventListener('click', ()=>{ const name=$('#ocmName').value.trim(); if(!name) return alert('Metric name required.'); const desc=$('#ocmDesc').value.trim(); const arr=db.goals[cur.tf].outcomes||(db.goals[cur.tf].outcomes=[]); if(arr.find(o=>o.name.toLowerCase()===name.toLowerCase())) return alert('Metric exists.'); arr.push({name,desc}); save(); $('#ocmName').value=''; $('#ocmDesc').value=''; renderAdminOutcomes(); });
-$('#btnSaveGoals')?.addEventListener('click', ()=>{ const g=db.goals[cur.tf]; const outs={}; $$('.goalOutRange').forEach(r=> outs[r.dataset.name]=parseInt(r.value,10)||0 ); const otks={}; $$('.goalOtkRange').forEach(r=> otks[r.dataset.name]=parseInt(r.value,10)||0 ); g.outputs=outs; g.outtakes=otks; save(); alert('Goals saved'); refreshAdminDash(); });
-function refreshAdminDash(){
+$('#btnAddOcm')?.addEventListener('click', ()=>{ const name=$('#ocmName').value.trim(); if(!name) return alert('Metric name required.'); const desc=$('#ocmDesc').value.trim(); const arr=db.goals[cur.tf].outcomes||(db.goals[cur.tf].outcomes=[]); if(arr.find(o=>o.name.toLowerCase()===name.toLowerCase())) return alert('Metric exists.'); arr.push({name,desc}); save(); $('#ocmName').value=''; $('#ocmDesc').value=''; renderChiefOutcomes(); });
+$('#btnSaveGoals')?.addEventListener('click', ()=>{ const g=db.goals[cur.tf]; const outs={}; $$('.goalOutRange').forEach(r=> outs[r.dataset.name]=parseInt(r.value,10)||0 ); const otks={}; $$('.goalOtkRange').forEach(r=> otks[r.dataset.name]=parseInt(r.value,10)||0 ); g.outputs=outs; g.outtakes=otks; save(); alert('Goals saved'); refreshChiefDash(); });
+function refreshChiefDash(){
   const p=calcProgress(cur.tf, cur.key);
-  $('#adminOutPct').textContent=toPct(p.outPct); $('#adminOutCounts').textContent=`${p.outTotals.done} / ${p.outTotals.goal}`;
-  $('#adminOtkPct').textContent=toPct(p.otkPct); $('#adminOtkCounts').textContent=`${p.otkTotals.done} / ${p.otkTotals.goal}`;
-  $('#adminOcmPct').textContent=toPct(p.ocmPct); $('#adminOcmCounts').textContent=(db.goals[cur.tf].outcomes||[]).length? `${(db.goals[cur.tf].outcomes||[]).length} metrics`:'—';
+  $('#chiefOutPct').textContent=toPct(p.outPct); $('#chiefOutCounts').textContent=`${p.outTotals.done} / ${p.outTotals.goal}`;
+  $('#chiefOtkPct').textContent=toPct(p.otkPct); $('#chiefOtkCounts').textContent=`${p.otkTotals.done} / ${p.otkTotals.goal}`;
+  $('#chiefOcmPct').textContent=toPct(p.ocmPct); $('#chiefOcmCounts').textContent=(db.goals[cur.tf].outcomes||[]).length? `${(db.goals[cur.tf].outcomes||[]).length} metrics`:'—';
   const outRows=Object.keys(p.outBreak.goal).map(k=>({product:k, goal:p.outBreak.goal[k]||0, done:p.outBreak.sum[k]||0}));
   const otkRows=Object.keys(p.otkBreak.goal).map(k=>({kind:k, goal:p.otkBreak.goal[k]||0, done:p.otkBreak.sum[k]||0}));
-  tbl($('#adminTblOutputs'), outRows, [{label:'Product',render:r=>r.product},{label:'Goal',render:r=>r.goal},{label:'Done',render:r=>r.done},{label:'% Complete',render:r=> toPct(r.goal? r.done/r.goal : 0)}]);
-  tbl($('#adminTblOuttakes'), otkRows, [{label:'Type',render:r=>r.kind},{label:'Goal',render:r=>r.goal},{label:'Done',render:r=>r.done},{label:'% Complete',render:r=> toPct(r.goal? r.done/r.goal : 0)}]);
+  tbl($('#chiefTblOutputs'), outRows, [{label:'Product',render:r=>r.product},{label:'Goal',render:r=>r.goal},{label:'Done',render:r=>r.done},{label:'% Complete',render:r=> toPct(r.goal? r.done/r.goal : 0)}]);
+  tbl($('#chiefTblOuttakes'), otkRows, [{label:'Type',render:r=>r.kind},{label:'Goal',render:r=>r.goal},{label:'Done',render:r=>r.done},{label:'% Complete',render:r=> toPct(r.goal? r.done/r.goal : 0)}]);
 }
+
+function buildAdmin(){
+  const sel=$('#adminUnit'); sel.innerHTML='';
+  const units=JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
+  units.forEach(u=>{ const o=document.createElement('option'); o.value=u; o.textContent=u; sel.appendChild(o); });
+}
+$('#btnAdminOpen').onclick=()=>{ const unit=$('#adminUnit').value; if(!unit) return alert('Select unit'); db=load(unit); role='chief'; whoPill.textContent=`PAO Chief (${unit})`; buildChief(); show('chief'); };
+$('#btnSaveGlobalPIN').onclick=()=>{ const p=$('#setGlobalPIN').value.trim(); if(!p) return alert('Enter a PIN'); globalAdminPIN=p; localStorage.setItem(GLOBAL_PIN_KEY,p); $('#setGlobalPIN').value=''; alert('Admin PIN updated'); };
 
 /* ================= MODULES (Hamburger) ================= */
 function buildKLE(){
@@ -1013,7 +1074,7 @@ function buildSocial(){
     refreshViewerIf();
   };
   const btnApi = $('#btnSocPostApi');
-  if(role === 'admin' && db.apiKeys && Object.values(db.apiKeys).some(k => k)){
+  if(role === 'chief' && db.apiKeys && Object.values(db.apiKeys).some(k => k)){
       btnApi.style.display = 'inline-block';
   }
   btnApi.onclick = () => {
@@ -1022,7 +1083,7 @@ function buildSocial(){
           alert('"Posting" to '+$('#socPlatform').value+' via API... (This is a demo)');
           $('#btnSocSave').click();
       } else {
-          alert('API key for '+$('#socPlatform').value+' is not configured in Admin settings, or the platform is not supported for API posting.');
+          alert('API key for '+$('#socPlatform').value+' is not configured in PAO Chief settings, or the platform is not supported for API posting.');
       }
   };
   renderSocial();
@@ -1204,7 +1265,7 @@ async function callAI(){
   const provider=aiProviderEl.value;
   const providerNames={openai:'OpenAI',gemini:'Gemini',camogpt:'CamoGPT',asksage:'AskSage'};
   const key=db.apiKeys?.[provider]?.trim();
-  if(!key) return alert(providerNames[provider]+" API key not set by Admin.");
+  if(!key) return alert(providerNames[provider]+" API key not set by PAO Chief.");
   if(!prompt) return alert('Enter a prompt first.');
   try{
     let res,data;
