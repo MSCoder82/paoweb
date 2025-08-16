@@ -1,0 +1,17 @@
+{
+  "name": "paoweb",
+  "version": "1.0.0",
+  "description": "This is a self-contained web application that:",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test:tooltip",
+    "test:tooltip": "node tests/tooltip.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "jsdom": "^26.1.0"
+  }
+}

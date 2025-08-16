@@ -27,3 +27,16 @@ You can host this as a static page:
 4. Share the GitHub Pages link with your team
 
 Enjoy!
+
+## 🧪 Testing
+
+### Automated check
+Run `npm run test:tooltip` to confirm that tooltips respond to keyboard focus and blur events. The script runs against both light and dark color schemes.
+
+### Manual check
+1. Open `index.html` in a browser.
+2. Use the **Tab** key to focus the "Home" button.
+3. Verify the tooltip "Back to role selection" appears when focused.
+4. Shift focus away and confirm the tooltip disappears.
+5. Ensure the tooltip never overlaps the button that triggers it.
+6. Repeat steps 2–5 in both light and dark themes.
