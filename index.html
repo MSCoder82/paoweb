@@ -303,12 +303,16 @@
               </div>
             </div>
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
-              <h3>Social Media API Keys</h3>
+              <h3>API Keys</h3>
               <div class="grid">
                 <div><label>Facebook API Key</label><input id="apiKeyFacebook" class="input" placeholder="Enter Key"></div>
                 <div><label>Instagram API Key</label><input id="apiKeyInstagram" class="input" placeholder="Enter Key"></div>
                 <div><label>X API Key</label><input id="apiKeyX" class="input" placeholder="Enter Key"></div>
                 <div><label>LinkedIn API Key</label><input id="apiKeyLinkedin" class="input" placeholder="Enter Key"></div>
+                <div><label>OpenAI API Key</label><input id="apiKeyOpenAI" class="input" placeholder="Enter Key"></div>
+                <div><label>Gemini API Key</label><input id="apiKeyGemini" class="input" placeholder="Enter Key"></div>
+                <div><label>CamoGPT API Key</label><input id="apiKeyCamogpt" class="input" placeholder="Enter Key"></div>
+                <div><label>AskSage API Key</label><input id="apiKeyAsksage" class="input" placeholder="Enter Key"></div>
               </div>
               <div style="display:flex; gap:10px; margin-top:10px">
                 <button class="cta" id="btnSaveApiKeys">Save API Keys</button>
@@ -423,12 +427,13 @@ homeBtn.addEventListener('click', ()=> show('role'));
 scrollTopBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 function show(which){
   ['screenRole','screenStaffAuth','screenAdminAuth','screenViewer','screenStaff','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist'].forEach(id=> $('#'+id).classList.add('hide'));
+  $('#askAI')?.classList.add('hide');
   if(which==='role'){role=null;user=null;whoPill.textContent='Not signed in'; btnHamburger.style.display='none'; $('#screenRole').classList.remove('hide'); return;}
   if(which==='viewer') $('#screenViewer').classList.remove('hide');
   if(which==='staffAuth') $('#screenStaffAuth').classList.remove('hide');
   if(which==='adminAuth') $('#screenAdminAuth').classList.remove('hide');
-  if(which==='staff') $('#screenStaff').classList.remove('hide');
-  if(which==='admin') $('#screenAdmin').classList.remove('hide');
+  if(which==='staff'){ $('#screenStaff').classList.remove('hide'); $('#askAI')?.classList.remove('hide'); }
+  if(which==='admin'){ $('#screenAdmin').classList.remove('hide'); $('#askAI')?.classList.remove('hide'); }
   if(which.startsWith('mod')) $('#'+which).classList.remove('hide');
 }
 $('#screenRole').addEventListener('click', e=>{
@@ -611,6 +616,10 @@ function buildAdmin(){
     $('#apiKeyInstagram').value = db.apiKeys.instagram || '';
     $('#apiKeyX').value = db.apiKeys.x || '';
     $('#apiKeyLinkedin').value = db.apiKeys.linkedin || '';
+    $('#apiKeyOpenAI').value = db.apiKeys.openai || '';
+    $('#apiKeyGemini').value = db.apiKeys.gemini || '';
+    $('#apiKeyCamogpt').value = db.apiKeys.camogpt || '';
+    $('#apiKeyAsksage').value = db.apiKeys.asksage || '';
   }
   $('#btnSaveApiKeys').onclick=()=>{
     if(!db.apiKeys) db.apiKeys = {};
@@ -618,6 +627,10 @@ function buildAdmin(){
     db.apiKeys.instagram = $('#apiKeyInstagram').value.trim();
     db.apiKeys.x = $('#apiKeyX').value.trim();
     db.apiKeys.linkedin = $('#apiKeyLinkedin').value.trim();
+    db.apiKeys.openai = $('#apiKeyOpenAI').value.trim();
+    db.apiKeys.gemini = $('#apiKeyGemini').value.trim();
+    db.apiKeys.camogpt = $('#apiKeyCamogpt').value.trim();
+    db.apiKeys.asksage = $('#apiKeyAsksage').value.trim();
     save();
     alert('API Keys saved');
   };
@@ -890,41 +903,57 @@ function buildAdmin()  { /* wired above */ }
 })();
 </script>
 
-<!-- GPT Prompt Section (Appended) -->
-<div class="card" style="margin-top:16px; max-width:600px; margin-left:auto; margin-right:auto;">
-  <h3>Ask GPT</h3>
-  <textarea id="gptPrompt" rows="3" class="input" placeholder="Ask a question..."></textarea>
-  <div style="margin-top:10px; display:flex; gap:10px;">
-    <button class="cta" onclick="callGPT()">Ask</button>
+<!-- Ask AI Section -->
+<div id="askAI" class="card hide" style="margin-top:16px; max-width:600px; margin-left:auto; margin-right:auto;">
+  <h3>Ask AI</h3>
+  <div class="grid">
+    <div><label>Provider</label>
+      <select id="aiProvider" class="input">
+        <option value="openai">OpenAI</option>
+        <option value="gemini">Gemini</option>
+        <option value="camogpt">CamoGPT</option>
+        <option value="asksage">AskSage</option>
+      </select>
+    </div>
+    <div style="grid-column:1/-1"><label>Prompt</label>
+      <textarea id="aiPrompt" rows="3" class="input" placeholder="Ask a question..."></textarea>
+    </div>
   </div>
-  <pre id="gptOutput" class="mini" style="margin-top:10px; white-space:pre-wrap"></pre>
+  <div style="margin-top:10px; display:flex; gap:10px;">
+    <button class="cta" id="btnAskAI">Ask</button>
+  </div>
+  <pre id="aiOutput" class="mini" style="margin-top:10px; white-space:pre-wrap"></pre>
 </div>
 
 <script>
-async function callGPT() {
-  const prompt = document.getElementById('gptPrompt').value.trim();
-  const key = db.apiKeys?.openai?.trim();
-  if (!key) return alert("OpenAI API key not set by Admin.");
-  if (!prompt) return alert("Enter a prompt first.");
-  try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${key}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
-    const data = await res.json();
-    document.getElementById('gptOutput').textContent =
-      data.choices?.[0]?.message?.content || "No response";
-  } catch (err) {
-    document.getElementById('gptOutput').textContent = "Error: " + err.message;
+async function callAI(){
+  const prompt=$('#aiPrompt').value.trim();
+  const provider=$('#aiProvider').value;
+  const key=db.apiKeys?.[provider]?.trim();
+  if(!key) return alert(provider.charAt(0).toUpperCase()+provider.slice(1)+" API key not set by Admin.");
+  if(!prompt) return alert('Enter a prompt first.');
+  try{
+    let url,opts;
+    if(provider==='openai'){
+      url='https://api.openai.com/v1/chat/completions';
+      opts={method:'POST',headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4',messages:[{role:'user',content:prompt}]})};
+    }else if(provider==='gemini'){
+      url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`;
+      opts={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})};
+    }else{
+      url=`https://api.${provider}.com/v1/chat/completions`;
+      opts={method:'POST',headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4',messages:[{role:'user',content:prompt}]})};
+    }
+    const res=await fetch(url,opts);
+    const data=await res.json();
+    let text;
+    if(provider==='gemini') text=data.candidates?.[0]?.content?.parts?.[0]?.text; else text=data.choices?.[0]?.message?.content;
+    $('#aiOutput').textContent=text||'No response';
+  }catch(err){
+    $('#aiOutput').textContent='Error: '+err.message;
   }
 }
+$('#btnAskAI').addEventListener('click',callAI);
 </script>
 
 </body>
