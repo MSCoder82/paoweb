@@ -509,7 +509,23 @@ const def={
   checklists:[], // pre-release
   apiKeys:{ facebook:'', instagram:'', x:'', linkedin:'', openai:'', gemini:'', camogpt:'', asksage:'' }
 };
-let db = load(); function load(){ try{const raw=localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw): (localStorage.setItem(STORAGE_KEY, JSON.stringify(def)), structuredClone(def)); }catch(e){ return structuredClone(def);} }
+let db = load();
+function load(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    let data = raw? JSON.parse(raw) : (localStorage.setItem(STORAGE_KEY, JSON.stringify(def)), structuredClone(def));
+    // migrate legacy template arrays of strings to object format
+    if(Array.isArray(data.templates?.outputs) && typeof data.templates.outputs[0] === 'string'){
+      data.templates.outputs = data.templates.outputs.map(name=>({name, qty:1, links:[]}));
+    }
+    if(Array.isArray(data.templates?.outtakes) && typeof data.templates.outtakes[0] === 'string'){
+      data.templates.outtakes = data.templates.outtakes.map(name=>({name, qty:1, notes:''}));
+    }
+    return data;
+  }catch(e){
+    return structuredClone(def);
+  }
+}
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
 
 /* ================= HELPERS ================= */
@@ -816,8 +832,10 @@ function buildAdmin(){
 }
   $('#btnAddStaff').onclick=()=>{ const name=$('#staffName').value.trim(), pin=$('#staffNewPIN').value.trim(); if(!name||!pin) return alert('Name & PIN required'); let rec=db.staff.find(s=>s.name.toLowerCase()===name.toLowerCase()); if(rec) rec.pin=pin; else db.staff.push({id:uid(),name,pin}); save(); $('#staffName').value=''; $('#staffNewPIN').value=''; renderStaffList(); };
   $('#btnSaveTemplates').onclick=()=>{
-    db.templates.outputs=$('#tplOutputs').value.split('\n').map(s=>s.trim()).filter(Boolean).map(name=>({name, qty:1, links:[]}));
-    db.templates.outtakes=$('#tplOuttakes').value.split('\n').map(s=>s.trim()).filter(Boolean).map(name=>({name, qty:1, notes:''}));
+    const outMap=Object.fromEntries((db.templates.outputs||[]).map(t=>[t.name,t]));
+    db.templates.outputs=$('#tplOutputs').value.split('\n').map(s=>s.trim()).filter(Boolean).map(name=> outMap[name] || {name, qty:1, links:[]});
+    const otkMap=Object.fromEntries((db.templates.outtakes||[]).map(t=>[t.name,t]));
+    db.templates.outtakes=$('#tplOuttakes').value.split('\n').map(s=>s.trim()).filter(Boolean).map(name=> otkMap[name] || {name, qty:1, notes:''});
     save(); alert('Templates saved');
   };
   $('#btnExport').onclick=()=>{ const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nww_pao_metrics_export.json'; a.click(); };
