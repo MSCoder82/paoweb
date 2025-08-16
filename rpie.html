@@ -152,15 +152,16 @@
         </div>
         <div id="progress" class="help" aria-live="polite"></div>
 
-        <div class="step-pane" id="step1" role="tabpanel">
+        <div class="step-pane" id="step1" data-step="1" role="tabpanel">
           <h3>Step 1 — Identify communication requirements</h3>
           <label for="issue">Issue statement</label>
           <textarea id="issue" placeholder="Define the issue, scope, and required support."></textarea>
           <label for="requirements">Requirements</label>
           <textarea id="requirements" placeholder="Key products, approvals, timing, authorities."></textarea>
+          <div class="btnbar"><button class="btn" data-next>Next</button></div>
         </div>
 
-        <div class="step-pane" id="step2" role="tabpanel" hidden aria-hidden="true">
+        <div class="step-pane" id="step2" data-step="2" role="tabpanel" hidden aria-hidden="true">
           <h3>Step 2 — Analyze the current situation</h3>
           <label for="situation">Situation analysis</label>
           <textarea id="situation" placeholder="Context, constraints, opportunities."></textarea>
@@ -172,9 +173,10 @@
             <div><label for="swotO">Opportunities</label><textarea id="swotO"></textarea></div>
             <div><label for="swotT">Threats</label><textarea id="swotT"></textarea></div>
           </div>
+          <div class="btnbar"><button class="btn ghost" data-back>Back</button><button class="btn" data-next>Next</button></div>
         </div>
 
-        <div class="step-pane" id="step3" role="tabpanel" hidden aria-hidden="true">
+        <div class="step-pane" id="step3" data-step="3" role="tabpanel" hidden aria-hidden="true">
           <h3>Step 3 — Stakeholders and target audiences</h3>
           <label>Business lines</label>
           <div id="businessLinesList" class="taglist"></div>
@@ -206,17 +208,19 @@
 
           <label for="audienceNotes" style="margin-top:10px">Notes (audience priorities, sensitivities)</label>
           <textarea id="audienceNotes"></textarea>
+          <div class="btnbar"><button class="btn ghost" data-back>Back</button><button class="btn" data-next>Next</button></div>
         </div>
 
-        <div class="step-pane" id="step4" role="tabpanel" hidden aria-hidden="true">
+        <div class="step-pane" id="step4" data-step="4" role="tabpanel" hidden aria-hidden="true">
           <h3>Step 4 — Goals and SMART objectives</h3>
           <label for="goals">Goals</label>
           <textarea id="goals" placeholder="Desired end state, long term focus."></textarea>
           <label for="objectives">SMART objectives</label>
           <textarea id="objectives" placeholder="Specific, Measurable, Achievable, Relevant, Time-bound."></textarea>
+          <div class="btnbar"><button class="btn ghost" data-back>Back</button><button class="btn" data-next>Next</button></div>
         </div>
 
-        <div class="step-pane" id="step5" role="tabpanel" hidden aria-hidden="true">
+        <div class="step-pane" id="step5" data-step="5" role="tabpanel" hidden aria-hidden="true">
           <h3>Step 5 — Strategies, tactics, key messages, talking points</h3>
           <label for="strategies">Strategies</label>
           <textarea id="strategies" placeholder="How to reach goals and objectives."></textarea>
@@ -226,9 +230,10 @@
           <textarea id="messages" placeholder="27-9-3 structure encouraged."></textarea>
           <label for="talking">Talking points</label>
           <textarea id="talking"></textarea>
+          <div class="btnbar"><button class="btn ghost" data-back>Back</button><button class="btn" data-next>Next</button></div>
         </div>
 
-        <div class="step-pane" id="step6" role="tabpanel" hidden aria-hidden="true">
+        <div class="step-pane" id="step6" data-step="6" role="tabpanel" hidden aria-hidden="true">
           <h3>Step 6 — Budget</h3>
           <div class="row">
             <div><label for="labor">Labor</label><input id="labor" type="text" placeholder="$ or hours"/></div>
@@ -239,9 +244,10 @@
             <div><label for="contract">Contractor/Facilitator</label><input id="contract" type="text" placeholder="$"/></div>
           </div>
           <label for="av">AV/Other</label><input id="av" type="text" placeholder="$ or notes"/>
+          <div class="btnbar"><button class="btn ghost" data-back>Back</button><button class="btn" data-next>Next</button></div>
         </div>
 
-        <div class="step-pane" id="step7" role="tabpanel" hidden aria-hidden="true">
+        <div class="step-pane" id="step7" data-step="7" role="tabpanel" hidden aria-hidden="true">
           <h3>Step 7 — Action matrix</h3>
           <div class="help">Add rows, then include dates, actions, roles, and methods.</div>
           <table id="am-table">
@@ -252,15 +258,17 @@
             <button class="btn ghost" id="am-add">+ Add row</button>
             <button class="btn ghost" id="am-clear">Clear</button>
           </div>
+          <div class="btnbar"><button class="btn ghost" data-back>Back</button><button class="btn" data-next>Next</button></div>
         </div>
 
-        <div class="step-pane" id="step8" role="tabpanel" hidden aria-hidden="true">
+        <div class="step-pane" id="step8" data-step="8" role="tabpanel" hidden aria-hidden="true">
           <h3>Step 8 — Implementation tracking</h3>
           <label for="tracking">Tracking notes</label>
           <textarea id="tracking" placeholder="Cadence, ownership, dashboards."></textarea>
+          <div class="btnbar"><button class="btn ghost" data-back>Back</button><button class="btn" data-next>Next</button></div>
         </div>
 
-        <div class="step-pane" id="step9" role="tabpanel" hidden aria-hidden="true">
+        <div class="step-pane" id="step9" data-step="9" role="tabpanel" hidden aria-hidden="true">
           <h3>Step 9 — Measurement plan</h3>
           <label>Outputs (products/channels)</label>
           <div id="outputsList" class="taglist"></div>
@@ -285,12 +293,14 @@
 
           <label for="measurementNotes" style="margin-top:10px">Measurement notes</label>
           <textarea id="measurementNotes" placeholder="Baselines, targets, data sources, cadence."></textarea>
+          <div class="btnbar"><button class="btn ghost" data-back>Back</button><button class="btn" data-next>Next</button></div>
         </div>
 
-        <div class="step-pane" id="step10" role="tabpanel" hidden aria-hidden="true">
+        <div class="step-pane" id="step10" data-step="10" role="tabpanel" hidden aria-hidden="true">
           <h3>Step 10 — Evaluation and feedback</h3>
           <label for="evaluation">Evaluation plan</label>
           <textarea id="evaluation" placeholder="Methods, timing, follow-on research and updates."></textarea>
+          <div class="btnbar"><button class="btn ghost" data-back>Back</button></div>
         </div>
 
         <div class="btnbar">
@@ -558,45 +568,81 @@
       btn.addEventListener('click', ()=> addCustom(btn.getAttribute('data-add')));
     });
 
-    const stepButtons = Array.from(els.stepper.querySelectorAll('button'));
-    const stepPanes = Array.from(document.querySelectorAll('.step-pane'));
-    let currentStep = 1;
+    const stepButtons = Array.from(els.stepper.querySelectorAll('button[data-step]'));
+    const stepPanes = Array.from(document.querySelectorAll('.step-pane[data-step]'));
+    let currentStep = parseInt(localStorage.getItem('rpie_step'), 10) || 1;
 
     function showStep(n){
       currentStep = n;
-      stepPanes.forEach((pane, idx)=>{
-        const active = idx === n - 1;
+      localStorage.setItem('rpie_step', currentStep);
+      stepPanes.forEach(pane => {
+        const step = parseInt(pane.dataset.step, 10);
+        const active = step === currentStep;
+        pane.hidden = !active;
         if(active){
-          pane.hidden = false;
           pane.removeAttribute('aria-hidden');
         } else {
-          pane.hidden = true;
           pane.setAttribute('aria-hidden','true');
         }
       });
-      stepButtons.forEach((btn, idx)=>{
-        const selected = idx === n - 1;
-        btn.setAttribute('aria-selected', selected ? 'true' : 'false');
-        btn.tabIndex = selected ? 0 : -1;
+      stepButtons.forEach(btn => {
+        const step = parseInt(btn.dataset.step, 10);
+        if(step === currentStep){
+          btn.setAttribute('aria-current','step');
+        } else {
+          btn.removeAttribute('aria-current');
+        }
       });
-      els.progress.textContent = `Step ${currentStep} of 10 — ${Math.round((currentStep/10)*100)} percent complete`;
+      els.progress.textContent = `Step ${currentStep} of ${stepPanes.length} — ${Math.round((currentStep/stepPanes.length)*100)} percent complete`;
     }
 
-    stepButtons.forEach((btn, idx)=>{
-      btn.addEventListener('click', ()=> showStep(idx + 1));
+    function validateStep(n){
+      const pane = document.querySelector(`.step-pane[data-step="${n}"]`);
+      if(!pane) return true;
+      let ok = true;
+      pane.querySelectorAll('.err').forEach(el=>el.remove());
+      pane.querySelectorAll('[required]').forEach(field=>{
+        const valid = field.type === 'checkbox' ? field.checked : field.value.trim();
+        if(!valid){
+          ok = false;
+          const msg = document.createElement('div');
+          msg.className = 'err';
+          msg.textContent = 'Required';
+          field.insertAdjacentElement('afterend', msg);
+        }
+      });
+      return ok;
+    }
+
+    stepButtons.forEach(btn=>{
+      btn.addEventListener('click', ()=> {
+        const target = parseInt(btn.dataset.step,10);
+        if(target === currentStep) return;
+        if(validateStep(currentStep)) showStep(target);
+      });
       btn.addEventListener('keydown', e=>{
         if(e.key === 'ArrowRight'){
-          const next = (idx + 1) % stepButtons.length;
-          stepButtons[next].focus();
-          showStep(next + 1);
+          const next = Math.min(currentStep + 1, stepButtons.length);
+          if(validateStep(currentStep)) showStep(next);
         } else if(e.key === 'ArrowLeft'){
-          const prev = (idx + stepButtons.length - 1) % stepButtons.length;
-          stepButtons[prev].focus();
-          showStep(prev + 1);
+          const prev = Math.max(currentStep - 1, 1);
+          showStep(prev);
         }
       });
     });
-    showStep(1);
+
+    document.querySelectorAll('[data-next]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        if(validateStep(currentStep)) showStep(Math.min(currentStep + 1, stepPanes.length));
+      });
+    });
+    document.querySelectorAll('[data-back]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        showStep(Math.max(currentStep - 1, 1));
+      });
+    });
+
+    showStep(currentStep);
 
     const activateTab = (which) => {
       const staff = document.getElementById('panel-inputs');
