@@ -71,6 +71,9 @@
     .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
     details{border:1px dashed #e5e7eb;border-radius:12px;background:#fff;margin:10px 0;padding:8px 10px;}
     summary{cursor:pointer;font-weight:700}
+    .step-pane{border:1px dashed #e5e7eb;border-radius:12px;background:#fff;margin:10px 0;padding:8px 10px;display:none;}
+    .step-pane.active{display:block;}
+    .mini{font-size:13px;color:var(--muted);margin-top:8px}
     table{width:100%;border-collapse:collapse}
     th,td{border:1px solid #e5e7eb;padding:8px 10px;font-size:14px}
     th{background:#fafafa;text-align:left}
@@ -136,16 +139,20 @@
           <textarea id="policy" placeholder="Tone, style, sensitivities, risk items, do-not-mentions..."></textarea>
         </details>
 
-        <details open>
-          <summary>Step 1 — Identify communication requirements</summary>
+        <section class="step-pane" data-step="1">
+          <h3>Step 1 — Identify communication requirements</h3>
           <label for="issue">Issue statement</label>
           <textarea id="issue" placeholder="Define the issue, scope, and required support."></textarea>
           <label for="requirements">Requirements</label>
           <textarea id="requirements" placeholder="Key products, approvals, timing, authorities."></textarea>
-        </details>
+          <div class="btnbar">
+            <button class="btn" data-nav="-1">Back</button>
+            <button class="btn" data-nav="+1">Next</button>
+          </div>
+        </section>
 
-        <details>
-          <summary>Step 2 — Analyze the current situation</summary>
+        <section class="step-pane" data-step="2">
+          <h3>Step 2 — Analyze the current situation</h3>
           <label for="situation">Situation analysis</label>
           <textarea id="situation" placeholder="Context, constraints, opportunities."></textarea>
           <div class="row">
@@ -156,10 +163,14 @@
             <div><label for="swotO">Opportunities</label><textarea id="swotO"></textarea></div>
             <div><label for="swotT">Threats</label><textarea id="swotT"></textarea></div>
           </div>
-        </details>
+          <div class="btnbar">
+            <button class="btn" data-nav="-1">Back</button>
+            <button class="btn" data-nav="+1">Next</button>
+          </div>
+        </section>
 
-        <details>
-          <summary>Step 3 — Stakeholders and target audiences</summary>
+        <section class="step-pane" data-step="3">
+          <h3>Step 3 — Stakeholders and target audiences</h3>
           <label>Business lines</label>
           <div id="businessLinesList" class="taglist"></div>
           <div class="tagadd">
@@ -190,18 +201,26 @@
 
           <label for="audienceNotes" style="margin-top:10px">Notes (audience priorities, sensitivities)</label>
           <textarea id="audienceNotes"></textarea>
-        </details>
+          <div class="btnbar">
+            <button class="btn" data-nav="-1">Back</button>
+            <button class="btn" data-nav="+1">Next</button>
+          </div>
+        </section>
 
-        <details>
-          <summary>Step 4 — Goals and SMART objectives</summary>
+        <section class="step-pane" data-step="4">
+          <h3>Step 4 — Goals and SMART objectives</h3>
           <label for="goals">Goals</label>
           <textarea id="goals" placeholder="Desired end state, long term focus."></textarea>
           <label for="objectives">SMART objectives</label>
           <textarea id="objectives" placeholder="Specific, Measurable, Achievable, Relevant, Time-bound."></textarea>
-        </details>
+          <div class="btnbar">
+            <button class="btn" data-nav="-1">Back</button>
+            <button class="btn" data-nav="+1">Next</button>
+          </div>
+        </section>
 
-        <details>
-          <summary>Step 5 — Strategies, tactics, key messages, talking points</summary>
+        <section class="step-pane" data-step="5">
+          <h3>Step 5 — Strategies, tactics, key messages, talking points</h3>
           <label for="strategies">Strategies</label>
           <textarea id="strategies" placeholder="How to reach goals and objectives."></textarea>
           <label for="tactics">Tactics</label>
@@ -210,10 +229,14 @@
           <textarea id="messages" placeholder="27-9-3 structure encouraged."></textarea>
           <label for="talking">Talking points</label>
           <textarea id="talking"></textarea>
-        </details>
+          <div class="btnbar">
+            <button class="btn" data-nav="-1">Back</button>
+            <button class="btn" data-nav="+1">Next</button>
+          </div>
+        </section>
 
-        <details>
-          <summary>Step 6 — Budget</summary>
+        <section class="step-pane" data-step="6">
+          <h3>Step 6 — Budget</h3>
           <div class="row">
             <div><label for="labor">Labor</label><input id="labor" type="text" placeholder="$ or hours"/></div>
             <div><label for="materials">Materials</label><input id="materials" type="text" placeholder="$"/></div>
@@ -223,10 +246,14 @@
             <div><label for="contract">Contractor/Facilitator</label><input id="contract" type="text" placeholder="$"/></div>
           </div>
           <label for="av">AV/Other</label><input id="av" type="text" placeholder="$ or notes"/>
-        </details>
+          <div class="btnbar">
+            <button class="btn" data-nav="-1">Back</button>
+            <button class="btn" data-nav="+1">Next</button>
+          </div>
+        </section>
 
-        <details>
-          <summary>Step 7 — Action matrix</summary>
+        <section class="step-pane" data-step="7">
+          <h3>Step 7 — Action matrix</h3>
           <div class="help">Add rows, then include dates, actions, roles, and methods.</div>
           <table id="am-table">
             <thead><tr><th>Date</th><th>Action</th><th>Responsibility</th><th>When</th><th>Method</th></tr></thead>
@@ -236,16 +263,24 @@
             <button class="btn ghost" id="am-add">+ Add row</button>
             <button class="btn ghost" id="am-clear">Clear</button>
           </div>
-        </details>
+          <div class="btnbar">
+            <button class="btn" data-nav="-1">Back</button>
+            <button class="btn" data-nav="+1">Next</button>
+          </div>
+        </section>
 
-        <details>
-          <summary>Step 8 — Implementation tracking</summary>
+        <section class="step-pane" data-step="8">
+          <h3>Step 8 — Implementation tracking</h3>
           <label for="tracking">Tracking notes</label>
           <textarea id="tracking" placeholder="Cadence, ownership, dashboards."></textarea>
-        </details>
+          <div class="btnbar">
+            <button class="btn" data-nav="-1">Back</button>
+            <button class="btn" data-nav="+1">Next</button>
+          </div>
+        </section>
 
-        <details>
-          <summary>Step 9 — Measurement plan</summary>
+        <section class="step-pane" data-step="9">
+          <h3>Step 9 — Measurement plan</h3>
           <label>Outputs (products/channels)</label>
           <div id="outputsList" class="taglist"></div>
           <div class="tagadd">
@@ -269,13 +304,23 @@
 
           <label for="measurementNotes" style="margin-top:10px">Measurement notes</label>
           <textarea id="measurementNotes" placeholder="Baselines, targets, data sources, cadence."></textarea>
-        </details>
+          <div class="btnbar">
+            <button class="btn" data-nav="-1">Back</button>
+            <button class="btn" data-nav="+1">Next</button>
+          </div>
+        </section>
 
-        <details>
-          <summary>Step 10 — Evaluation and feedback</summary>
+        <section class="step-pane" data-step="10">
+          <h3>Step 10 — Evaluation and feedback</h3>
           <label for="evaluation">Evaluation plan</label>
           <textarea id="evaluation" placeholder="Methods, timing, follow-on research and updates."></textarea>
-        </details>
+          <div class="btnbar">
+            <button class="btn" data-nav="-1">Back</button>
+            <button class="btn" data-nav="+1">Next</button>
+          </div>
+        </section>
+
+        <div id="progress" class="mini"></div>
 
         <div class="btnbar">
           <button class="btn" id="generate">Generate plan</button>
@@ -519,6 +564,8 @@
       exportAll: document.getElementById('exportAll'),
       wipeAll: document.getElementById('wipeAll'),
       adminMsg: document.getElementById('adminMsg'),
+      stepPanes: Array.from(document.querySelectorAll('.step-pane')),
+      progress: document.getElementById('progress'),
     };
 
     // Prefill API key from parent if available
@@ -538,6 +585,31 @@
     document.querySelectorAll('button[data-add]').forEach(btn=>{
       btn.addEventListener('click', ()=> addCustom(btn.getAttribute('data-add')));
     });
+
+    // Stepper navigation
+    let currentStep = 1;
+    const totalSteps = els.stepPanes.length;
+    function showStep(n){
+      if(n < 1 || n > totalSteps) return;
+      currentStep = n;
+      els.stepPanes.forEach(p=>{
+        const active = Number(p.dataset.step) === currentStep;
+        p.classList.toggle('active', active);
+        const back = p.querySelector('button[data-nav="-1"]');
+        const next = p.querySelector('button[data-nav="+1"]');
+        if(back) back.disabled = currentStep === 1;
+        if(next) next.disabled = currentStep === totalSteps;
+      });
+      const pct = Math.round((currentStep / totalSteps) * 100);
+      els.progress.textContent = `Step ${currentStep} of ${totalSteps} — ${pct} percent complete`;
+    }
+    document.querySelectorAll('[data-nav]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const delta = Number(btn.getAttribute('data-nav'));
+        showStep(currentStep + delta);
+      });
+    });
+    showStep(1);
 
     const activateTab = (which) => {
       const staff = document.getElementById('panel-inputs');
