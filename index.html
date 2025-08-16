@@ -694,7 +694,17 @@ function buildKLE(){
       <div style="display:flex; gap:10px; margin-top:10px"><button class="cta" id="btnKLEAdd">Save KLE</button></div>
     </div>
     <div class="card" style="margin-top:12px"><h3>KLE Log</h3><div id="kleList" class="scroll"></div></div>`;
-  $('#btnKLEAdd').onclick=()=>{ if(!user) return alert('Sign in'); const rec={id:uid(), by:user.name, date:$('#kleDate').value, audience:$('#kleAudience').value.trim(), purpose:$('#klePurpose').value.trim(), attendees:parseInt($('#kleAtt').value||'0',10), talkingPoints:$('#kleTP').value, commitments:$('#kleCom').value, links:parseLinks($('#kleLinks').value), ts:Date.now()}; db.kle.push(rec); save(); renderKLE(); };
+  $('#btnKLEAdd').onclick=()=>{
+    if(!user) return alert('Sign in');
+    const rec={id:uid(), by:user.name, date:$('#kleDate').value, audience:$('#kleAudience').value.trim(), purpose:$('#klePurpose').value.trim(), attendees:parseInt($('#kleAtt').value||'0',10), talkingPoints:$('#kleTP').value, commitments:$('#kleCom').value, links:parseLinks($('#kleLinks').value), ts:Date.now()};
+    db.kle.push(rec);
+    db.entries.push({id:uid(), userId:user.id, type:'outtake', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{kind:'Stakeholder briefings', qty:1, notes:rec.audience}});
+    if(rec.attendees>0){ db.entries.push({id:uid(), userId:user.id, type:'outtake', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{kind:'Event attendees', qty:rec.attendees, notes:rec.audience}}); }
+    save();
+    renderKLE();
+    refreshStaff();
+    refreshViewerIf();
+  };
   renderKLE();
 }
 function renderKLE(){
@@ -730,7 +740,16 @@ function buildMedia(){
       </div>
     </div>
     <div class="card" style="margin-top:12px"><h3>Media Queries</h3><div id="mediaList" class="scroll"></div></div>`;
-  $('#btnMedSave').onclick=()=>{ if(!user) return alert('Sign in'); const rec={id:uid(), by:user.name, date:$('#medDate').value, outlet:$('#medOutlet').value.trim(), reporter:$('#medReporter').value.trim(), topic:$('#medTopic').value.trim(), deadline:$('#medDeadline').value, status:$('#medStatus').value, spokesperson:$('#medSpox').value.trim(), disposition:$('#medDisp').value.trim(), link:$('#medLink').value.trim(), notes:$('#medNotes').value.trim(), ts:Date.now()}; db.media.push(rec); save(); renderMedia(); };
+  $('#btnMedSave').onclick=()=>{
+    if(!user) return alert('Sign in');
+    const rec={id:uid(), by:user.name, date:$('#medDate').value, outlet:$('#medOutlet').value.trim(), reporter:$('#medReporter').value.trim(), topic:$('#medTopic').value.trim(), deadline:$('#medDeadline').value, status:$('#medStatus').value, spokesperson:$('#medSpox').value.trim(), disposition:$('#medDisp').value.trim(), link:$('#medLink').value.trim(), notes:$('#medNotes').value.trim(), ts:Date.now()};
+    db.media.push(rec);
+    db.entries.push({id:uid(), userId:user.id, type:'outtake', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{kind:'Media engagements', qty:1, notes:rec.outlet}});
+    save();
+    renderMedia();
+    refreshStaff();
+    refreshViewerIf();
+  };
   renderMedia();
 }
 function renderMedia(){
@@ -765,7 +784,17 @@ function buildSocial(){
       <div style="display:flex; gap:10px; margin-top:10px"><button class="cta" id="btnSocSave">Save Post</button><button class="cta" id="btnSocPostApi" style="display:none; background: var(--accent2);">Post via API</button></div>
     </div>
     <div class="card" style="margin-top:12px"><h3>Social Posts</h3><div id="socList" class="scroll"></div></div>`;
-  $('#btnSocSave').onclick=()=>{ if(!user) return alert('Sign in'); const rec={id:uid(), by:user.name, datetime:$('#socDT').value, platform:$('#socPlatform').value, handle:$('#socHandle').value.trim(), postType:$('#socType').value, link:$('#socLink').value.trim(), campaign:$('#socCampaign').value.trim(), reach:parseInt($('#socReach').value||'0',10), engagements:parseInt($('#socEng').value||'0',10), notes:$('#socNotes').value.trim(), ts:Date.now()}; db.social.push(rec); save(); renderSocial();};
+  $('#btnSocSave').onclick=()=>{
+    if(!user) return alert('Sign in');
+    const rec={id:uid(), by:user.name, datetime:$('#socDT').value, platform:$('#socPlatform').value, handle:$('#socHandle').value.trim(), postType:$('#socType').value, link:$('#socLink').value.trim(), campaign:$('#socCampaign').value.trim(), reach:parseInt($('#socReach').value||'0',10), engagements:parseInt($('#socEng').value||'0',10), notes:$('#socNotes').value.trim(), ts:Date.now()};
+    db.social.push(rec);
+    const links = rec.link? [rec.link] : [];
+    db.entries.push({id:uid(), userId:user.id, type:'output', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{product:'Social media posts', qty:1, links}});
+    save();
+    renderSocial();
+    refreshStaff();
+    refreshViewerIf();
+  };
   const btnApi = $('#btnSocPostApi');
   if(role === 'admin' && db.apiKeys && Object.values(db.apiKeys).some(k => k)){
       btnApi.style.display = 'inline-block';
