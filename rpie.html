@@ -40,6 +40,13 @@
       box-shadow:0 4px 16px rgba(0,0,0,.06);
     }
     .tab.active{border-color:var(--brand-red);outline:2px solid rgba(239,51,64,.15)}
+    .stepper{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;}
+    .stepper button{
+      background:#fff;border:1px solid #e5e7eb;border-radius:999px;padding:8px 12px;cursor:pointer;
+      box-shadow:0 4px 16px rgba(0,0,0,.06);
+    }
+    .stepper button[aria-current="step"]{border-color:var(--brand-red);}
+    .stepper button:focus-visible{outline:2px solid var(--brand-red);outline-offset:2px}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
     @media (min-width:1440px){.wrap{max-width:1400px}}
     @media (max-width:1024px){.grid{grid-template-columns:1fr}}
@@ -138,18 +145,18 @@
           <textarea id="policy" placeholder="Tone, style, sensitivities, risk items, do-not-mentions..."></textarea>
         </details>
 
-        <div id="stepper" class="tabs" role="tablist" aria-label="Plan steps">
-          <button type="button" class="tab" role="tab" aria-selected="true" data-step="1">Step 1</button>
-          <button type="button" class="tab" role="tab" aria-selected="false" data-step="2">Step 2</button>
-          <button type="button" class="tab" role="tab" aria-selected="false" data-step="3">Step 3</button>
-          <button type="button" class="tab" role="tab" aria-selected="false" data-step="4">Step 4</button>
-          <button type="button" class="tab" role="tab" aria-selected="false" data-step="5">Step 5</button>
-          <button type="button" class="tab" role="tab" aria-selected="false" data-step="6">Step 6</button>
-          <button type="button" class="tab" role="tab" aria-selected="false" data-step="7">Step 7</button>
-          <button type="button" class="tab" role="tab" aria-selected="false" data-step="8">Step 8</button>
-          <button type="button" class="tab" role="tab" aria-selected="false" data-step="9">Step 9</button>
-          <button type="button" class="tab" role="tab" aria-selected="false" data-step="10">Step 10</button>
-        </div>
+        <nav id="stepper" class="stepper" aria-label="Plan steps">
+          <button type="button" data-step="1" aria-current="step">1. Identify requirements</button>
+          <button type="button" data-step="2">2. Analyze situation</button>
+          <button type="button" data-step="3">3. Stakeholders & audiences</button>
+          <button type="button" data-step="4">4. Goals & objectives</button>
+          <button type="button" data-step="5">5. Strategies & tactics</button>
+          <button type="button" data-step="6">6. Budget</button>
+          <button type="button" data-step="7">7. Action matrix</button>
+          <button type="button" data-step="8">8. Implementation tracking</button>
+          <button type="button" data-step="9">9. Measurement plan</button>
+          <button type="button" data-step="10">10. Evaluate/Update</button>
+        </nav>
         <div id="progress" class="help" aria-live="polite"></div>
 
         <div class="step-pane" id="step1" role="tabpanel">
@@ -575,9 +582,14 @@
         }
       });
       stepButtons.forEach((btn, idx)=>{
-        const selected = idx === n - 1;
-        btn.setAttribute('aria-selected', selected ? 'true' : 'false');
-        btn.tabIndex = selected ? 0 : -1;
+        const activeBtn = idx === n - 1;
+        if(activeBtn){
+          btn.setAttribute('aria-current','step');
+          btn.tabIndex = 0;
+        } else {
+          btn.removeAttribute('aria-current');
+          btn.tabIndex = -1;
+        }
       });
       els.progress.textContent = `Step ${currentStep} of 10 — ${Math.round((currentStep/10)*100)} percent complete`;
     }
