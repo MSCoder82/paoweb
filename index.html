@@ -320,6 +320,18 @@
                 <button class="cta" id="btnSaveApiKeys">Save API Keys</button>
               </div>
             </div>
+            <div class="card" style="background:#ffffff22;border-color:#ffffff55">
+              <h3>AI API Keys</h3>
+              <div class="grid">
+                <div><label>OpenAI API Key</label><input id="apiKeyOpenAI" class="input" placeholder="Enter Key"></div>
+                <div><label>Gemini API Key</label><input id="apiKeyGemini" class="input" placeholder="Enter Key"></div>
+                <div><label>CamoGPT API Key</label><input id="apiKeyCamogpt" class="input" placeholder="Enter Key"></div>
+                <div><label>AskSage API Key</label><input id="apiKeyAsksage" class="input" placeholder="Enter Key"></div>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:10px">
+                <button class="cta" id="btnSaveAiKeys">Save AI API Keys</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -417,7 +429,7 @@ const def={
   social:[], // social posts
   brand:{ policy:{brandGuideUrl:'', milHost:'', approvalsRequired:['PAO Release','OPSEC II','Caption/VI','Accessibility','Records Tag']}, inventory:[] },
   checklists:[], // pre-release
-  apiKeys:{ facebook:'', instagram:'', x:'', linkedin:'' }
+  apiKeys:{ facebook:'', instagram:'', x:'', linkedin:'', openai:'', gemini:'', camogpt:'', asksage:'' }
 };
 let db = load(); function load(){ try{const raw=localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw): (localStorage.setItem(STORAGE_KEY, JSON.stringify(def)), structuredClone(def)); }catch(e){ return structuredClone(def);} }
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
@@ -456,12 +468,13 @@ inputLoadProgress.addEventListener('change', e=>{
 });
 function show(which){
   ['screenRole','screenStaffAuth','screenAdminAuth','screenViewer','screenStaff','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist'].forEach(id=> $('#'+id).classList.add('hide'));
+  $('#askAIModule')?.classList.add('hide');
   if(which==='role'){role=null;user=null;whoPill.textContent='Not signed in'; btnHamburger.style.display='none'; btnSaveProgress.style.display='none'; lblLoadProgress.style.display='none'; $('#screenRole').classList.remove('hide'); return;}
   if(which==='viewer') $('#screenViewer').classList.remove('hide');
   if(which==='staffAuth') $('#screenStaffAuth').classList.remove('hide');
   if(which==='adminAuth') $('#screenAdminAuth').classList.remove('hide');
-  if(which==='staff') $('#screenStaff').classList.remove('hide');
-  if(which==='admin') $('#screenAdmin').classList.remove('hide');
+  if(which==='staff'){ $('#screenStaff').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); }
+  if(which==='admin'){ $('#screenAdmin').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); }
   if(which.startsWith('mod')) $('#'+which).classList.remove('hide');
 }
 $('#screenRole').addEventListener('click', e=>{
@@ -681,6 +694,10 @@ function buildAdmin(){
     $('#apiKeyInstagram').value = db.apiKeys.instagram || '';
     $('#apiKeyX').value = db.apiKeys.x || '';
     $('#apiKeyLinkedin').value = db.apiKeys.linkedin || '';
+    $('#apiKeyOpenAI').value = db.apiKeys.openai || '';
+    $('#apiKeyGemini').value = db.apiKeys.gemini || '';
+    $('#apiKeyCamogpt').value = db.apiKeys.camogpt || '';
+    $('#apiKeyAsksage').value = db.apiKeys.asksage || '';
   }
   $('#btnSaveApiKeys').onclick=()=>{
     if(!db.apiKeys) db.apiKeys = {};
@@ -690,6 +707,15 @@ function buildAdmin(){
     db.apiKeys.linkedin = $('#apiKeyLinkedin').value.trim();
     save();
     alert('API Keys saved');
+  };
+  $('#btnSaveAiKeys').onclick=()=>{
+    if(!db.apiKeys) db.apiKeys = {};
+    db.apiKeys.openai = $('#apiKeyOpenAI').value.trim();
+    db.apiKeys.gemini = $('#apiKeyGemini').value.trim();
+    db.apiKeys.camogpt = $('#apiKeyCamogpt').value.trim();
+    db.apiKeys.asksage = $('#apiKeyAsksage').value.trim();
+    save();
+    alert('AI API Keys saved');
   };
   $('#btnSaveAdminPIN').onclick=()=>{ const p=$('#setAdminPIN').value.trim(); if(!p) return alert('Enter a PIN'); db.adminPIN=p; save(); $('#setAdminPIN').value=''; alert('Admin PIN updated'); };
 }
@@ -991,39 +1017,53 @@ function renderChecklist(){
 })();
 </script>
 
-<!-- GPT Prompt Section (Appended) -->
-<div class="card" style="margin-top:16px; max-width:600px; margin-left:auto; margin-right:auto;">
-  <h3>Ask GPT</h3>
-  <textarea id="gptPrompt" rows="3" class="input" placeholder="Ask a question..."></textarea>
-  <div style="margin-top:10px; display:flex; gap:10px;">
-    <button class="cta" onclick="callGPT()">Ask</button>
+<!-- Ask AI Module -->
+<div id="askAIModule" class="card hide" style="margin-top:16px; max-width:600px; margin-left:auto; margin-right:auto;">
+  <h3>Ask AI</h3>
+  <div><label>Provider</label>
+    <select id="aiProvider" class="input" style="margin-bottom:6px">
+      <option value="openai">OpenAI</option>
+      <option value="gemini">Gemini</option>
+      <option value="camogpt">CamoGPT</option>
+      <option value="asksage">AskSage</option>
+    </select>
   </div>
-  <pre id="gptOutput" class="mini" style="margin-top:10px; white-space:pre-wrap"></pre>
+  <textarea id="aiPrompt" rows="3" class="input" placeholder="Ask a question..."></textarea>
+  <div style="margin-top:10px; display:flex; gap:10px;">
+    <button class="cta" onclick="callAI()">Ask</button>
+  </div>
+  <pre id="aiOutput" class="mini" style="margin-top:10px; white-space:pre-wrap"></pre>
 </div>
 
 <script>
-async function callGPT() {
-  const prompt = document.getElementById('gptPrompt').value.trim();
-  const key = db.apiKeys?.openai?.trim();
-  if (!key) return alert("OpenAI API key not set by Admin.");
-  if (!prompt) return alert("Enter a prompt first.");
-  try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${key}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [{ role: "user", content: prompt }]
-      })
-    });
-    const data = await res.json();
-    document.getElementById('gptOutput').textContent =
-      data.choices?.[0]?.message?.content || "No response";
-  } catch (err) {
-    document.getElementById('gptOutput').textContent = "Error: " + err.message;
+async function callAI(){
+  const prompt=document.getElementById('aiPrompt').value.trim();
+  const provider=document.getElementById('aiProvider').value;
+  const providerNames={openai:'OpenAI',gemini:'Gemini',camogpt:'CamoGPT',asksage:'AskSage'};
+  const key=db.apiKeys?.[provider]?.trim();
+  if(!key) return alert(providerNames[provider]+" API key not set by Admin.");
+  if(!prompt) return alert('Enter a prompt first.');
+  try{
+    let res,data;
+    if(provider==='openai'){
+      res=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model:'gpt-4',messages:[{role:'user',content:prompt}]})});
+      data=await res.json();
+      document.getElementById('aiOutput').textContent=data.choices?.[0]?.message?.content||'No response';
+    }else if(provider==='gemini'){
+      res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+      data=await res.json();
+      document.getElementById('aiOutput').textContent=data.candidates?.[0]?.content?.parts?.[0]?.text||'No response';
+    }else if(provider==='camogpt'){
+      res=await fetch('https://api.camogpt.com/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model:'camo-gpt',messages:[{role:'user',content:prompt}]})});
+      data=await res.json();
+      document.getElementById('aiOutput').textContent=data.choices?.[0]?.message?.content||'No response';
+    }else if(provider==='asksage'){
+      res=await fetch('https://api.asksage.ai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model:'sage',messages:[{role:'user',content:prompt}]})});
+      data=await res.json();
+      document.getElementById('aiOutput').textContent=data.choices?.[0]?.message?.content||'No response';
+    }
+  }catch(err){
+    document.getElementById('aiOutput').textContent='Error: '+err.message;
   }
 }
 </script>
