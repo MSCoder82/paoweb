@@ -1009,8 +1009,6 @@ ${d.step10.evaluation || 'n/a'}
         const saved = JSON.parse(localStorage.getItem('nww_rpie_draft') || '{}');
         saved.generated = { at:new Date().toISOString(), model:data.connection.model, text };
         localStorage.setItem('nww_rpie_draft', JSON.stringify(saved));
-        // Push metrics to parent app
-        window.parent?.addRpieEntries?.(data);
       } catch(err){
         status(String(err.message || err), 'err');
       }

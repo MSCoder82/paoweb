@@ -1110,14 +1110,6 @@ function renderChecklist(){
     return `<div class="card" style="background:#0e1124;border-color:#2f355e"><div class="chip">${r.status}</div> <span class="chip">${r.productType}</span> <span class="chip">${r.title||'Untitled'}</span><div class="divider"></div><div class="mini">${flags}</div>${r.links?.length? `<div class="links" style="margin-top:6px">${r.links.map(u=>`<a href="${u}" target="_blank">${u}</a>`).join('<br>')}</div>`:''}<div class="mini">By ${r.by} • ${new Date(r.ts).toLocaleString()}</div></div>`; }).join('') : '<div class="mini">No checklists yet.</div>';
 }
 
-function addRpieEntries(data){
-  if(!user) return;
-  (data.step9?.outputs || []).forEach(o=> db.entries.push({id:uid(), userId:user.id, type:'output', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{product:o, qty:1, links:[]}}));
-  (data.step9?.outtakes || []).forEach(o=> db.entries.push({id:uid(), userId:user.id, type:'outtake', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{kind:o, qty:1, notes:''}}));
-  (data.step9?.outcomes || []).forEach(o=> db.entries.push({id:uid(), userId:user.id, type:'outcome', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{metric:o, pct:0}}));
-  save();
-}
-
 /* ================= ONBOARDING ================= */
 function startOnboard(){
   if(localStorage.getItem(ONBOARD_KEY)) return;
