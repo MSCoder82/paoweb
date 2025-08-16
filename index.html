@@ -81,6 +81,8 @@
   .menuItem{display:flex; align-items:center; gap:10px; margin:8px 0; padding:10px 12px; border-radius:12px; background:linear-gradient(135deg,#151a35,#131833); border:1px solid #2c3259; color:#cbd2ff; cursor:pointer}
   .menuItem:hover{ outline:2px solid #3b4184 }
   .menuItem .dot{width:10px;height:10px;border-radius:50%}
+  .menuGroupHeader{margin:8px 0;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,#1a1f3d,#151a33);border:1px solid #2c3259;color:#cbd2ff;font-weight:700;cursor:pointer}
+  .menuGroupItems{margin-left:12px}
   .grad1{background:var(--accent4)}
   .grad2{background:var(--accent2)}
   .grad3{background:var(--accent3)}
@@ -474,16 +476,20 @@ $('#btnAdminLogin').addEventListener('click', ()=>{
 function buildMenu(){
   menuItems.innerHTML='';
   const items=[
-    {id:'staff', label:'My Inputs (core metrics)', dot:'grad4'},
-    {id:'kle', label:'Community Engagement / KLE', dot:'grad1'},
-    {id:'media', label:'Media Log & Queries', dot:'grad2'},
-    {id:'social', label:'Social Media', dot:'grad3'},
-    {id:'brand', label:'Branding Governance', dot:'grad4'},
-    {id:'check', label:'Pre‑Release Checklist', dot:'grad5'},
-    ...(role==='admin' ? [{id:'admin', label:'Admin (Goals, Staff, Templates)', dot:'grad2'}] : [])
+    {id:'staff', label:'My Inputs (core metrics)', dot:'grad4', group:'Staff'},
+    {id:'kle', label:'Community Engagement / KLE', dot:'grad1', group:'Staff'},
+    {id:'media', label:'Media Log & Queries', dot:'grad2', group:'Staff'},
+    {id:'social', label:'Social Media', dot:'grad3', group:'Staff'},
+    {id:'brand', label:'Branding Governance', dot:'grad4', group:'Staff'},
+    {id:'check', label:'Pre‑Release Checklist', dot:'grad5', group:'Staff'},
+    ...(role==='admin' ? [{id:'admin', label:'Admin (Goals, Staff, Templates)', dot:'grad2', group:'Admin'}] : [])
   ];
-  items.forEach(it=>{
-    const el=document.createElement('div'); el.className='menuItem'; el.innerHTML=`<div class="dot ${it.dot}"></div><div>${it.label}</div>`;
+  const groups={}; const ungrouped=[];
+  items.forEach(it=>{ if(it.group) (groups[it.group] ||= []).push(it); else ungrouped.push(it); });
+  const createItem=it=>{
+    const el=document.createElement('div');
+    el.className='menuItem';
+    el.innerHTML=`<div class="dot ${it.dot}"></div><div>${it.label}</div>`;
     el.addEventListener('click', ()=>{
       drawer.classList.remove('open');
       if(it.id==='staff') { buildStaff(); show('staff'); }
@@ -494,8 +500,17 @@ function buildMenu(){
       if(it.id==='check'){ buildChecklist(); show('modChecklist'); }
       if(it.id==='admin'){ buildAdmin(); show('admin'); }
     });
-    menuItems.appendChild(el);
+    return el;
+  };
+  Object.entries(groups).forEach(([g, list])=>{
+    const wrap=document.createElement('div');
+    const hdr=document.createElement('div'); hdr.className='menuGroupHeader'; hdr.textContent=g;
+    const cont=document.createElement('div'); cont.className='menuGroupItems';
+    list.forEach(it=> cont.appendChild(createItem(it)));
+    hdr.addEventListener('click', ()=> cont.classList.toggle('hide'));
+    wrap.appendChild(hdr); wrap.appendChild(cont); menuItems.appendChild(wrap);
   });
+  ungrouped.forEach(it=> menuItems.appendChild(createItem(it)));
 }
 $('#btnHamburger').addEventListener('click', ()=>{ buildMenu(); drawer.classList.add('open'); });
 $('#drawerClose, #drawerCloseBtn').addEventListener('click', ()=> drawer.classList.remove('open'));
