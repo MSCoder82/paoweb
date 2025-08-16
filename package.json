@@ -4,8 +4,9 @@
   "description": "This is a self-contained web application that:",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test:tooltip",
-    "test:tooltip": "node tests/tooltip.test.js"
+    "test": "npm run test:tooltip && npm run test:drawer",
+    "test:tooltip": "node tests/tooltip.test.js",
+    "test:drawer": "node tests/drawer-close.test.js"
   },
   "keywords": [],
   "author": "",

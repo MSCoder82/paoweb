@@ -651,7 +651,9 @@ function buildMenu(){
   ungrouped.forEach(it=> menuItems.appendChild(createItem(it)));
 }
 $('#btnHamburger').addEventListener('click', ()=>{ buildMenu(); drawer.classList.add('open'); });
-$('#drawerClose, #drawerCloseBtn').addEventListener('click', ()=> drawer.classList.remove('open'));
+$$('#drawerClose, #drawerCloseBtn').forEach(el =>
+  el.addEventListener('click', () => drawer.classList.remove('open'))
+);
 
 /* ================= METRICS CORE LOGIC ================= */
 function tbl(container, rows, cols){
