@@ -435,16 +435,18 @@
       });
     }
     function ensureOptions(containerId, baseList, selected){
+      const box = document.getElementById(containerId);
       const combined = [...baseList];
       (selected||[]).forEach(v=>{ if(!combined.includes(v)) combined.push(v); });
       renderChecklist(containerId, combined);
       (selected||[]).forEach(v=>{
-        const cb = document.querySelector(`#${containerId} input[value="${cssEscape(v)}"]`);
+        const cb = box.querySelector(`input[value="${cssEscape(v)}"]`);
         if(cb) cb.checked = true;
       });
     }
     function getChecklistValues(containerId){
-      return [...document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`)].map(i=>i.value);
+      const box = document.getElementById(containerId);
+      return [...box.querySelectorAll('input[type="checkbox"]:checked')].map(i=>i.value);
     }
     function addCustom(listKey){
       const input = document.getElementById(listKey+'Add');
