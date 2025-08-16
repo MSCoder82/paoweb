@@ -47,6 +47,7 @@
       background:rgba(255,255,255,.85);backdrop-filter: blur(8px);
       border:1px solid #e5e7eb;border-radius:var(--radius);
       box-shadow:0 10px 30px rgba(0,0,0,.08);padding:18px;
+      transition:transform .18s ease, box-shadow .18s ease;
     }
     h1{font-size:22px;margin:0;color:var(--brand-black)}
     h2{font-size:18px;margin:0 0 12px}
@@ -62,13 +63,20 @@
     .btnbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     .btn{
       border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700;
-      transition:transform .02s ease;box-shadow:0 8px 20px rgba(0,0,0,.08);
+      transition:transform .18s ease, box-shadow .18s ease;box-shadow:0 8px 20px rgba(0,0,0,.08);
       background:linear-gradient(135deg, var(--brand-red), var(--brand-yellow));color:#111;
     }
     .btn.alt{background:#111;color:#fff}
     .btn.ghost{background:#fff;color:#111;border:1px solid #e5e7eb}
-    .btn:active{transform:translateY(1px)}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.12)}
+    .btn:active{transform:scale(.98)}
     .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    .card:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.12)}
+    .card:active{transform:scale(.98)}
+    .fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border:none;border-radius:50%;background:linear-gradient(135deg,var(--brand-red),var(--brand-yellow));color:var(--brand-black);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.15);opacity:0;visibility:hidden;transform:scale(.9);transition:opacity .18s ease,transform .18s ease,box-shadow .18s ease;z-index:900}
+    .fab:hover{box-shadow:0 10px 28px rgba(0,0,0,.25);transform:scale(1.05)}
+    .fab:active{transform:scale(.98)}
+    .fab.show{opacity:1;visibility:visible;transform:scale(1)}
     details{border:1px dashed #e5e7eb;border-radius:12px;background:#fff;margin:10px 0;padding:8px 10px;}
     summary{cursor:pointer;font-weight:700}
     table{width:100%;border-collapse:collapse}
@@ -1023,5 +1031,13 @@ ${d.step10.evaluation || 'n/a'}
       el.addEventListener('change', saveShadow);
     });
   </script>
+<button id="backToTop" class="fab" aria-label="Back to top">↑</button>
+<script>
+const backToTop=document.getElementById('backToTop');
+window.addEventListener('scroll',()=>{
+  if(window.scrollY>600){backToTop.classList.add('show');}else{backToTop.classList.remove('show');}
+});
+backToTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+</script>
 </body>
 </html>

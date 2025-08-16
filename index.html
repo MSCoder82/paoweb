@@ -41,7 +41,7 @@
   }
   .topbar h1{font-size:18px;letter-spacing:.3px;margin:0;font-weight:800}
   .pill{border:1px solid #2b3157; border-radius:999px; padding:8px 12px; color:var(--muted); background:#0f1225}
-  .ghost.small{padding:6px 10px; font-weight:600; background:#10132a; border:1px solid #293055; color:#cbd2ff; border-radius:12px; cursor:pointer}
+  .ghost.small{padding:6px 10px; font-weight:600; background:#10132a; border:1px solid #293055; color:#cbd2ff; border-radius:12px; cursor:pointer; transition:transform .18s ease, box-shadow .18s ease}
   .hamburger{
     display:none; width:40px;height:40px;border-radius:12px;border:1px solid #2a2d4a; background:#0f1224;
     align-items:center;justify-content:center;cursor:pointer;color:#cfe0ff;
@@ -52,10 +52,10 @@
   .grid{display:grid; gap:14px}
   .grid-2{grid-template-columns:repeat(2, minmax(0,1fr))}
   .grid-3{grid-template-columns:repeat(3, minmax(0,1fr))}
-  .card{background:var(--card); border:1px solid #25294a; border-radius:16px; padding:18px; box-shadow: 0 10px 30px rgba(3,4,10,.35)}
+  .card{background:var(--card); border:1px solid #25294a; border-radius:16px; padding:18px; box-shadow: 0 10px 30px rgba(3,4,10,.35); transition:transform .18s ease, box-shadow .18s ease}
   .card h3{margin:0 0 10px 0; font-size:16px; letter-spacing:.2px}
   .badge{display:inline-flex; align-items:center; gap:8px; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25)); border:1px solid #2a2e50; color:var(--muted); border-radius:999px; padding:6px 10px; font-size:12px}
-  .cta,.ghost.btn,.danger{appearance:none; border:none; cursor:pointer; font-weight:700; letter-spacing:.3px; border-radius:12px; padding:10px 14px}
+  .cta,.ghost.btn,.danger{appearance:none; border:none; cursor:pointer; font-weight:700; letter-spacing:.3px; border-radius:12px; padding:10px 14px; transition:transform .18s ease, box-shadow .18s ease}
   .cta{ background:var(--accent4); color:#041216 }
   .ghost.btn{ background:#10132a; border:1px solid #293055; color:#cbd2ff }
   .danger{ background: linear-gradient(135deg,#ff6b6b,#f06595); color:#fff}
@@ -88,6 +88,14 @@
   .grad3{background:var(--accent3)}
   .grad4{background:linear-gradient(135deg,#00e5ff,#7c4dff)}
   .grad5{background:linear-gradient(135deg,#ff8a8a,#ffd06a)}
+  .card:hover{transform:translateY(-2px); box-shadow:0 14px 34px rgba(3,4,10,.45)}
+  .card:active{transform:scale(.98)}
+  .cta:hover,.ghost.btn:hover,.danger:hover,.ghost.small:hover{transform:translateY(-2px); box-shadow:0 12px 24px rgba(0,0,0,.2)}
+  .cta:active,.ghost.btn:active,.danger:active,.ghost.small:active{transform:scale(.98)}
+  .fab{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border:none;border-radius:50%;background:var(--accent2);color:#1d0c16;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.3);opacity:0;visibility:hidden;transform:scale(.9);transition:opacity .18s ease,transform .18s ease,box-shadow .18s ease;z-index:900}
+  .fab:hover{box-shadow:0 10px 28px rgba(0,0,0,.4);transform:scale(1.05)}
+  .fab:active{transform:scale(.98)}
+  .fab.show{opacity:1;visibility:visible;transform:scale(1)}
 </style>
 </head>
 <body>
@@ -1095,6 +1103,8 @@ function addRpieEntries(data){
   <pre id="aiOutput" class="mini" style="margin-top:10px; white-space:pre-wrap"></pre>
 </div>
 
+<button id="backToTop" class="fab" aria-label="Back to top">↑</button>
+
 <script>
 async function callAI(){
   const prompt=document.getElementById('aiPrompt').value.trim();
@@ -1126,6 +1136,14 @@ async function callAI(){
     document.getElementById('aiOutput').textContent='Error: '+err.message;
   }
 }
+</script>
+
+<script>
+const backToTop=document.getElementById('backToTop');
+window.addEventListener('scroll',()=>{
+  if(window.scrollY>600){backToTop.classList.add('show');}else{backToTop.classList.remove('show');}
+});
+backToTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
 </script>
 
 </body>
