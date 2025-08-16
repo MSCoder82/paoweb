@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NWW PAO • Metrics + Role Menu (One Page)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0e0f1a;
+    --card: #15172a;
+    --soft: #1c1f36;
+    --muted: #a2a7c6;
+    --txt: #e7ebff;
+    --ok: #28d17c;
+    --warn: #ffc247;
+    --bad: #ff6b6b;
+    --accent1: linear-gradient(135deg,#7c4dff 0%, #00e5ff 100%); /* info kpis */
+    --accent2: linear-gradient(135deg,#ff6ec4 0%, #7873f5 100%); /* admin/menu */
+    --accent3: linear-gradient(135deg,#f6d365 0%, #fda085 100%); /* goals */
+    --accent4: linear-gradient(135deg,#42e695 0%, #3bb2b8 100%); /* staff cards */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color:var(--txt);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(124,77,255,.25), transparent 60%),
+      radial-gradient(1000px 500px at 90% 0%, rgba(0,229,255,.25), transparent 60%),
+      radial-gradient(800px 400px at 50% 110%, rgba(255,110,196,.18), transparent 60%),
+      var(--bg);
+  }
+  .shell{max-width:1200px;margin:0 auto;padding:24px}
+  .topbar{
+    display:flex; gap:12px; align-items:center; justify-content:space-between;
+    padding:14px 18px; border:1px solid #2a2d4a; border-radius:14px;
+    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.15));
+    backdrop-filter: blur(6px);
+  }
+  .topbar h1{font-size:18px;letter-spacing:.3px;margin:0;font-weight:800}
+  .pill{border:1px solid #2b3157; border-radius:999px; padding:8px 12px; color:var(--muted); background:#0f1225}
+  .ghost.small{padding:6px 10px; font-weight:600; background:#10132a; border:1px solid #293055; color:#cbd2ff; border-radius:12px; cursor:pointer}
+  .hamburger{
+    display:none; width:40px;height:40px;border-radius:12px;border:1px solid #2a2d4a; background:#0f1224;
+    align-items:center;justify-content:center;cursor:pointer;color:#cfe0ff;
+  }
+  .hamburger svg{width:22px;height:22px}
+  .row{display:flex; gap:16px; flex-wrap:wrap}
+  .col{flex:1 1 320px}
+  .grid{display:grid; gap:14px}
+  .grid-2{grid-template-columns:repeat(2, minmax(0,1fr))}
+  .grid-3{grid-template-columns:repeat(3, minmax(0,1fr))}
+  .card{background:var(--card); border:1px solid #25294a; border-radius:16px; padding:18px; box-shadow: 0 10px 30px rgba(3,4,10,.35)}
+  .card h3{margin:0 0 10px 0; font-size:16px; letter-spacing:.2px}
+  .badge{display:inline-flex; align-items:center; gap:8px; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25)); border:1px solid #2a2e50; color:var(--muted); border-radius:999px; padding:6px 10px; font-size:12px}
+  .cta,.ghost.btn,.danger{appearance:none; border:none; cursor:pointer; font-weight:700; letter-spacing:.3px; border-radius:12px; padding:10px 14px}
+  .cta{ background:var(--accent4); color:#041216 }
+  .ghost.btn{ background:#10132a; border:1px solid #293055; color:#cbd2ff }
+  .danger{ background: linear-gradient(135deg,#ff6b6b,#f06595); color:#fff}
+  .input, select, textarea{width:100%; background:#0f1224; color:var(--txt); border:1px solid #2a2e50; border-radius:12px; padding:10px 12px; font-size:14px}
+  label{font-size:12px; color:#b9bff0; margin-bottom:6px; display:block}
+  .divider{height:1px;background:#262b4b;border:0;margin:8px 0 16px 0}
+  .mini{font-size:12px;color: #001fd4;}
+  .subtle{color:#a7aed9;font-size:13px}
+  .chip{display:inline-flex; align-items:center; gap:6px; border:1px solid #2a2e50; padding:6px 10px; border-radius:999px; color:#cbd2ff; background:#10132a}
+  .links a{color:#91ddff; text-decoration:none}
+  .scroll{max-height:420px; overflow:auto; padding-right:6px}
+  .table{width:100%; border-collapse:collapse}
+  .table th,.table td{padding:8px 6px;border-bottom:1px solid #24294a;text-align:left;font-size:13px}
+  .kpi{border-radius:16px; padding:14px 14px 10px 14px; color:#06111a; background: linear-gradient(135deg, #adfff2, #fff7ad)}
+  .kpi h4{margin:0 0 6px 0; font-size:13px; color:#27314e}
+  .kpi .big{font-size:24px; font-weight:900; color:#0b1733}
+  .hide{display:none !important}
+  /* drawer */
+  .drawer{position:fixed; inset:0; display:none; z-index:1000}
+  .drawer.open{display:block}
+  .drawer .backdrop{position:absolute; inset:0; background:rgba(0,0,0,.45)}
+  .drawer .panel{position:absolute; top:0; left:0; height:100%; width:320px; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.2)), #0f1224; border-right:1px solid #2b2f54; padding:16px; box-shadow: 10px 0 30px rgba(0,0,0,.35)}
+  .menuItem{display:flex; align-items:center; gap:10px; margin:8px 0; padding:10px 12px; border-radius:12px; background:linear-gradient(135deg,#151a35,#131833); border:1px solid #2c3259; color:#cbd2ff; cursor:pointer}
+  .menuItem:hover{ outline:2px solid #3b4184 }
+  .menuItem .dot{width:10px;height:10px;border-radius:50%}
+  .grad1{background:var(--accent4)}
+  .grad2{background:var(--accent2)}
+  .grad3{background:var(--accent3)}
+  .grad4{background:linear-gradient(135deg,#00e5ff,#7c4dff)}
+  .grad5{background:linear-gradient(135deg,#ff8a8a,#ffd06a)}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div style="display:flex; gap:10px; align-items:center">
+      <button class="hamburger" id="btnHamburger" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <h1>Walla Walla District • PAO Metrics Tracker</h1>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center">
+      <span class="pill" id="whoPill">Not signed in</span>
+      <button class="ghost small" id="homeBtn" title="Back to role selection">⟵ Home</button>
+    </div>
+  </div>
+
+  <!-- ROLE PICK -->
+  <section id="screenRole" class="grid grid-3" style="margin-top:18px">
+    <button class="card" style="background:var(--accent3);color:#281a07; cursor:pointer" data-role="viewer">
+      <div style="font-size:22px;font-weight:800">Viewer</div><div class="mini">See progress & click product links</div>
+    </button>
+    <button class="card" style="background:var(--accent4);color:#041d13; cursor:pointer" data-role="staff">
+      <div style="font-size:22px;font-weight:800">Staff</div><div class="mini">Enter my work & links (PIN protected)</div>
+    </button>
+    <button class="card" style="background:var(--accent2);color:#1d0c16; cursor:pointer" data-role="admin">
+      <div style="font-size:22px;font-weight:800">Admin</div><div class="mini">Set goals, staff & PINs, manage templates</div>
+    </button>
+  </section>
+
+  <!-- STAFF AUTH -->
+  <section id="screenStaffAuth" class="card hide" style="margin-top:18px">
+    <h3>Staff Sign‑In</h3>
+    <div class="grid grid-3">
+      <div><label>Select your name</label><select id="staffUser" class="input"></select></div>
+      <div><label>Your PIN</label><input id="staffPIN" type="password" class="input" placeholder="••••" /></div>
+      <div style="display:flex;align-items:flex-end"><button class="cta" id="btnStaffLogin">Sign in</button></div>
+    </div>
+    <div class="mini" style="margin-top:8px">Need to be added? Admin can create you in Settings.</div>
+  </section>
+
+  <!-- ADMIN AUTH -->
+  <section id="screenAdminAuth" class="card hide" style="margin-top:18px">
+    <h3>Admin Sign‑In</h3>
+    <div class="grid grid-2" style="grid-template-columns:1fr auto">
+      <div><label>Admin PIN</label><input id="adminPIN" type="password" class="input" placeholder="Default 0000 (change in Settings)" /></div>
+      <div style="display:flex;align-items:flex-end"><button class="cta" id="btnAdminLogin">Sign in</button></div>
+    </div>
+  </section>
+
+  <!-- VIEWER -->
+  <section id="screenViewer" class="hide">
+    <div class="row" style="margin-top:18px">
+      <div class="col">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3>Portfolio Overview</h3>
+            <span class="badge"><span class="mini">Timeframe</span>
+              <select id="tfViewer" class="input" style="width:auto; margin-left:8px">
+                <option value="M">Monthly</option><option value="Q">Quarterly</option><option value="Y">Annual</option>
+              </select>
+              <span id="tfViewerPick"></span>
+            </span>
+          </div>
+          <div class="divider"></div>
+          <div class="grid grid-3">
+            <div class="card" style="background:var(--accent4);color:#07241a">
+              <div class="mini">Outputs</div><div style="font-size:30px;font-weight:900" id="sumOutPct">0%</div><div class="mini" id="sumOutCounts">0 / 0</div>
+            </div>
+            <div class="card" style="background:var(--accent3);color:#281a07">
+              <div class="mini">Outtakes</div><div style="font-size:30px;font-weight:900" id="sumOtkPct">0%</div><div class="mini" id="sumOtkCounts">0 / 0</div>
+            </div>
+            <div class="card" style="background:var(--accent2);color:#1d0c16">
+              <div class="mini">Outcomes (avg)</div><div style="font-size:30px;font-weight:900" id="sumOcmPct">0%</div><div class="mini" id="sumOcmCounts">—</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="grid grid-2">
+            <div class="card"><h3>Outputs by Product</h3><div id="tblOutputs" class="scroll"></div></div>
+            <div class="card"><h3>Outtakes by Type</h3><div id="tblOuttakes" class="scroll"></div></div>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <h3>All Product Links (click to open)</h3><div class="scroll links" id="allLinks"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card" style="background:var(--accent1); color:#06131a">
+          <h3 style="color:#111a2a">At‑a‑Glance</h3>
+          <div class="kpi"><h4>Top Contributors (Outputs)</h4><div class="big" id="leadersOut">—</div></div>
+          <div style="height:12px"></div>
+          <div class="kpi"><h4>Top Contributors (Outtakes)</h4><div class="big" id="leadersOtk">—</div></div>
+          <div style="height:12px"></div>
+          <div class="kpi"><h4>Outcomes Leaders</h4><div class="big" id="leadersOcm">—</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAFF (inputs) -->
+  <section id="screenStaff" class="hide">
+    <div class="row" style="margin-top:18px">
+      <div class="col">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3>My Inputs</h3>
+            <span class="badge"><span class="mini">Timeframe</span>
+              <select id="tfStaff" class="input" style="width:auto; margin-left:8px">
+                <option value="M">Monthly</option><option value="Q">Quarterly</option><option value="Y">Annual</option>
+              </select>
+              <span id="tfStaffPick"></span>
+            </span>
+          </div>
+          <div class="divider"></div>
+          <div class="grid grid-2">
+            <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
+              <h3>Outputs — Products I produced</h3>
+              <div class="grid grid-2">
+                <div><label>Product Type</label><select id="outProdType" class="input"></select></div>
+                <div id="otherProdWrap" class="hide"><label>Other (specify)</label><input id="otherProd" class="input" placeholder="e.g., Podcast episode"/></div>
+                <div><label>Quantity</label><input id="outQty" type="number" min="1" class="input" value="1"/></div>
+                <div><label>Links (comma or new line)</label><textarea id="outLinks" rows="2" class="input" placeholder="https://…"></textarea></div>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:10px">
+                <button class="cta" id="btnAddOutput">Add Output</button><button class="ghost btn" id="btnClearOutput">Clear</button>
+              </div>
+              <div class="scroll" id="outList" style="margin-top:10px"></div>
+            </div>
+
+            <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
+              <h3>Outtakes — Engagements & reach</h3>
+              <div class="grid grid-2">
+                <div><label>Outtake Type</label><select id="otkType" class="input"></select></div>
+                <div id="otkOtherWrap" class="hide"><label>Other (specify)</label><input id="otkOther" class="input" placeholder="e.g., Survey completes"/></div>
+                <div><label>Quantity</label><input id="otkQty" type="number" min="1" class="input" value="1"/></div>
+                <div><label>Notes / Links (optional)</label><textarea id="otkNotes" rows="2" class="input" placeholder="Context or URLs"></textarea></div>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:10px">
+                <button class="cta" id="btnAddOuttake">Add Outtake</button><button class="ghost btn" id="btnClearOuttake">Clear</button>
+              </div>
+              <div class="scroll" id="otkList" style="margin-top:10px"></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:16px;background:rgba(21,23,42,.75); border-color:#323761">
+            <h3>Outcomes — Objective progress</h3>
+            <div class="grid grid-3">
+              <div><label>Outcome Metric</label><select id="ocmKey" class="input"></select></div>
+              <div><label>My status (% toward target)</label><input id="ocmPct" type="range" min="0" max="100" value="0" /><div class="mini" id="ocmVal">0%</div></div>
+              <div style="display:flex;align-items:flex-end"><button class="cta" id="btnSaveOutcome">Save Outcome</button></div>
+            </div>
+            <div class="scroll" id="ocmList" style="margin-top:10px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card" style="background:var(--accent1); color:#07131a">
+          <h3 style="color:#111a2a">My Progress</h3>
+          <div class="kpi"><h4>Outputs completion</h4><div class="big" id="kpiOutPct">0%</div></div>
+          <div style="height:12px"></div>
+          <div class="kpi"><h4>Outtakes completion</h4><div class="big" id="kpiOtkPct">0%</div></div>
+          <div style="height:12px"></div>
+          <div class="kpi"><h4>Outcomes (avg)</h4><div class="big" id="kpiOcmPct">0%</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ADMIN -->
+  <section id="screenAdmin" class="hide">
+    <div class="row" style="margin-top:18px">
+      <div class="col">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3>Admin • Settings & Staff</h3>
+            <span class="badge"><span class="mini">Timeframe</span>
+              <select id="tfAdmin" class="input" style="width:auto; margin-left:8px">
+                <option value="M">Monthly</option><option value="Q">Quarterly</option><option value="Y">Annual</option>
+              </select>
+              <span id="tfAdminPick"></span>
+            </span>
+          </div>
+          <div class="divider"></div>
+          <div class="grid grid-3">
+            <div class="card" style="background:#ffffff22;border-color:#ffffff55">
+              <h3>Admin PIN & Staff</h3>
+              <div class="grid grid-3">
+                <div><label>Set Admin PIN</label><input id="setAdminPIN" type="password" class="input" placeholder="New PIN"></div>
+                <div style="display:flex;align-items:flex-end"><button class="cta" id="btnSaveAdminPIN">Save PIN</button></div>
+              </div>
+              <div class="divider"></div>
+              <div class="grid grid-3">
+                <div><label>Staff Name</label><input id="staffName" class="input" placeholder="e.g., A. Johnson"></div>
+                <div><label>PIN</label><input id="staffNewPIN" type="password" class="input" placeholder="Set PIN"></div>
+                <div style="display:flex;align-items:flex-end"><button class="cta" id="btnAddStaff">Add / Update</button></div>
+              </div>
+              <div class="scroll" id="staffList" style="margin-top:10px"></div>
+              <div style="display:flex; gap:8px; margin-top:12px">
+                <button class="ghost btn" id="btnExport">Export JSON</button>
+                <label class="ghost btn" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px">
+                  <input id="importFile" type="file" accept="application/json" class="hide" />Import JSON
+                </label>
+                <button class="danger" id="btnReset">Factory Reset</button>
+              </div>
+            </div>
+            <div class="card" style="background:#ffffff22;border-color:#ffffff55">
+              <h3>Templates</h3>
+              <div class="grid grid-2">
+                <div><label>Output Product Types</label><textarea id="tplOutputs" rows="6" class="input"></textarea></div>
+                <div><label>Outtake Types</label><textarea id="tplOuttakes" rows="6" class="input"></textarea></div>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:10px">
+                <button class="cta" id="btnSaveTemplates">Save Templates</button>
+                <span class="mini">“Other” is always allowed on staff forms.</span>
+              </div>
+            </div>
+            <div class="card" style="background:#ffffff22;border-color:#ffffff55">
+              <h3>Social Media API Keys</h3>
+              <div class="grid">
+                <div><label>Facebook API Key</label><input id="apiKeyFacebook" class="input" placeholder="Enter Key"></div>
+                <div><label>Instagram API Key</label><input id="apiKeyInstagram" class="input" placeholder="Enter Key"></div>
+                <div><label>X API Key</label><input id="apiKeyX" class="input" placeholder="Enter Key"></div>
+                <div><label>LinkedIn API Key</label><input id="apiKeyLinkedin" class="input" placeholder="Enter Key"></div>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:10px">
+                <button class="cta" id="btnSaveApiKeys">Save API Keys</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Goals & admin dashboard -->
+      <div class="col">
+        <div class="card" style="background:var(--accent3); color:#24160a">
+          <h3>Set Goals (Counts & Outcomes)</h3>
+          <div class="mini">Outputs/Outtakes by count; Outcomes as custom % metrics.</div>
+          <div class="divider"></div>
+          <div class="card" style="background:#ffffff33;border-color:#ffffff66">
+            <h3>Outputs Goals</h3><div id="goalsOutputs" class="grid"></div>
+          </div>
+          <div class="card" style="margin-top:12px;background:#ffffff33;border-color:#ffffff66">
+            <h3>Outtakes Goals</h3><div id="goalsOuttakes" class="grid"></div>
+          </div>
+          <div class="card" style="margin-top:12px;background:#ffffff33;border-color:#ffffff66">
+            <h3>Outcomes (Custom % Metrics)</h3>
+            <div class="grid grid-3">
+              <div><label>Metric name</label><input id="ocmName" class="input" placeholder="e.g., Awareness lift"/></div>
+              <div><label>Description (optional)</label><input id="ocmDesc" class="input" placeholder="Short context"/></div>
+              <div style="display:flex;align-items:flex-end"><button class="cta" id="btnAddOcm">Add Metric</button></div>
+            </div>
+            <div id="ocmAdminList" class="scroll" style="margin-top:10px"></div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:12px"><button class="cta" id="btnSaveGoals">Save All Goals</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Admin Dashboard</h3>
+      <div class="grid grid-3">
+        <div class="card" style="background:var(--accent4); color:#0d1e19"><div class="mini">Outputs</div><div style="font-size:30px;font-weight:900" id="adminOutPct">0%</div><div class="mini" id="adminOutCounts">0 / 0</div></div>
+        <div class="card" style="background:var(--accent1); color:#0a141c"><div class="mini">Outtakes</div><div style="font-size:30px;font-weight:900" id="adminOtkPct">0%</div><div class="mini" id="adminOtkCounts">0 / 0</div></div>
+        <div class="card" style="background:var(--accent2); color:#1d0c16"><div class="mini">Outcomes (avg)</div><div style="font-size:30px;font-weight:900" id="adminOcmPct">0%</div><div class="mini" id="adminOcmCounts">—</div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="grid grid-2">
+        <div class="card"><h3>Outputs by Product</h3><div class="scroll" id="adminTblOutputs"></div></div>
+        <div class="card"><h3>Outtakes by Type</h3><div class="scroll" id="adminTblOuttakes"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEW MODULES (via hamburger) -->
+  <section id="modKLE" class="hide"></section>
+  <section id="modMedia" class="hide"></section>
+  <section id="modSocial" class="hide"></section>
+  <section id="modBrand" class="hide"></section>
+  <section id="modChecklist" class="hide"></section>
+</div>
+
+<!-- Drawer -->
+<div class="drawer" id="drawer">
+  <div class="backdrop" id="drawerClose"></div>
+  <div class="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="pill">Role Menu</div>
+      <button class="ghost small" id="drawerCloseBtn">Close</button>
+    </div>
+    <div id="menuItems"></div>
+  </div>
+</div>
+
+<button class="ghost small" id="scrollTop" style="position:fixed;right:22px;bottom:22px;z-index:99">↑ Top</button>
+
+<script>
+/* ================= DATA ================= */
+const STORAGE_KEY='nww_pao_metrics_onepage_v1';
+const def={
+  adminPIN:'0000',
+  staff:[], // {id,name,pin}
+  templates:{ outputs:['Story','Photos','Social media posts','News release','Video','Graphic','Fact sheet'], outtakes:['Event attendees','Stakeholder briefings','Media engagements','Website clicks','Email signups'] },
+  goals:{ M:{outputs:{},outtakes:{},outcomes:[]}, Q:{outputs:{},outtakes:{},outcomes:[]}, Y:{outputs:{},outtakes:{},outcomes:[]} },
+  entries:[], // metrics: {id,userId,type:'output'|'outtake'|'outcome', tf, tfKey, ts, data:{...}}
+  kle:[],    // KLE
+  media:[],  // media queries
+  social:[], // social posts
+  brand:{ policy:{brandGuideUrl:'', milHost:'', approvalsRequired:['PAO Release','OPSEC II','Caption/VI','Accessibility','Records Tag']}, inventory:[] },
+  checklists:[], // pre-release
+  apiKeys:{ facebook:'', instagram:'', x:'', linkedin:'' }
+};
+let db = load(); function load(){ try{const raw=localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw): (localStorage.setItem(STORAGE_KEY, JSON.stringify(def)), structuredClone(def)); }catch(e){ return structuredClone(def);} }
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
+
+/* ================= HELPERS ================= */
+const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
+function uid(){return Math.random().toString(36).slice(2,9)}
+function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
+function toPct(v){return `${Math.round((v||0)*100)}%`}
+function sum(o){return Object.values(o).reduce((a,b)=>a+(b||0),0)}
+function todayISO(){return new Date().toISOString().slice(0,10)}
+function parseLinks(txt){return (txt||'').split(/[\n,]/).map(s=>s.trim()).filter(Boolean)}
+function year(d){return d.getFullYear()}
+function monthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+function quarter(d){return Math.floor(d.getMonth()/3)+1}
+function quarterKey(d){return `${d.getFullYear()}-Q${quarter(d)}`}
+function tfKeyOf(tf, dLike){const d = dLike? new Date(dLike): new Date(); if(tf==='M') return monthKey(d); if(tf==='Q') return quarterKey(d); return String(year(d))}
+
+/* ================= STATE ================= */
+let role=null, user=null, cur={tf:'M',key:tfKeyOf('M')};
+const whoPill=$('#whoPill'); const homeBtn=$('#homeBtn'); const scrollTopBtn=$('#scrollTop');
+const btnHamburger=$('#btnHamburger'); const drawer=$('#drawer'); const menuItems=$('#menuItems');
+
+/* ================= NAV ================= */
+homeBtn.addEventListener('click', ()=> show('role'));
+scrollTopBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+function show(which){
+  ['screenRole','screenStaffAuth','screenAdminAuth','screenViewer','screenStaff','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist'].forEach(id=> $('#'+id).classList.add('hide'));
+  if(which==='role'){role=null;user=null;whoPill.textContent='Not signed in'; btnHamburger.style.display='none'; $('#screenRole').classList.remove('hide'); return;}
+  if(which==='viewer') $('#screenViewer').classList.remove('hide');
+  if(which==='staffAuth') $('#screenStaffAuth').classList.remove('hide');
+  if(which==='adminAuth') $('#screenAdminAuth').classList.remove('hide');
+  if(which==='staff') $('#screenStaff').classList.remove('hide');
+  if(which==='admin') $('#screenAdmin').classList.remove('hide');
+  if(which.startsWith('mod')) $('#'+which).classList.remove('hide');
+}
+$('#screenRole').addEventListener('click', e=>{
+  const card=e.target.closest('[data-role]'); if(!card) return;
+  const r=card.dataset.role;
+  if(r==='viewer'){ role='viewer'; whoPill.textContent='Viewer'; buildViewer(); show('viewer'); }
+  if(r==='staff'){ role='staff'; whoPill.textContent='Staff — sign in'; populateStaffList(); show('staffAuth'); }
+  if(r==='admin'){ role='admin'; whoPill.textContent='Admin — sign in'; show('adminAuth'); }
+});
+
+/* ================= AUTH ================= */
+const staffUserSel=$('#staffUser');
+function populateStaffList(){ staffUserSel.innerHTML=''; db.staff.forEach(s=>{const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; staffUserSel.appendChild(o);}); }
+$('#btnStaffLogin').addEventListener('click', ()=>{
+  const id=staffUserSel.value; const pin=$('#staffPIN').value.trim(); const rec=db.staff.find(s=>s.id===id);
+  if(!rec) return alert('Select your name'); if(rec.pin!==pin) return alert('Incorrect PIN');
+  user={id:rec.id, name:rec.name}; whoPill.textContent=`Staff: ${rec.name}`; btnHamburger.style.display='inline-flex';
+  buildStaff(); show('staff');
+});
+$('#btnAdminLogin').addEventListener('click', ()=>{
+  const pin=$('#adminPIN').value.trim(); if(pin!==db.adminPIN) return alert('Incorrect Admin PIN');
+  user={id:'admin', name:'Admin'}; whoPill.textContent='Admin'; btnHamburger.style.display='inline-flex';
+  buildAdmin(); show('admin');
+});
+
+/* ================= HAMBURGER ================= */
+function buildMenu(){
+  menuItems.innerHTML='';
+  const items=[
+    {id:'staff', label:'My Inputs (core metrics)', dot:'grad4'},
+    {id:'kle', label:'Community Engagement / KLE', dot:'grad1'},
+    {id:'media', label:'Media Log & Queries', dot:'grad2'},
+    {id:'social', label:'Social Media', dot:'grad3'},
+    {id:'brand', label:'Branding Governance', dot:'grad4'},
+    {id:'check', label:'Pre‑Release Checklist', dot:'grad5'},
+    ...(role==='admin' ? [{id:'admin', label:'Admin (Goals, Staff, Templates)', dot:'grad2'}] : [])
+  ];
+  items.forEach(it=>{
+    const el=document.createElement('div'); el.className='menuItem'; el.innerHTML=`<div class="dot ${it.dot}"></div><div>${it.label}</div>`;
+    el.addEventListener('click', ()=>{
+      drawer.classList.remove('open');
+      if(it.id==='staff') { buildStaff(); show('staff'); }
+      if(it.id==='kle') { buildKLE(); show('modKLE'); }
+      if(it.id==='media'){ buildMedia(); show('modMedia'); }
+      if(it.id==='social'){ buildSocial(); show('modSocial'); }
+      if(it.id==='brand'){ buildBrand(); show('modBrand'); }
+      if(it.id==='check'){ buildChecklist(); show('modChecklist'); }
+      if(it.id==='admin'){ buildAdmin(); show('admin'); }
+    });
+    menuItems.appendChild(el);
+  });
+}
+$('#btnHamburger').addEventListener('click', ()=>{ buildMenu(); drawer.classList.add('open'); });
+$('#drawerClose, #drawerCloseBtn').addEventListener('click', ()=> drawer.classList.remove('open'));
+
+/* ================= METRICS CORE LOGIC ================= */
+function tbl(container, rows, cols){
+  const t=['<table class="table"><thead><tr>']; cols.forEach(c=> t.push(`<th>${c.label}</th>`)); t.push('</tr></thead><tbody>');
+  rows.forEach(r=>{ t.push('<tr>'); cols.forEach(c=> t.push(`<td>${c.render(r)}</td>`)); t.push('</tr>'); });
+  t.push('</tbody></table>'); container.innerHTML=t.join('');
+}
+function calcProgress(tf, tfKey){
+  const g=db.goals[tf];
+  const entries=db.entries.filter(e=> e.tf===tf && e.tfKey===tfKey);
+  const outSum=entries.filter(e=>e.type==='output').reduce((m,e)=> (m[e.data.product]=(m[e.data.product]||0)+e.data.qty, m),{});
+  const otkSum=entries.filter(e=>e.type==='outtake').reduce((m,e)=> (m[e.data.kind]=(m[e.data.kind]||0)+e.data.qty, m),{});
+  const outGoal=g.outputs||{}, otkGoal=g.outtakes||{};
+  const outTotGoal=sum(outGoal), otkTotGoal=sum(otkGoal);
+  const outTotDone=Object.entries(outGoal).reduce((S,[k,v])=> S + Math.min(outSum[k]||0, v||0), 0);
+  const otkTotDone=Object.entries(otkGoal).reduce((S,[k,v])=> S + Math.min(otkSum[k]||0, v||0), 0);
+  const outPct = outTotGoal? outTotDone/outTotGoal : 0;
+  const otkPct = otkTotGoal? otkTotDone/otkTotGoal : 0;
+  const metrics=(g.outcomes||[]).map(o=>o.name);
+  const latestByMetric={};
+  entries.filter(e=>e.type==='outcome').forEach(e=> latestByMetric[e.data.metric]=Math.max(latestByMetric[e.data.metric]||0, e.data.pct||0));
+  const ocmPct = metrics.length? metrics.reduce((a,m)=> a + (latestByMetric[m]||0), 0)/(metrics.length*100) : 0;
+  return { outPct, otkPct, ocmPct, outTotals:{done:outTotDone, goal:outTotGoal}, otkTotals:{done:otkTotDone, goal:otkTotGoal}, outBreak:{sum:outSum, goal:outGoal}, otkBreak:{sum:otkSum, goal:otkGoal}, metrics };
+}
+
+/* ===== Viewer ===== */
+const tfViewerSel=$('#tfViewer'), tfViewerPick=$('#tfViewerPick');
+tfViewerSel?.addEventListener('change', ()=> buildTfPicker(tfViewerPick, tfViewerSel.value, key=>{ cur.tf=tfViewerSel.value; cur.key=key; refreshViewer(); }));
+function buildTfPicker(spanEl, tf, onChange){
+  spanEl.innerHTML=''; const today=new Date();
+  if(tf==='M'){ const i=document.createElement('input'); i.type='month'; i.className='input'; i.style.width='auto'; i.value=monthKey(today); i.addEventListener('change', ()=>onChange(i.value)); spanEl.appendChild(i); onChange(i.value); }
+  if(tf==='Q'){ const y=document.createElement('input'); y.type='number'; y.className='input'; y.style.width='100px'; y.value=year(today);
+    const q=document.createElement('select'); q.className='input'; q.style.width='auto'; ['Q1','Q2','Q3','Q4'].forEach((qq,i)=>{const o=document.createElement('option'); o.value=`Q${i+1}`; o.textContent=qq; q.appendChild(o);}); q.value=`Q${quarter(today)}`;
+    const wrap=document.createElement('span'); wrap.appendChild(y); wrap.appendChild(q); spanEl.appendChild(wrap);
+    const fire=()=>onChange(`${y.value}-${q.value}`); y.addEventListener('input',fire); q.addEventListener('change',fire); fire(); }
+  if(tf==='Y'){ const y=document.createElement('input'); y.type='number'; y.className='input'; y.style.width='100px'; y.value=year(today); y.addEventListener('input', ()=>onChange(String(y.value))); spanEl.appendChild(y); onChange(String(y.value)); }
+}
+function buildViewer(){
+  buildTfPicker(tfViewerPick, tfViewerSel.value, key=>{cur.key=key; refreshViewer();});
+}
+function refreshViewer(){
+  const p=calcProgress(cur.tf, cur.key);
+  $('#sumOutPct').textContent=toPct(p.outPct); $('#sumOutCounts').textContent=`${p.outTotals.done} / ${p.outTotals.goal}`;
+  $('#sumOtkPct').textContent=toPct(p.otkPct); $('#sumOtkCounts').textContent=`${p.otkTotals.done} / ${p.otkTotals.goal}`;
+  $('#sumOcmPct').textContent=toPct(p.ocmPct); $('#sumOcmCounts').textContent=p.metrics.length? `${p.metrics.length} metrics` : '—';
+  const outRows=Object.keys(p.outBreak.goal).map(k=>({product:k, goal:p.outBreak.goal[k]||0, done:p.outBreak.sum[k]||0}));
+  const otkRows=Object.keys(p.otkBreak.goal).map(k=>({kind:k, goal:p.otkBreak.goal[k]||0, done:p.otkBreak.sum[k]||0}));
+  tbl($('#tblOutputs'), outRows, [
+    {label:'Product', render:r=>r.product},{label:'Goal', render:r=>r.goal},{label:'Done', render:r=>r.done},{label:'% Complete', render:r=> toPct(r.goal? r.done/r.goal : 0)}
+  ]);
+  tbl($('#tblOuttakes'), otkRows, [
+    {label:'Type', render:r=>r.kind},{label:'Goal', render:r=>r.goal},{label:'Done', render:r=>r.done},{label:'% Complete', render:r=> toPct(r.goal? r.done/r.goal : 0)}
+  ]);
+  const links=db.entries.filter(e=> e.tf===cur.tf && e.tfKey===cur.key && e.type==='output').flatMap(e=> (e.data.links||[]).map(u=>({u,who:db.staff.find(s=>s.id===e.userId)?.name||'Unknown', prod:e.data.product})));
+  $('#allLinks').innerHTML = links.length? links.map(l=> `<div class="card" style="background:#0e1124;border-color:#2f355e"><a target="_blank" rel="noopener" href="${l.u}">${l.u}</a><div class="mini">by ${l.who} • ${l.prod}</div></div>`).join('') : '<div class="mini">No links submitted yet.</div>';
+  function leaders(type, field){
+    const arr=db.entries.filter(e=> e.tf===cur.tf && e.tfKey===cur.key && e.type===type);
+    const map={}; arr.forEach(e=> map[e.userId]=(map[e.userId]||0)+(e.data[field]||0));
+    return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([id,v])=> `${db.staff.find(s=>s.id===id)?.name||'—'} (${v})`).join(', ') || '—';
+  }
+  $('#leadersOut').textContent=leaders('output','qty');
+  $('#leadersOtk').textContent=leaders('outtake','qty');
+  const metrics=(db.goals[cur.tf].outcomes||[]).map(o=>o.name); const byUser={};
+  db.entries.filter(e=> e.tf===cur.tf && e.tfKey===cur.key && e.type==='outcome').forEach(e=>{ byUser[e.userId]=byUser[e.userId]||{}; byUser[e.userId][e.data.metric]=Math.max(byUser[e.userId][e.data.metric]||0, e.data.pct||0); });
+  const lead=Object.entries(byUser).map(([id,obj])=>{ const avg = metrics.length? metrics.reduce((a,m)=> a+(obj[m]||0),0)/metrics.length : 0; return {name:db.staff.find(s=>s.id===id)?.name||'—', avg}; }).sort((a,b)=>b.avg-a.avg).slice(0,3).map(x=> `${x.name} (${Math.round(x.avg)}%)`).join(', ') || '—';
+  $('#leadersOcm').textContent=lead;
+}
+
+/* ===== Staff ===== */
+const tfStaffSel=$('#tfStaff'), tfStaffPick=$('#tfStaffPick');
+tfStaffSel?.addEventListener('change', ()=> buildTfPicker(tfStaffPick, tfStaffSel.value, key=>{cur.tf=tfStaffSel.value; cur.key=key; refreshStaff();}));
+function buildStaff(){
+  // populate pickers
+  $('#outProdType').innerHTML = [...db.templates.outputs, 'Other (specify)'].map(t=>`<option>${t}</option>`).join('');
+  $('#otkType').innerHTML    = [...db.templates.outtakes, 'Other (specify)'].map(t=>`<option>${t}</option>`).join('');
+  buildTfPicker(tfStaffPick, tfStaffSel.value, key=>{cur.key=key; refreshStaff();});
+  const sel=$('#ocmKey'); sel.innerHTML=''; (db.goals[cur.tf].outcomes||[]).forEach(o=> sel.appendChild(new Option(o.name,o.name)));
+}
+$('#outProdType').addEventListener('change', ()=> $('#otherProdWrap').classList.toggle('hide', $('#outProdType').value!=='Other (specify)'));
+$('#otkType').addEventListener('change', ()=> $('#otkOtherWrap').classList.toggle('hide', $('#otkType').value!=='Other (specify)'));
+$('#ocmPct').addEventListener('input', e=> $('#ocmVal').textContent = e.target.value+'%');
+$('#btnAddOutput').addEventListener('click', ()=>{
+  if(!user) return; const type=$('#outProdType').value==='Other (specify)' ? ($('#otherProd').value.trim()||'Other') : $('#outProdType').value;
+  const qty=parseInt($('#outQty').value||'0',10); if(qty<=0) return alert('Quantity must be > 0');
+  const links=parseLinks($('#outLinks').value);
+  db.entries.push({id:uid(), userId:user.id, type:'output', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{product:type, qty, links}});
+  save(); $('#outQty').value=1; $('#outLinks').value=''; $('#otherProd').value=''; refreshStaff(); refreshViewerIf();
+});
+$('#btnClearOutput').addEventListener('click', ()=>{ $('#outQty').value=1; $('#outLinks').value=''; $('#otherProd').value=''; });
+$('#btnAddOuttake').addEventListener('click', ()=>{
+  if(!user) return; const type=$('#otkType').value==='Other (specify)' ? ($('#otkOther').value.trim()||'Other') : $('#otkType').value;
+  const qty=parseInt($('#otkQty').value||'0',10); if(qty<=0) return alert('Quantity must be > 0');
+  const notes=$('#otkNotes').value.trim();
+  db.entries.push({id:uid(), userId:user.id, type:'outtake', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{kind:type, qty, notes}});
+  save(); $('#otkQty').value=1; $('#otkNotes').value=''; $('#otkOther').value=''; refreshStaff(); refreshViewerIf();
+});
+$('#btnClearOuttake').addEventListener('click', ()=>{ $('#otkQty').value=1; $('#otkNotes').value=''; $('#otkOther').value=''; });
+$('#btnSaveOutcome').addEventListener('click', ()=>{
+  if(!user) return; const key=$('#ocmKey').value; if(!key) return alert('No outcome metric defined.');
+  const pct=parseInt($('#ocmPct').value,10);
+  db.entries.push({id:uid(), userId:user.id, type:'outcome', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{metric:key, pct}});
+  save(); refreshStaff(); refreshViewerIf();
+});
+function refreshStaff(){
+  const mine=db.entries.filter(e=> e.userId===user?.id && e.tf===cur.tf && e.tfKey===cur.key);
+  const outs=mine.filter(e=>e.type==='output').sort((a,b)=>b.ts-a.ts), otks=mine.filter(e=>e.type==='outtake').sort((a,b)=>b.ts-a.ts), ocms=mine.filter(e=>e.type==='outcome').sort((a,b)=>b.ts-a.ts);
+  $('#outList').innerHTML = outs.length? outs.map(e=> {
+    const links=(e.data.links||[]).map(u=> `<a href="${u}" target="_blank" rel="noopener">${u}</a>`).join('<br>');
+    return `<div class="card" style="background:#0e1124;border-color:#2f355e"><div class="chip mono">${e.data.qty}×</div> <span class="chip">${e.data.product}</span>${links?'<div class="divider"></div><div class="links">'+links+'</div>':''}<div class="mini">${new Date(e.ts).toLocaleString()}</div></div>`;
+  }).join('') : '<div class="mini">No outputs yet.</div>';
+  $('#otkList').innerHTML = otks.length? otks.map(e=> `<div class="card" style="background:#0e1124;border-color:#2f355e"><div class="chip mono">${e.data.qty}×</div> <span class="chip">${e.data.kind}</span>${e.data.notes?'<div class="divider"></div><div class="mini">'+e.data.notes+'</div>':''}<div class="mini">${new Date(e.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No outtakes yet.</div>';
+  $('#ocmList').innerHTML = ocms.length? ocms.map(e=> `<div class="card" style="background:#0e1124;border-color:#2f355e"><span class="chip">${e.data.metric}</span><div class="divider"></div><div class="mini">${clamp(e.data.pct,0,100)}% • ${new Date(e.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No outcomes yet.</div>';
+  const p=calcProgress(cur.tf, cur.key); $('#kpiOutPct').textContent=toPct(p.outPct); $('#kpiOtkPct').textContent=toPct(p.otkPct); $('#kpiOcmPct').textContent=toPct(p.ocmPct);
+}
+function refreshViewerIf(){ if(!$('#screenViewer').classList.contains('hide')) refreshViewer(); }
+
+/* ===== Admin ===== */
+const tfAdminSel=$('#tfAdmin'), tfAdminPick=$('#tfAdminPick');
+tfAdminSel?.addEventListener('change', ()=> buildTfPicker(tfAdminPick, tfAdminSel.value, key=>{cur.tf=tfAdminSel.value; cur.key=key; buildGoalsEditors(); refreshAdminDash();}));
+function buildAdmin(){
+  $('#tplOutputs').value=db.templates.outputs.join('\n'); $('#tplOuttakes').value=db.templates.outtakes.join('\n');
+  buildTfPicker(tfAdminPick, tfAdminSel.value, key=>{cur.key=key; buildGoalsEditors(); refreshAdminDash();});
+  renderStaffList();
+  if(db.apiKeys){
+    $('#apiKeyFacebook').value = db.apiKeys.facebook || '';
+    $('#apiKeyInstagram').value = db.apiKeys.instagram || '';
+    $('#apiKeyX').value = db.apiKeys.x || '';
+    $('#apiKeyLinkedin').value = db.apiKeys.linkedin || '';
+  }
+  $('#btnSaveApiKeys').onclick=()=>{
+    if(!db.apiKeys) db.apiKeys = {};
+    db.apiKeys.facebook = $('#apiKeyFacebook').value.trim();
+    db.apiKeys.instagram = $('#apiKeyInstagram').value.trim();
+    db.apiKeys.x = $('#apiKeyX').value.trim();
+    db.apiKeys.linkedin = $('#apiKeyLinkedin').value.trim();
+    save();
+    alert('API Keys saved');
+  };
+  $('#btnSaveAdminPIN').onclick=()=>{ const p=$('#setAdminPIN').value.trim(); if(!p) return alert('Enter a PIN'); db.adminPIN=p; save(); alert('Admin PIN updated'); };
+}
+  $('#btnAddStaff').onclick=()=>{ const name=$('#staffName').value.trim(), pin=$('#staffNewPIN').value.trim(); if(!name||!pin) return alert('Name & PIN required'); let rec=db.staff.find(s=>s.name.toLowerCase()===name.toLowerCase()); if(rec) rec.pin=pin; else db.staff.push({id:uid(),name,pin}); save(); $('#staffName').value=''; $('#staffNewPIN').value=''; renderStaffList(); };
+  $('#btnSaveTemplates').onclick=()=>{ db.templates.outputs=$('#tplOutputs').value.split('\n').map(s=>s.trim()).filter(Boolean); db.templates.outtakes=$('#tplOuttakes').value.split('\n').map(s=>s.trim()).filter(Boolean); save(); alert('Templates saved'); };
+  $('#btnExport').onclick=()=>{ const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nww_pao_metrics_export.json'; a.click(); };
+  $('#importFile').onchange=(e)=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ db=JSON.parse(fr.result); save(); alert('Imported. Reloading…'); location.reload(); }catch(err){ alert('Invalid JSON'); } }; fr.readAsText(f); };
+  $('#btnReset').onclick=()=>{ if(!confirm('Wipe all local data?'))return; localStorage.removeItem(STORAGE_KEY); location.reload(); };
+function renderStaffList(){
+  const box=$('#staffList'); box.innerHTML=''; if(!db.staff.length){ box.innerHTML='<div class="mini">No staff yet.</div>'; return; }
+  db.staff.forEach(s=>{
+    const row=document.createElement('div'); row.className='card'; row.style.cssText='background:#0e1124;border-color:#2f355e;display:flex;justify-content:space-between;align-items:center;gap:8px;';
+    row.innerHTML=`<div><strong>${s.name}</strong><div class="mini">id: ${s.id}</div></div><div><button class="ghost small" data-reset="${s.id}">Reset PIN</button> <button class="danger small" data-del="${s.id}">Remove</button></div>`;
+    box.appendChild(row);
+  });
+  box.querySelectorAll('[data-reset]').forEach(b=> b.addEventListener('click', e=>{ const s=db.staff.find(x=>x.id===e.target.dataset.reset); const np=prompt('New PIN for '+s.name); if(np){ s.pin=np; save(); alert('PIN updated'); }}));
+  box.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{ const id=e.target.dataset.del; if(!confirm('Remove staff?'))return; db.staff=db.staff.filter(x=>x.id!==id); save(); renderStaffList(); }));
+}
+function buildGoalsEditors(){
+  const g=db.goals[cur.tf];
+  const go=$('#goalsOutputs'); go.innerHTML=''; db.templates.outputs.forEach(name=>{
+    const val=g.outputs[name]||0; const r=document.createElement('div'); r.className='card'; r.style.cssText='background:#0e1124;border-color:#2f355e';
+    r.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="chip">${name}</span></div><div style="min-width:180px"><input type="range" min="0" max="50" value="${val}" data-name="${name}" class="goalOutRange"><div class="mini"><span class="val">${val}</span> products</div></div></div>`;
+    go.appendChild(r);
+  });
+  const gt=$('#goalsOuttakes'); gt.innerHTML=''; db.templates.outtakes.forEach(name=>{
+    const val=g.outtakes[name]||0; const r=document.createElement('div'); r.className='card'; r.style.cssText='background:#0e1124;border-color:#2f355e';
+    r.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="chip">${name}</span></div><div style="min-width:180px"><input type="range" min="0" max="50" value="${val}" data-name="${name}" class="goalOtkRange"><div class="mini"><span class="val">${val}</span> events/qty</div></div></div>`;
+    gt.appendChild(r);
+  });
+  renderAdminOutcomes();
+  go.querySelectorAll('.goalOutRange').forEach(r=> r.addEventListener('input', e=> e.target.parentElement.querySelector('.val').textContent=e.target.value));
+  gt.querySelectorAll('.goalOtkRange').forEach(r=> r.addEventListener('input', e=> e.target.parentElement.querySelector('.val').textContent=e.target.value));
+}
+function renderAdminOutcomes(){
+  const box=$('#ocmAdminList'); const arr=db.goals[cur.tf].outcomes||[]; box.innerHTML= arr.length? '' : '<div class="mini">No outcome metrics yet.</div>';
+  arr.forEach((o,idx)=>{
+    const row=document.createElement('div'); row.className='card'; row.style.cssText='background:#0e1124;border-color:#2f355e;display:flex;justify-content:space-between;align-items:center;gap:8px;';
+    row.innerHTML=`<div><strong>${o.name}</strong><div class="mini">${o.desc||''}</div></div><div><button class="danger small" data-del="${idx}">Remove</button></div>`;
+    box.appendChild(row);
+  });
+  box.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{ const i=+e.target.dataset.del; db.goals[cur.tf].outcomes.splice(i,1); save(); renderAdminOutcomes(); refreshAdminDash(); }));
+}
+$('#btnAddOcm')?.addEventListener('click', ()=>{ const name=$('#ocmName').value.trim(); if(!name) return alert('Metric name required.'); const desc=$('#ocmDesc').value.trim(); const arr=db.goals[cur.tf].outcomes||(db.goals[cur.tf].outcomes=[]); if(arr.find(o=>o.name.toLowerCase()===name.toLowerCase())) return alert('Metric exists.'); arr.push({name,desc}); save(); $('#ocmName').value=''; $('#ocmDesc').value=''; renderAdminOutcomes(); });
+$('#btnSaveGoals')?.addEventListener('click', ()=>{ const g=db.goals[cur.tf]; const outs={}; $$('.goalOutRange').forEach(r=> outs[r.dataset.name]=parseInt(r.value,10)||0 ); const otks={}; $$('.goalOtkRange').forEach(r=> otks[r.dataset.name]=parseInt(r.value,10)||0 ); g.outputs=outs; g.outtakes=otks; save(); alert('Goals saved'); refreshAdminDash(); });
+function refreshAdminDash(){
+  const p=calcProgress(cur.tf, cur.key);
+  $('#adminOutPct').textContent=toPct(p.outPct); $('#adminOutCounts').textContent=`${p.outTotals.done} / ${p.outTotals.goal}`;
+  $('#adminOtkPct').textContent=toPct(p.otkPct); $('#adminOtkCounts').textContent=`${p.otkTotals.done} / ${p.otkTotals.goal}`;
+  $('#adminOcmPct').textContent=toPct(p.ocmPct); $('#adminOcmCounts').textContent=(db.goals[cur.tf].outcomes||[]).length? `${(db.goals[cur.tf].outcomes||[]).length} metrics`:'—';
+  const outRows=Object.keys(p.outBreak.goal).map(k=>({product:k, goal:p.outBreak.goal[k]||0, done:p.outBreak.sum[k]||0}));
+  const otkRows=Object.keys(p.otkBreak.goal).map(k=>({kind:k, goal:p.otkBreak.goal[k]||0, done:p.otkBreak.sum[k]||0}));
+  tbl($('#adminTblOutputs'), outRows, [{label:'Product',render:r=>r.product},{label:'Goal',render:r=>r.goal},{label:'Done',render:r=>r.done},{label:'% Complete',render:r=> toPct(r.goal? r.done/r.goal : 0)}]);
+  tbl($('#adminTblOuttakes'), otkRows, [{label:'Type',render:r=>r.kind},{label:'Goal',render:r=>r.goal},{label:'Done',render:r=>r.done},{label:'% Complete',render:r=> toPct(r.goal? r.done/r.goal : 0)}]);
+}
+
+/* ================= MODULES (Hamburger) ================= */
+function buildKLE(){
+  const c=$('#modKLE');
+  c.innerHTML=`
+    <div class="card" style="margin-top:18px;background:var(--accent4);color:#041d13">
+      <h3>Community Engagement / KLE</h3>
+      <div class="grid grid-3">
+        <div><label>Date</label><input id="kleDate" class="input" type="date" value="${todayISO()}"></div>
+        <div><label>Audience / Partner</label><input id="kleAudience" class="input" placeholder="e.g., County EM, Tribe, City Council"></div>
+        <div><label>Purpose</label><input id="klePurpose" class="input" placeholder="e.g., Dam safety update"></div>
+        <div><label># Attendees</label><input id="kleAtt" class="input" type="number" min="0" value="0"></div>
+        <div><label>Talking Points (bullets)</label><textarea id="kleTP" rows="3" class="input" placeholder="- Point 1&#10;- Point 2"></textarea></div>
+        <div><label>Commitments / Follow‑ups</label><textarea id="kleCom" rows="3" class="input" placeholder="- Action / POC / due"></textarea></div>
+        <div><label>Links (comma or new line)</label><textarea id="kleLinks" rows="2" class="input" placeholder="Agenda, deck, photos…"></textarea></div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:10px"><button class="cta" id="btnKLEAdd">Save KLE</button></div>
+    </div>
+    <div class="card" style="margin-top:12px"><h3>KLE Log</h3><div id="kleList" class="scroll"></div></div>`;
+  $('#btnKLEAdd').onclick=()=>{ if(!user) return alert('Sign in'); const rec={id:uid(), by:user.name, date:$('#kleDate').value, audience:$('#kleAudience').value.trim(), purpose:$('#klePurpose').value.trim(), attendees:parseInt($('#kleAtt').value||'0',10), talkingPoints:$('#kleTP').value, commitments:$('#kleCom').value, links:parseLinks($('#kleLinks').value), ts:Date.now()}; db.kle.push(rec); save(); renderKLE(); };
+  renderKLE();
+}
+function renderKLE(){
+  const wrap=$('#kleList'); const rows=[...db.kle].sort((a,b)=>b.ts-a.ts);
+  wrap.innerHTML = rows.length? rows.map(r=>`<div class="card" style="background:#0e1124;border-color:#2f355e">
+    <div class="chip">${r.date}</div> <span class="chip">${r.audience}</span> <span class="chip">${r.attendees} attendees</span>
+    <div class="divider"></div><div class="mini">Purpose: ${r.purpose||'—'}</div>
+    ${r.talkingPoints? `<div class="divider"></div><pre class="mini" style="white-space:pre-wrap">${r.talkingPoints}</pre>`:''}
+    ${r.commitments? `<div class="divider"></div><pre class="mini" style="white-space:pre-wrap">${r.commitments}</pre>`:''}
+    ${r.links?.length? `<div class="divider"></div><div class="links">${r.links.map(u=>`<a href="${u}" target="_blank">${u}</a>`).join('<br>')}</div>`:''}
+    <div class="mini">Logged by ${r.by} • ${new Date(r.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No KLE entries yet.</div>';
+}
+
+function buildMedia(){
+  const c=$('#modMedia');
+  c.innerHTML=`
+    <div class="card" style="margin-top:18px;background:var(--accent2);color:#1d0c16">
+      <h3>Media Log & Query Tracker</h3>
+      <div class="grid grid-3">
+        <div><label>Date</label><input id="medDate" class="input" type="date" value="${todayISO()}"></div>
+        <div><label>Outlet</label><input id="medOutlet" class="input" placeholder="e.g., KXLY, Spokesman-Review"></div>
+        <div><label>Reporter</label><input id="medReporter" class="input" placeholder="Name"></div>
+        <div><label>Topic / Query</label><input id="medTopic" class="input" placeholder="Subject"></div>
+        <div><label>Deadline</label><input id="medDeadline" class="input" type="datetime-local"></div>
+        <div><label>Status</label><select id="medStatus" class="input"><option>Open</option><option>In Progress</option><option>Responded</option><option>Closed</option></select></div>
+        <div><label>Spokesperson</label><input id="medSpox" class="input" placeholder="Name/Title"></div>
+        <div><label>Disposition</label><input id="medDisp" class="input" placeholder="Key outcome"></div>
+        <div><label>Link to Response / Story</label><input id="medLink" class="input" placeholder="https://…"></div>
+        <div class="grid" style="grid-template-columns:1fr auto; align-items:end; gap:10px">
+          <div><label>Notes</label><textarea id="medNotes" class="input" rows="3"></textarea></div>
+          <button class="cta" id="btnMedSave">Save</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px"><h3>Media Queries</h3><div id="mediaList" class="scroll"></div></div>`;
+  $('#btnMedSave').onclick=()=>{ if(!user) return alert('Sign in'); const rec={id:uid(), by:user.name, date:$('#medDate').value, outlet:$('#medOutlet').value.trim(), reporter:$('#medReporter').value.trim(), topic:$('#medTopic').value.trim(), deadline:$('#medDeadline').value, status:$('#medStatus').value, spokesperson:$('#medSpox').value.trim(), disposition:$('#medDisp').value.trim(), link:$('#medLink').value.trim(), notes:$('#medNotes').value.trim(), ts:Date.now()}; db.media.push(rec); save(); renderMedia(); };
+  renderMedia();
+}
+function renderMedia(){
+  const wrap=$('#mediaList'); const rows=[...db.media].sort((a,b)=>b.ts-a.ts);
+  wrap.innerHTML = rows.length? rows.map(r=>`<div class="card" style="background:#0e1124;border-color:#2f355e">
+    <div class="chip">${r.date}</div> <span class="chip">${r.outlet}</span> <span class="chip">${r.reporter}</span> <span class="chip">${r.status}</span>
+    <div class="divider"></div><div class="mini"><strong>Topic:</strong> ${r.topic||'—'}</div>
+    <div class="mini"><strong>Deadline:</strong> ${r.deadline? new Date(r.deadline).toLocaleString():'—'}</div>
+    <div class="mini"><strong>Spokesperson:</strong> ${r.spokesperson||'—'}</div>
+    <div class="mini"><strong>Disposition:</strong> ${r.disposition||'—'}</div>
+    ${r.link? `<div class="links"><a href="${r.link}" target="_blank">Open link</a></div>`:''}
+    ${r.notes? `<div class="mini">${r.notes}</div>`:''}
+    <div class="mini">Logged by ${r.by} • ${new Date(r.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No media queries yet.</div>';
+}
+
+function buildSocial(){
+  const c=$('#modSocial');
+  c.innerHTML=`
+    <div class="card" style="margin-top:18px;background:var(--accent3);color:#281a07">
+      <h3>Social Media Tracker</h3>
+      <div class="grid grid-3">
+        <div><label>Platform</label><select id="socPlatform" class="input"><option>Facebook</option><option>Instagram</option><option>X</option><option>LinkedIn</option><option>YouTube</option><option>Other</option></select></div>
+        <div><label>Handle</label><input id="socHandle" class="input" placeholder="@USACEWallaWalla"></div>
+        <div><label>Date/Time (posted)</label><input id="socDT" class="input" type="datetime-local"></div>
+        <div><label>Post Type</label><select id="socType" class="input"><option>News link</option><option>Photo</option><option>Video</option><option>Thread</option><option>Story/Reel/Short</option><option>Other</option></select></div>
+        <div><label>Public Link</label><input id="socLink" class="input" placeholder="https://…"></div>
+        <div><label>Campaign/Focus</label><input id="socCampaign" class="input" placeholder="Deliver the Mission / EWeek"></div>
+        <div><label>Reach (optional)</label><input id="socReach" class="input" type="number" min="0" value="0"></div>
+        <div><label>Engagements (optional)</label><input id="socEng" class="input" type="number" min="0" value="0"></div>
+        <div><label>Notes</label><input id="socNotes" class="input" placeholder="Alt text, captions, tagging…"></div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:10px"><button class="cta" id="btnSocSave">Save Post</button><button class="cta" id="btnSocPostApi" style="display:none; background: var(--accent2);">Post via API</button></div>
+    </div>
+    <div class="card" style="margin-top:12px"><h3>Social Posts</h3><div id="socList" class="scroll"></div></div>`;
+  $('#btnSocSave').onclick=()=>{ if(!user) return alert('Sign in'); const rec={id:uid(), by:user.name, datetime:$('#socDT').value, platform:$('#socPlatform').value, handle:$('#socHandle').value.trim(), postType:$('#socType').value, link:$('#socLink').value.trim(), campaign:$('#socCampaign').value.trim(), reach:parseInt($('#socReach').value||'0',10), engagements:parseInt($('#socEng').value||'0',10), notes:$('#socNotes').value.trim(), ts:Date.now()}; db.social.push(rec); save(); renderSocial();};
+  const btnApi = $('#btnSocPostApi');
+  if(role === 'admin' && db.apiKeys && Object.values(db.apiKeys).some(k => k)){
+      btnApi.style.display = 'inline-block';
+  }
+  btnApi.onclick = () => {
+      const platform = $('#socPlatform').value.toLowerCase();
+      if(db.apiKeys && db.apiKeys[platform] && db.apiKeys[platform].length > 0){
+          alert('"Posting" to '+$('#socPlatform').value+' via API... (This is a demo)');
+          $('#btnSocSave').click();
+      } else {
+          alert('API key for '+$('#socPlatform').value+' is not configured in Admin settings, or the platform is not supported for API posting.');
+      }
+  };
+  renderSocial();
+}
+function renderSocial(){
+  const wrap=$('#socList'); const rows=[...db.social].sort((a,b)=>b.ts-a.ts);
+  wrap.innerHTML = rows.length? rows.map(r=>`<div class="card" style="background:#0e1124;border-color:#2f355e">
+    <div class="chip">${r.platform}</div> <span class="chip">${r.handle||''}</span> <span class="chip">${r.postType}</span>
+    <div class="divider"></div>
+    <div class="mini"><strong>When:</strong> ${r.datetime? new Date(r.datetime).toLocaleString():'—'}</div>
+    <div class="mini"><strong>Campaign:</strong> ${r.campaign||'—'}</div>
+    <div class="mini"><strong>Reach:</strong> ${r.reach||0} • <strong>Engagements:</strong> ${r.engagements||0}</div>
+    ${r.link? `<div class="links"><a href="${r.link}" target="_blank">Open post</a></div>`:''}
+    ${r.notes? `<div class="mini">${r.notes}</div>`:''}
+    <div class="mini">Logged by ${r.by} • ${new Date(r.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No posts logged yet.</div>';
+}
+
+function buildBrand(){
+  const c=$('#modBrand');
+  c.innerHTML=`
+    <div class="card" style="margin-top:18px;background:var(--accent4);color:#041d13">
+      <h3>Branding Governance</h3>
+      <div class="grid grid-3">
+        <div><label>USACE Brand Guide URL</label><input id="brandGuide" class="input" placeholder="https://…"></div>
+        <div><label>.mil Host / Site</label><input id="brandMil" class="input" placeholder="https://www.nww.usace.army.mil/…"></div>
+        <div><label>Approvals Required (comma‑sep)</label><input id="brandApprovals" class="input" placeholder="PAO Release, OPSEC II, VI Caption, Accessibility, Records"></div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:10px"><button class="cta" id="btnBrandSave">Save Policy</button></div>
+    </div>
+    <div class="card" style="margin-top:12px;background:var(--accent1);color:#06131a">
+      <h3>Channel Inventory</h3>
+      <div class="grid grid-3">
+        <div><label>Site / Channel</label><input id="invName" class="input" placeholder="Facebook Page / Website section / DVIDS hub"></div>
+        <div><label>URL</label><input id="invUrl" class="input" placeholder="https://…"></div>
+        <div><label>Owner</label><input id="invOwner" class="input" placeholder="PAO / Section / POC"></div>
+        <div><label>Authorized?</label><select id="invAuth" class="input"><option>Yes</option><option>No</option><option>Unknown</option></select></div>
+        <div class="grid" style="grid-template-columns:1fr auto; align-items:end; gap:10px">
+          <div><label>Notes</label><input id="invNotes" class="input" placeholder="Branding issues, migration, redirects…"></div>
+          <button class="cta" id="btnInvAdd">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px"><h3>Inventory</h3><div id="brandInvList" class="scroll"></div></div>`;
+  $('#brandGuide').value=db.brand.policy.brandGuideUrl||''; $('#brandMil').value=db.brand.policy.milHost||''; $('#brandApprovals').value=(db.brand.policy.approvalsRequired||[]).join(', ');
+  $('#btnBrandSave').onclick=()=>{ db.brand.policy.brandGuideUrl=$('#brandGuide').value.trim(); db.brand.policy.milHost=$('#brandMil').value.trim(); db.brand.policy.approvalsRequired=$('#brandApprovals').value.split(',').map(s=>s.trim()).filter(Boolean); save(); alert('Brand policy saved'); };
+  $('#btnInvAdd').onclick=()=>{ const rec={id:uid(), siteOrChannel:$('#invName').value.trim(), url:$('#invUrl').value.trim(), owner:$('#invOwner').value.trim(), authorized:$('#invAuth').value, notes:$('#invNotes').value.trim(), ts:Date.now()}; if(!rec.siteOrChannel) return alert('Enter a site/channel'); db.brand.inventory.push(rec); save(); renderBrandInv(); $('#invName').value=''; $('#invUrl').value=''; $('#invOwner').value=''; $('#invNotes').value=''; };
+  renderBrandInv();
+}
+function renderBrandInv(){
+  const wrap=$('#brandInvList'); const rows=[...db.brand.inventory].sort((a,b)=>b.ts-a.ts);
+  wrap.innerHTML = rows.length? rows.map(r=>`<div class="card" style="background:#0e1124;border-color:#2f355e"><div class="chip">${r.siteOrChannel}</div> <span class="chip">${r.authorized}</span>${r.url? `<div class="links"><a href="${r.url}" target="_blank">${r.url}</a></div>`:''}<div class="mini">Owner: ${r.owner||'—'}</div>${r.notes? `<div class="mini">${r.notes}</div>`:''}<div class="mini">${new Date(r.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No inventory yet.</div>';
+}
+
+function buildChecklist(){
+  const c=$('#modChecklist'); const approvals=db.brand.policy.approvalsRequired?.length? db.brand.policy.approvalsRequired.join(', ') : 'PAO Release, OPSEC II, VI Caption, Accessibility, Records';
+  c.innerHTML=`
+    <div class="card" style="margin-top:18px;background:var(--accent2);color:#1d0c16">
+      <h3>Pre‑Release Checklist (OPSEC • VI • Release)</h3>
+      <div class="mini">Required approvals: ${approvals}</div>
+      <div class="grid grid-3" style="margin-top:8px">
+        <div><label>Product Title</label><input id="chkTitle" class="input" placeholder="e.g., Water Safety News Release"></div>
+        <div><label>Product Type</label><select id="chkType" class="input">${db.templates.outputs.map(t=>`<option>${t}</option>`).join('')}<option>Other</option></select></div>
+        <div><label>Links (comma or new line)</label><input id="chkLinks" class="input" placeholder="Drafts, assets, DVIDS, etc."></div>
+      </div>
+      <div class="grid grid-2" style="margin-top:12px">
+        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>OPSEC / PII</h3>
+          <div><label><input type="checkbox" id="opsecOk"> OPSEC reviewed (Level II)</label></div>
+          <div class="grid grid-3"><div><label>Reviewer</label><input id="opsecRev" class="input" placeholder="Name"></div><div><label>Date</label><input id="opsecDate" class="input" type="date" value="${todayISO()}"></div><div><label>PII scrubbed?</label><select id="piiOk" class="input"><option>Yes</option><option>No</option></select></div></div>
+        </div>
+        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>VI Standards</h3>
+          <div class="grid grid-3"><div><label>Captions complete?</label><select id="viCap" class="input"><option>Yes</option><option>No</option></select></div><div><label>Metadata embedded?</label><select id="viMeta" class="input"><option>Yes</option><option>No</option></select></div><div><label>Archived to DVIDS/CORE?</label><select id="viArch" class="input"><option>Yes</option><option>No</option></select></div></div>
+        </div>
+        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>Accessibility</h3>
+          <div class="grid grid-3"><div><label>ALT text present?</label><select id="accAlt" class="input"><option>Yes</option><option>No</option></select></div><div><label>Captions / transcripts?</label><select id="accCap" class="input"><option>Yes</option><option>No</option></select></div><div><label>Readable (contrast/size)?</label><select id="accRead" class="input"><option>Yes</option><option>No</option></select></div></div>
+        </div>
+        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>Release & Records</h3>
+          <div class="grid grid-3"><div><label>Release authority</label><input id="relAuth" class="input" placeholder="PAO / Commander"></div><div><label>Release date</label><input id="relDate" class="input" type="date" value="${todayISO()}"></div><div><label>Records tagged?</label><select id="recTag" class="input"><option>Yes</option><option>No</option></select></div></div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:12px"><button class="cta" id="btnChkSave">Save Checklist</button><button class="ghost btn" id="btnChkReady">Mark Ready for Release</button></div>
+    </div>
+    <div class="card" style="margin-top:12px"><h3>Checklists</h3><div id="chkList" class="scroll"></div></div>`;
+  $('#btnChkSave').onclick=()=> saveChecklist('Needs Fix'); $('#btnChkReady').onclick=()=> saveChecklist('Ready'); renderChecklist();
+}
+function saveChecklist(status){
+  if(!user) return alert('Sign in');
+  const rec={ id:uid(), by:user.name, title:$('#chkTitle').value.trim(), productType:$('#chkType').value, links:parseLinks($('#chkLinks').value),
+    opsec:{checked:$('#opsecOk').checked, reviewer:$('#opsecRev').value.trim(), date:$('#opsecDate').value},
+    pii:{checked:($('#piiOk').value==='Yes')}, vi:{caption:($('#viCap').value==='Yes'), metadata:($('#viMeta').value==='Yes'), archived:($('#viArch').value==='Yes')},
+    accessibility:{alt:($('#accAlt').value==='Yes'), captions:($('#accCap').value==='Yes'), readable:($('#accRead').value==='Yes')},
+    release:{authority:$('#relAuth').value.trim(), date:$('#relDate').value}, records:{tagged:($('#recTag').value==='Yes')},
+    status, ts:Date.now() };
+  if(status==='Ready'){ const ok=rec.opsec.checked && rec.pii.checked && rec.vi.caption && rec.vi.metadata && rec.accessibility.alt && rec.release.authority && rec.records.tagged; if(!ok) return alert('To mark Ready: OPSEC, PII, VI caption+metadata, ALT text, Release authority, and Records tag must be set.'); }
+  db.checklists.push(rec); save(); renderChecklist(); alert('Checklist saved');
+}
+function renderChecklist(){
+  const wrap=$('#chkList'); const rows=[...db.checklists].sort((a,b)=>b.ts-a.ts);
+  wrap.innerHTML = rows.length? rows.map(r=>{ const flags=[ r.opsec.checked?'OPSEC✓':'OPSEC✗', r.pii.checked?'PII✓':'PII✗', r.vi.caption?'CAP✓':'CAP✗', r.vi.metadata?'META✓':'META✗', r.accessibility.alt?'ALT✓':'ALT✗', r.records.tagged?'REC✓':'REC✗' ].join(' • ');
+    return `<div class="card" style="background:#0e1124;border-color:#2f355e"><div class="chip">${r.status}</div> <span class="chip">${r.productType}</span> <span class="chip">${r.title||'Untitled'}</span><div class="divider"></div><div class="mini">${flags}</div>${r.links?.length? `<div class="links" style="margin-top:6px">${r.links.map(u=>`<a href="${u}" target="_blank">${u}</a>`).join('<br>')}</div>`:''}<div class="mini">By ${r.by} • ${new Date(r.ts).toLocaleString()}</div></div>`; }).join('') : '<div class="mini">No checklists yet.</div>';
+}
+
+/* ================= INIT ================= */
+function buildViewer() { /* picker wired above */ }
+function buildStaff()  { /* pickers wired in handlers */   }
+function buildAdmin()  { /* wired above */ }
+
+(function init(){
+  show('role');
+  // Viewer picker default
+  if(tfViewerSel){ buildTfPicker(tfViewerPick, tfViewerSel.value, key=>{cur.key=key; refreshViewer();}); }
+})();
+</script>
+
+<!-- GPT Prompt Section (Appended) -->
+<div class="card" style="margin-top:16px; max-width:600px; margin-left:auto; margin-right:auto;">
+  <h3>Ask GPT</h3>
+  <textarea id="gptPrompt" rows="3" class="input" placeholder="Ask a question..."></textarea>
+  <div style="margin-top:10px; display:flex; gap:10px;">
+    <button class="cta" onclick="callGPT()">Ask</button>
+  </div>
+  <pre id="gptOutput" class="mini" style="margin-top:10px; white-space:pre-wrap"></pre>
+</div>
+
+<script>
+async function callGPT() {
+  const prompt = document.getElementById('gptPrompt').value.trim();
+  const key = db.apiKeys?.openai?.trim();
+  if (!key) return alert("OpenAI API key not set by Admin.");
+  if (!prompt) return alert("Enter a prompt first.");
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await res.json();
+    document.getElementById('gptOutput').textContent =
+      data.choices?.[0]?.message?.content || "No response";
+  } catch (err) {
+    document.getElementById('gptOutput').textContent = "Error: " + err.message;
+  }
+}
+</script>
+
+</body>
+</html>
