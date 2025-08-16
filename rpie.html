@@ -69,6 +69,37 @@
     .btn.ghost{background:#fff;color:#111;border:1px solid #e5e7eb}
     .btn:active{transform:translateY(1px)}
     .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    .info-icon{
+      display:inline-block;
+      margin-left:4px;
+      width:14px;
+      height:14px;
+      border-radius:50%;
+      background:#e5e7eb;
+      color:#111;
+      font-size:10px;
+      line-height:14px;
+      text-align:center;
+      font-weight:700;
+      cursor:pointer;
+      position:relative;
+    }
+    .info-icon::after{
+      content:attr(data-tooltip);
+      position:absolute;
+      left:100%;
+      top:50%;
+      transform:translateY(-50%);
+      background:#333;
+      color:#fff;
+      padding:4px 6px;
+      border-radius:4px;
+      white-space:nowrap;
+      display:none;
+      z-index:1000;
+    }
+    .info-icon:focus::after,
+    .info-icon:hover::after{display:block}
     details{border:1px dashed #e5e7eb;border-radius:12px;background:#fff;margin:10px 0;padding:8px 10px;}
     summary{cursor:pointer;font-weight:700}
     table{width:100%;border-collapse:collapse}
@@ -120,19 +151,19 @@
 
         <details open>
           <summary>Connection</summary>
-          <label for="apiKey">OpenAI API key</label>
+          <label for="apiKey">OpenAI API key <span class="info-icon" tabindex="0" data-tooltip="More info about OpenAI API key">i</span></label>
           <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
           <div class="row">
             <div>
-              <label for="model">Model</label>
+              <label for="model">Model <span class="info-icon" tabindex="0" data-tooltip="More info about Model">i</span></label>
               <input id="model" value="gpt-4.1-mini" />
             </div>
             <div>
-              <label for="temperature">Temperature</label>
+              <label for="temperature">Temperature <span class="info-icon" tabindex="0" data-tooltip="More info about Temperature">i</span></label>
               <input id="temperature" type="number" step="0.1" min="0" max="2" value="0.2" />
             </div>
           </div>
-          <label for="policy">Admin guidance to include in prompt (optional)</label>
+          <label for="policy">Admin guidance to include in prompt (optional) <span class="info-icon" tabindex="0" data-tooltip="More info about Admin guidance to include in prompt (optional)">i</span></label>
           <textarea id="policy" placeholder="Tone, style, sensitivities, risk items, do-not-mentions..."></textarea>
         </details>
 
@@ -151,96 +182,96 @@
         <div id="progress" class="help" aria-live="polite"></div>
 
         <div class="step-pane" id="step1" role="tabpanel">
-          <h3>Step 1 — Identify communication requirements</h3>
-          <label for="issue">Issue statement</label>
+          <h3>Step 1 — Identify communication requirements <span class="info-icon" tabindex="0" data-tooltip="More info about Step 1 — Identify communication requirements">i</span></h3>
+          <label for="issue">Issue statement <span class="info-icon" tabindex="0" data-tooltip="More info about Issue statement">i</span></label>
           <textarea id="issue" placeholder="Define the issue, scope, and required support."></textarea>
-          <label for="requirements">Requirements</label>
+          <label for="requirements">Requirements <span class="info-icon" tabindex="0" data-tooltip="More info about Requirements">i</span></label>
           <textarea id="requirements" placeholder="Key products, approvals, timing, authorities."></textarea>
         </div>
 
         <div class="step-pane" id="step2" role="tabpanel" hidden aria-hidden="true">
-          <h3>Step 2 — Analyze the current situation</h3>
-          <label for="situation">Situation analysis</label>
+          <h3>Step 2 — Analyze the current situation <span class="info-icon" tabindex="0" data-tooltip="More info about Step 2 — Analyze the current situation">i</span></h3>
+          <label for="situation">Situation analysis <span class="info-icon" tabindex="0" data-tooltip="More info about Situation analysis">i</span></label>
           <textarea id="situation" placeholder="Context, constraints, opportunities."></textarea>
           <div class="row">
-            <div><label for="swotS">Strengths</label><textarea id="swotS"></textarea></div>
-            <div><label for="swotW">Weaknesses</label><textarea id="swotW"></textarea></div>
+            <div><label for="swotS">Strengths <span class="info-icon" tabindex="0" data-tooltip="More info about Strengths">i</span></label><textarea id="swotS"></textarea></div>
+            <div><label for="swotW">Weaknesses <span class="info-icon" tabindex="0" data-tooltip="More info about Weaknesses">i</span></label><textarea id="swotW"></textarea></div>
           </div>
           <div class="row">
-            <div><label for="swotO">Opportunities</label><textarea id="swotO"></textarea></div>
-            <div><label for="swotT">Threats</label><textarea id="swotT"></textarea></div>
+            <div><label for="swotO">Opportunities <span class="info-icon" tabindex="0" data-tooltip="More info about Opportunities">i</span></label><textarea id="swotO"></textarea></div>
+            <div><label for="swotT">Threats <span class="info-icon" tabindex="0" data-tooltip="More info about Threats">i</span></label><textarea id="swotT"></textarea></div>
           </div>
         </div>
 
         <div class="step-pane" id="step3" role="tabpanel" hidden aria-hidden="true">
-          <h3>Step 3 — Stakeholders and target audiences</h3>
-          <label>Business lines</label>
+          <h3>Step 3 — Stakeholders and target audiences <span class="info-icon" tabindex="0" data-tooltip="More info about Step 3 — Stakeholders and target audiences">i</span></h3>
+          <label>Business lines <span class="info-icon" tabindex="0" data-tooltip="More info about Business lines">i</span></label>
           <div id="businessLinesList" class="taglist"></div>
           <div class="tagadd">
             <input id="businessLinesAdd" placeholder="Add custom business line" />
             <button class="btn ghost" data-add="businessLines">Add</button>
           </div>
 
-          <label style="margin-top:10px">Lines of effort</label>
+          <label style="margin-top:10px">Lines of effort <span class="info-icon" tabindex="0" data-tooltip="More info about Lines of effort">i</span></label>
           <div id="loeList" class="taglist"></div>
           <div class="tagadd">
             <input id="loeAdd" placeholder="Add custom line of effort" />
             <button class="btn ghost" data-add="loe">Add</button>
           </div>
 
-          <label style="margin-top:10px">Target audiences</label>
+          <label style="margin-top:10px">Target audiences <span class="info-icon" tabindex="0" data-tooltip="More info about Target audiences">i</span></label>
           <div id="audiencesList" class="taglist"></div>
           <div class="tagadd">
             <input id="audiencesAdd" placeholder="Add custom audience" />
             <button class="btn ghost" data-add="audiences">Add</button>
           </div>
 
-          <label style="margin-top:10px">Stakeholders</label>
+          <label style="margin-top:10px">Stakeholders <span class="info-icon" tabindex="0" data-tooltip="More info about Stakeholders">i</span></label>
           <div id="stakeholdersList" class="taglist"></div>
           <div class="tagadd">
             <input id="stakeholdersAdd" placeholder="Add custom stakeholder" />
             <button class="btn ghost" data-add="stakeholders">Add</button>
           </div>
 
-          <label for="audienceNotes" style="margin-top:10px">Notes (audience priorities, sensitivities)</label>
+          <label for="audienceNotes" style="margin-top:10px">Notes (audience priorities, sensitivities) <span class="info-icon" tabindex="0" data-tooltip="More info about Notes (audience priorities, sensitivities)">i</span></label>
           <textarea id="audienceNotes"></textarea>
         </div>
 
         <div class="step-pane" id="step4" role="tabpanel" hidden aria-hidden="true">
-          <h3>Step 4 — Goals and SMART objectives</h3>
-          <label for="goals">Goals</label>
+          <h3>Step 4 — Goals and SMART objectives <span class="info-icon" tabindex="0" data-tooltip="More info about Step 4 — Goals and SMART objectives">i</span></h3>
+          <label for="goals">Goals <span class="info-icon" tabindex="0" data-tooltip="More info about Goals">i</span></label>
           <textarea id="goals" placeholder="Desired end state, long term focus."></textarea>
-          <label for="objectives">SMART objectives</label>
+          <label for="objectives">SMART objectives <span class="info-icon" tabindex="0" data-tooltip="More info about SMART objectives">i</span></label>
           <textarea id="objectives" placeholder="Specific, Measurable, Achievable, Relevant, Time-bound."></textarea>
         </div>
 
         <div class="step-pane" id="step5" role="tabpanel" hidden aria-hidden="true">
-          <h3>Step 5 — Strategies, tactics, key messages, talking points</h3>
-          <label for="strategies">Strategies</label>
+          <h3>Step 5 — Strategies, tactics, key messages, talking points <span class="info-icon" tabindex="0" data-tooltip="More info about Step 5 — Strategies, tactics, key messages, talking points">i</span></h3>
+          <label for="strategies">Strategies <span class="info-icon" tabindex="0" data-tooltip="More info about Strategies">i</span></label>
           <textarea id="strategies" placeholder="How to reach goals and objectives."></textarea>
-          <label for="tactics">Tactics</label>
+          <label for="tactics">Tactics <span class="info-icon" tabindex="0" data-tooltip="More info about Tactics">i</span></label>
           <textarea id="tactics" placeholder="Products, services, activities."></textarea>
-          <label for="messages">Key messages</label>
+          <label for="messages">Key messages <span class="info-icon" tabindex="0" data-tooltip="More info about Key messages">i</span></label>
           <textarea id="messages" placeholder="27-9-3 structure encouraged."></textarea>
-          <label for="talking">Talking points</label>
+          <label for="talking">Talking points <span class="info-icon" tabindex="0" data-tooltip="More info about Talking points">i</span></label>
           <textarea id="talking"></textarea>
         </div>
 
         <div class="step-pane" id="step6" role="tabpanel" hidden aria-hidden="true">
-          <h3>Step 6 — Budget</h3>
+          <h3>Step 6 — Budget <span class="info-icon" tabindex="0" data-tooltip="More info about Step 6 — Budget">i</span></h3>
           <div class="row">
-            <div><label for="labor">Labor</label><input id="labor" type="text" placeholder="$ or hours"/></div>
-            <div><label for="materials">Materials</label><input id="materials" type="text" placeholder="$"/></div>
+            <div><label for="labor">Labor <span class="info-icon" tabindex="0" data-tooltip="More info about Labor">i</span></label><input id="labor" type="text" placeholder="$ or hours"/></div>
+            <div><label for="materials">Materials <span class="info-icon" tabindex="0" data-tooltip="More info about Materials">i</span></label><input id="materials" type="text" placeholder="$"/></div>
           </div>
           <div class="row">
-            <div><label for="postage">Postage</label><input id="postage" type="text" placeholder="$"/></div>
-            <div><label for="contract">Contractor/Facilitator</label><input id="contract" type="text" placeholder="$"/></div>
+            <div><label for="postage">Postage <span class="info-icon" tabindex="0" data-tooltip="More info about Postage">i</span></label><input id="postage" type="text" placeholder="$"/></div>
+            <div><label for="contract">Contractor/Facilitator <span class="info-icon" tabindex="0" data-tooltip="More info about Contractor/Facilitator">i</span></label><input id="contract" type="text" placeholder="$"/></div>
           </div>
-          <label for="av">AV/Other</label><input id="av" type="text" placeholder="$ or notes"/>
+          <label for="av">AV/Other <span class="info-icon" tabindex="0" data-tooltip="More info about AV/Other">i</span></label><input id="av" type="text" placeholder="$ or notes"/>
         </div>
 
         <div class="step-pane" id="step7" role="tabpanel" hidden aria-hidden="true">
-          <h3>Step 7 — Action matrix</h3>
+          <h3>Step 7 — Action matrix <span class="info-icon" tabindex="0" data-tooltip="More info about Step 7 — Action matrix">i</span></h3>
           <div class="help">Add rows, then include dates, actions, roles, and methods.</div>
           <table id="am-table">
             <thead><tr><th>Date</th><th>Action</th><th>Responsibility</th><th>When</th><th>Method</th></tr></thead>
@@ -253,41 +284,41 @@
         </div>
 
         <div class="step-pane" id="step8" role="tabpanel" hidden aria-hidden="true">
-          <h3>Step 8 — Implementation tracking</h3>
-          <label for="tracking">Tracking notes</label>
+          <h3>Step 8 — Implementation tracking <span class="info-icon" tabindex="0" data-tooltip="More info about Step 8 — Implementation tracking">i</span></h3>
+          <label for="tracking">Tracking notes <span class="info-icon" tabindex="0" data-tooltip="More info about Tracking notes">i</span></label>
           <textarea id="tracking" placeholder="Cadence, ownership, dashboards."></textarea>
         </div>
 
         <div class="step-pane" id="step9" role="tabpanel" hidden aria-hidden="true">
-          <h3>Step 9 — Measurement plan</h3>
-          <label>Outputs (products/channels)</label>
+          <h3>Step 9 — Measurement plan <span class="info-icon" tabindex="0" data-tooltip="More info about Step 9 — Measurement plan">i</span></h3>
+          <label>Outputs (products/channels) <span class="info-icon" tabindex="0" data-tooltip="More info about Outputs (products/channels)">i</span></label>
           <div id="outputsList" class="taglist"></div>
           <div class="tagadd">
             <input id="outputsAdd" placeholder="Add custom output" />
             <button class="btn ghost" data-add="outputs">Add</button>
           </div>
 
-          <label style="margin-top:10px">Outtakes (exposure/engagement)</label>
+          <label style="margin-top:10px">Outtakes (exposure/engagement) <span class="info-icon" tabindex="0" data-tooltip="More info about Outtakes (exposure/engagement)">i</span></label>
           <div id="outtakesList" class="taglist"></div>
           <div class="tagadd">
             <input id="outtakesAdd" placeholder="Add custom outtake" />
             <button class="btn ghost" data-add="outtakes">Add</button>
           </div>
 
-          <label style="margin-top:10px">Outcomes (impact/behavior)</label>
+          <label style="margin-top:10px">Outcomes (impact/behavior) <span class="info-icon" tabindex="0" data-tooltip="More info about Outcomes (impact/behavior)">i</span></label>
           <div id="outcomesList" class="taglist"></div>
           <div class="tagadd">
             <input id="outcomesAdd" placeholder="Add custom outcome" />
             <button class="btn ghost" data-add="outcomes">Add</button>
           </div>
 
-          <label for="measurementNotes" style="margin-top:10px">Measurement notes</label>
+          <label for="measurementNotes" style="margin-top:10px">Measurement notes <span class="info-icon" tabindex="0" data-tooltip="More info about Measurement notes">i</span></label>
           <textarea id="measurementNotes" placeholder="Baselines, targets, data sources, cadence."></textarea>
         </div>
 
         <div class="step-pane" id="step10" role="tabpanel" hidden aria-hidden="true">
-          <h3>Step 10 — Evaluation and feedback</h3>
-          <label for="evaluation">Evaluation plan</label>
+          <h3>Step 10 — Evaluation and feedback <span class="info-icon" tabindex="0" data-tooltip="More info about Step 10 — Evaluation and feedback">i</span></h3>
+          <label for="evaluation">Evaluation plan <span class="info-icon" tabindex="0" data-tooltip="More info about Evaluation plan">i</span></label>
           <textarea id="evaluation" placeholder="Methods, timing, follow-on research and updates."></textarea>
         </div>
 
@@ -320,15 +351,15 @@
         </div>
 
         <div id="adminPanel" class="card" style="display:none;margin-top:14px">
-          <h3>Admin controls</h3>
-          <label for="newPin">Set new PIN</label>
+          <h3>Admin controls <span class="info-icon" tabindex="0" data-tooltip="More info about Admin controls">i</span></h3>
+          <label for="newPin">Set new PIN <span class="info-icon" tabindex="0" data-tooltip="More info about Set new PIN">i</span></label>
           <div class="row">
             <input id="newPin" placeholder="New PIN" />
             <button class="btn ghost" id="setPin">Update PIN</button>
           </div>
 
-          <h3>Template and guardrails</h3>
-          <label for="sysPrompt">System role template</label>
+          <h3>Template and guardrails <span class="info-icon" tabindex="0" data-tooltip="More info about Template and guardrails">i</span></h3>
+          <label for="sysPrompt">System role template <span class="info-icon" tabindex="0" data-tooltip="More info about System role template">i</span></label>
           <textarea id="sysPrompt" placeholder="Define the role, style, compliance notes."></textarea>
           <div class="btnbar">
             <button class="btn ghost" id="saveTemplate">Save template</button>
@@ -336,7 +367,7 @@
             <button class="btn ghost" id="resetTemplate">Reset</button>
           </div>
 
-          <h3>Submissions</h3>
+          <h3>Submissions <span class="info-icon" tabindex="0" data-tooltip="More info about Submissions">i</span></h3>
           <div class="btnbar">
             <button class="btn ghost" id="exportAll">Export all drafts (JSON)</button>
             <button class="btn ghost" id="wipeAll">Wipe all localStorage</button>

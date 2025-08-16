@@ -58,6 +58,37 @@
   .cta,.ghost.btn,.danger{appearance:none; border:none; cursor:pointer; font-weight:700; letter-spacing:.3px; border-radius:12px; padding:10px 14px}
   .cta{ background:var(--accent4); color:#041216 }
   .ghost.btn{ background:#10132a; border:1px solid #293055; color:#cbd2ff }
+  .info-icon{
+    display:inline-block;
+    margin-left:4px;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:#e5e7eb;
+    color:#111;
+    font-size:10px;
+    line-height:14px;
+    text-align:center;
+    font-weight:700;
+    cursor:pointer;
+    position:relative;
+  }
+  .info-icon::after{
+    content:attr(data-tooltip);
+    position:absolute;
+    left:100%;
+    top:50%;
+    transform:translateY(-50%);
+    background:#333;
+    color:#fff;
+    padding:4px 6px;
+    border-radius:4px;
+    white-space:nowrap;
+    display:none;
+    z-index:1000;
+  }
+  .info-icon:focus::after,
+  .info-icon:hover::after{display:block}
   .danger{ background: linear-gradient(135deg,#ff6b6b,#f06595); color:#fff}
   .input, select, textarea{width:100%; background:#0f1224; color:var(--txt); border:1px solid #2a2e50; border-radius:12px; padding:10px 12px; font-size:14px}
   label{font-size:12px; color:#b9bff0; margin-bottom:6px; display:block}
@@ -122,10 +153,10 @@
 
   <!-- STAFF AUTH -->
   <section id="screenStaffAuth" class="card hide" style="margin-top:18px">
-    <h3>Staff Sign‑In</h3>
+    <h3>Staff Sign‑In <span class="info-icon" tabindex="0" data-tooltip="More info about Staff Sign‑In">i</span></h3>
     <div class="grid" style="grid-template-columns:1fr">
-      <div><label>Select your name</label><select id="staffUser" class="input"></select></div>
-      <div><label>Your PIN</label><input id="staffPIN" type="password" class="input" placeholder="••••" /></div>
+      <div><label>Select your name <span class="info-icon" tabindex="0" data-tooltip="More info about Select your name">i</span></label><select id="staffUser" class="input"></select></div>
+      <div><label>Your PIN <span class="info-icon" tabindex="0" data-tooltip="More info about Your PIN">i</span></label><input id="staffPIN" type="password" class="input" placeholder="••••" /></div>
       <div><button class="cta" id="btnStaffLogin" style="margin-top:8px">Sign in</button></div>
     </div>
     <div class="mini" style="margin-top:8px">Need to be added? Admin can create you in Settings.</div>
@@ -133,9 +164,9 @@
 
   <!-- ADMIN AUTH -->
   <section id="screenAdminAuth" class="card hide" style="margin-top:18px">
-    <h3>Admin Sign‑In</h3>
+    <h3>Admin Sign‑In <span class="info-icon" tabindex="0" data-tooltip="More info about Admin Sign‑In">i</span></h3>
     <div class="grid" style="grid-template-columns:1fr">
-      <div><label>Admin PIN</label><input id="adminPIN" type="password" class="input" placeholder="Default 0000 (change in Settings)" /></div>
+      <div><label>Admin PIN <span class="info-icon" tabindex="0" data-tooltip="More info about Admin PIN">i</span></label><input id="adminPIN" type="password" class="input" placeholder="Default 0000 (change in Settings)" /></div>
       <div><button class="cta" id="btnAdminLogin" style="margin-top:8px">Sign in</button></div>
     </div>
   </section>
@@ -146,7 +177,7 @@
       <div class="col">
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <h3>Portfolio Overview</h3>
+            <h3>Portfolio Overview <span class="info-icon" tabindex="0" data-tooltip="More info about Portfolio Overview">i</span></h3>
             <span class="badge"><span class="mini">Timeframe</span>
               <select id="tfViewer" class="input" style="width:auto; margin-left:8px">
                 <option value="M">Monthly</option><option value="Q">Quarterly</option><option value="Y">Annual</option>
@@ -168,17 +199,17 @@
           </div>
           <div class="divider"></div>
           <div class="grid grid-2">
-            <div class="card"><h3>Outputs by Product</h3><div id="tblOutputs" class="scroll"></div></div>
-            <div class="card"><h3>Outtakes by Type</h3><div id="tblOuttakes" class="scroll"></div></div>
+            <div class="card"><h3>Outputs by Product <span class="info-icon" tabindex="0" data-tooltip="More info about Outputs by Product">i</span></h3><div id="tblOutputs" class="scroll"></div></div>
+            <div class="card"><h3>Outtakes by Type <span class="info-icon" tabindex="0" data-tooltip="More info about Outtakes by Type">i</span></h3><div id="tblOuttakes" class="scroll"></div></div>
           </div>
           <div class="card" style="margin-top:16px">
-            <h3>All Product Links (click to open)</h3><div class="scroll links" id="allLinks"></div>
+            <h3>All Product Links (click to open) <span class="info-icon" tabindex="0" data-tooltip="More info about All Product Links (click to open)">i</span></h3><div class="scroll links" id="allLinks"></div>
           </div>
         </div>
       </div>
       <div class="col">
         <div class="card" style="background:var(--accent1); color:#06131a">
-          <h3 style="color:#111a2a">At‑a‑Glance</h3>
+          <h3 style="color:#111a2a">At‑a‑Glance <span class="info-icon" tabindex="0" data-tooltip="More info about At‑a‑Glance">i</span></h3>
           <div class="kpi"><h4>Top Contributors (Outputs)</h4><div class="big" id="leadersOut">—</div></div>
           <div style="height:12px"></div>
           <div class="kpi"><h4>Top Contributors (Outtakes)</h4><div class="big" id="leadersOtk">—</div></div>
@@ -195,7 +226,7 @@
       <div class="col">
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <h3>My Inputs</h3>
+            <h3>My Inputs <span class="info-icon" tabindex="0" data-tooltip="More info about My Inputs">i</span></h3>
             <span class="badge"><span class="mini">Timeframe</span>
               <select id="tfStaff" class="input" style="width:auto; margin-left:8px">
                 <option value="M">Monthly</option><option value="Q">Quarterly</option><option value="Y">Annual</option>
@@ -206,13 +237,13 @@
           <div class="divider"></div>
           <div class="grid" style="grid-template-columns:1fr">
             <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
-              <h3>Outputs — Products I produced</h3>
+              <h3>Outputs — Products I produced <span class="info-icon" tabindex="0" data-tooltip="More info about Outputs — Products I produced">i</span></h3>
               <div class="grid grid-2">
-                <div><label>Template</label><select id="outTemplate" class="input"></select></div>
-                <div><label>Product Type</label><select id="outProdType" class="input"></select></div>
-                <div id="otherProdWrap" class="hide"><label>Other (specify)</label><input id="otherProd" class="input" placeholder="e.g., Podcast episode"/></div>
-                <div><label>Quantity</label><input id="outQty" type="number" min="1" class="input" value="1"/></div>
-                <div><label>Links (comma or new line)</label><textarea id="outLinks" rows="2" class="input" placeholder="https://…"></textarea></div>
+                <div><label>Template <span class="info-icon" tabindex="0" data-tooltip="More info about Template">i</span></label><select id="outTemplate" class="input"></select></div>
+                <div><label>Product Type <span class="info-icon" tabindex="0" data-tooltip="More info about Product Type">i</span></label><select id="outProdType" class="input"></select></div>
+                <div id="otherProdWrap" class="hide"><label>Other (specify) <span class="info-icon" tabindex="0" data-tooltip="More info about Other (specify)">i</span></label><input id="otherProd" class="input" placeholder="e.g., Podcast episode"/></div>
+                <div><label>Quantity <span class="info-icon" tabindex="0" data-tooltip="More info about Quantity">i</span></label><input id="outQty" type="number" min="1" class="input" value="1"/></div>
+                <div><label>Links (comma or new line) <span class="info-icon" tabindex="0" data-tooltip="More info about Links (comma or new line)">i</span></label><textarea id="outLinks" rows="2" class="input" placeholder="https://…"></textarea></div>
               </div>
               <div style="display:flex; gap:10px; margin-top:10px">
                 <button class="cta" id="btnAddOutput">Add Output</button><button class="ghost btn" id="btnClearOutput">Clear</button>
@@ -221,13 +252,13 @@
             </div>
 
             <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
-              <h3>Outtakes — Engagements & reach</h3>
+              <h3>Outtakes — Engagements & reach <span class="info-icon" tabindex="0" data-tooltip="More info about Outtakes — Engagements & reach">i</span></h3>
               <div class="grid grid-2">
-                <div><label>Template</label><select id="otkTemplate" class="input"></select></div>
-                <div><label>Outtake Type</label><select id="otkType" class="input"></select></div>
-                <div id="otkOtherWrap" class="hide"><label>Other (specify)</label><input id="otkOther" class="input" placeholder="e.g., Survey completes"/></div>
-                <div><label>Quantity</label><input id="otkQty" type="number" min="1" class="input" value="1"/></div>
-                <div><label>Notes / Links (optional)</label><textarea id="otkNotes" rows="2" class="input" placeholder="Context or URLs"></textarea></div>
+                <div><label>Template <span class="info-icon" tabindex="0" data-tooltip="More info about Template">i</span></label><select id="otkTemplate" class="input"></select></div>
+                <div><label>Outtake Type <span class="info-icon" tabindex="0" data-tooltip="More info about Outtake Type">i</span></label><select id="otkType" class="input"></select></div>
+                <div id="otkOtherWrap" class="hide"><label>Other (specify) <span class="info-icon" tabindex="0" data-tooltip="More info about Other (specify)">i</span></label><input id="otkOther" class="input" placeholder="e.g., Survey completes"/></div>
+                <div><label>Quantity <span class="info-icon" tabindex="0" data-tooltip="More info about Quantity">i</span></label><input id="otkQty" type="number" min="1" class="input" value="1"/></div>
+                <div><label>Notes / Links (optional) <span class="info-icon" tabindex="0" data-tooltip="More info about Notes / Links (optional)">i</span></label><textarea id="otkNotes" rows="2" class="input" placeholder="Context or URLs"></textarea></div>
               </div>
               <div style="display:flex; gap:10px; margin-top:10px">
                 <button class="cta" id="btnAddOuttake">Add Outtake</button><button class="ghost btn" id="btnClearOuttake">Clear</button>
@@ -237,11 +268,11 @@
           </div>
 
           <div class="card" style="margin-top:16px;background:rgba(21,23,42,.75); border-color:#323761">
-            <h3>Outcomes — Objective progress</h3>
+            <h3>Outcomes — Objective progress <span class="info-icon" tabindex="0" data-tooltip="More info about Outcomes — Objective progress">i</span></h3>
             <div class="grid" style="grid-template-columns:1fr">
-              <div><label>Outcome Metric</label><select id="ocmKey" class="input"></select></div>
-              <div id="ocmOtherWrap" class="hide"><label>Other (specify)</label><input id="ocmOther" class="input" placeholder="e.g., Public trust"/></div>
-              <div><label>My status (% toward target)</label><input id="ocmPct" type="range" min="0" max="100" value="0" /><div class="mini" id="ocmVal">0%</div></div>
+              <div><label>Outcome Metric <span class="info-icon" tabindex="0" data-tooltip="More info about Outcome Metric">i</span></label><select id="ocmKey" class="input"></select></div>
+              <div id="ocmOtherWrap" class="hide"><label>Other (specify) <span class="info-icon" tabindex="0" data-tooltip="More info about Other (specify)">i</span></label><input id="ocmOther" class="input" placeholder="e.g., Public trust"/></div>
+              <div><label>My status (% toward target) <span class="info-icon" tabindex="0" data-tooltip="More info about My status (% toward target)">i</span></label><input id="ocmPct" type="range" min="0" max="100" value="0" /><div class="mini" id="ocmVal">0%</div></div>
               <div><button class="cta" id="btnSaveOutcome" style="margin-top:8px">Save Outcome</button></div>
             </div>
             <div class="scroll" id="ocmList" style="margin-top:10px"></div>
@@ -250,7 +281,7 @@
       </div>
       <div class="col">
         <div class="card" style="background:var(--accent1); color:#07131a">
-          <h3 style="color:#111a2a">My Progress</h3>
+          <h3 style="color:#111a2a">My Progress <span class="info-icon" tabindex="0" data-tooltip="More info about My Progress">i</span></h3>
           <div class="kpi"><h4>Outputs completion</h4><div class="big" id="kpiOutPct">0%</div></div>
           <div style="height:12px"></div>
           <div class="kpi"><h4>Outtakes completion</h4><div class="big" id="kpiOtkPct">0%</div></div>
@@ -267,7 +298,7 @@
       <div class="col">
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
-            <h3>Admin • Settings & Staff</h3>
+            <h3>Admin • Settings & Staff <span class="info-icon" tabindex="0" data-tooltip="More info about Admin • Settings & Staff">i</span></h3>
             <span class="badge"><span class="mini">Timeframe</span>
               <select id="tfAdmin" class="input" style="width:auto; margin-left:8px">
                 <option value="M">Monthly</option><option value="Q">Quarterly</option><option value="Y">Annual</option>
@@ -278,15 +309,15 @@
           <div class="divider"></div>
           <div class="grid" style="grid-template-columns:1fr">
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
-              <h3>Admin PIN & Staff</h3>
+              <h3>Admin PIN & Staff <span class="info-icon" tabindex="0" data-tooltip="More info about Admin PIN & Staff">i</span></h3>
               <div class="grid" style="grid-template-columns:1fr">
-                <div><label>Set Admin PIN</label><input id="setAdminPIN" type="password" class="input" placeholder="New PIN"></div>
+                <div><label>Set Admin PIN <span class="info-icon" tabindex="0" data-tooltip="More info about Set Admin PIN">i</span></label><input id="setAdminPIN" type="password" class="input" placeholder="New PIN"></div>
                 <div><button class="cta" id="btnSaveAdminPIN" style="margin-top:8px">Save PIN</button></div>
               </div>
               <div class="divider"></div>
               <div class="grid" style="grid-template-columns:1fr">
-                <div><label>Staff Name</label><input id="staffName" class="input" placeholder="e.g., A. Johnson"></div>
-                <div><label>PIN</label><input id="staffNewPIN" type="password" class="input" placeholder="Set PIN"></div>
+                <div><label>Staff Name <span class="info-icon" tabindex="0" data-tooltip="More info about Staff Name">i</span></label><input id="staffName" class="input" placeholder="e.g., A. Johnson"></div>
+                <div><label>PIN <span class="info-icon" tabindex="0" data-tooltip="More info about PIN">i</span></label><input id="staffNewPIN" type="password" class="input" placeholder="Set PIN"></div>
                 <div><button class="cta" id="btnAddStaff" style="margin-top:8px">Add / Update</button></div>
               </div>
               <div class="scroll" id="staffList" style="margin-top:10px"></div>
@@ -299,10 +330,10 @@
               </div>
             </div>
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
-              <h3>Templates</h3>
+              <h3>Templates <span class="info-icon" tabindex="0" data-tooltip="More info about Templates">i</span></h3>
               <div class="grid" style="grid-template-columns:1fr">
-                <div><label>Output Product Types</label><textarea id="tplOutputs" rows="6" class="input"></textarea></div>
-                <div><label>Outtake Types</label><textarea id="tplOuttakes" rows="6" class="input"></textarea></div>
+                <div><label>Output Product Types <span class="info-icon" tabindex="0" data-tooltip="More info about Output Product Types">i</span></label><textarea id="tplOutputs" rows="6" class="input"></textarea></div>
+                <div><label>Outtake Types <span class="info-icon" tabindex="0" data-tooltip="More info about Outtake Types">i</span></label><textarea id="tplOuttakes" rows="6" class="input"></textarea></div>
               </div>
               <div style="display:flex; gap:10px; margin-top:10px">
                 <button class="cta" id="btnSaveTemplates">Save Templates</button>
@@ -310,24 +341,24 @@
               </div>
             </div>
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
-              <h3>Social Media API Keys</h3>
+              <h3>Social Media API Keys <span class="info-icon" tabindex="0" data-tooltip="More info about Social Media API Keys">i</span></h3>
               <div class="grid">
-                <div><label>Facebook API Key</label><input id="apiKeyFacebook" class="input" placeholder="Enter Key"></div>
-                <div><label>Instagram API Key</label><input id="apiKeyInstagram" class="input" placeholder="Enter Key"></div>
-                <div><label>X API Key</label><input id="apiKeyX" class="input" placeholder="Enter Key"></div>
-                <div><label>LinkedIn API Key</label><input id="apiKeyLinkedin" class="input" placeholder="Enter Key"></div>
+                <div><label>Facebook API Key <span class="info-icon" tabindex="0" data-tooltip="More info about Facebook API Key">i</span></label><input id="apiKeyFacebook" class="input" placeholder="Enter Key"></div>
+                <div><label>Instagram API Key <span class="info-icon" tabindex="0" data-tooltip="More info about Instagram API Key">i</span></label><input id="apiKeyInstagram" class="input" placeholder="Enter Key"></div>
+                <div><label>X API Key <span class="info-icon" tabindex="0" data-tooltip="More info about X API Key">i</span></label><input id="apiKeyX" class="input" placeholder="Enter Key"></div>
+                <div><label>LinkedIn API Key <span class="info-icon" tabindex="0" data-tooltip="More info about LinkedIn API Key">i</span></label><input id="apiKeyLinkedin" class="input" placeholder="Enter Key"></div>
               </div>
               <div style="display:flex; gap:10px; margin-top:10px">
                 <button class="cta" id="btnSaveApiKeys">Save API Keys</button>
               </div>
             </div>
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
-              <h3>AI API Keys</h3>
+              <h3>AI API Keys <span class="info-icon" tabindex="0" data-tooltip="More info about AI API Keys">i</span></h3>
               <div class="grid">
-                <div><label>OpenAI API Key</label><input id="apiKeyOpenAI" class="input" placeholder="Enter Key"></div>
-                <div><label>Gemini API Key</label><input id="apiKeyGemini" class="input" placeholder="Enter Key"></div>
-                <div><label>CamoGPT API Key</label><input id="apiKeyCamogpt" class="input" placeholder="Enter Key"></div>
-                <div><label>AskSage API Key</label><input id="apiKeyAsksage" class="input" placeholder="Enter Key"></div>
+                <div><label>OpenAI API Key <span class="info-icon" tabindex="0" data-tooltip="More info about OpenAI API Key">i</span></label><input id="apiKeyOpenAI" class="input" placeholder="Enter Key"></div>
+                <div><label>Gemini API Key <span class="info-icon" tabindex="0" data-tooltip="More info about Gemini API Key">i</span></label><input id="apiKeyGemini" class="input" placeholder="Enter Key"></div>
+                <div><label>CamoGPT API Key <span class="info-icon" tabindex="0" data-tooltip="More info about CamoGPT API Key">i</span></label><input id="apiKeyCamogpt" class="input" placeholder="Enter Key"></div>
+                <div><label>AskSage API Key <span class="info-icon" tabindex="0" data-tooltip="More info about AskSage API Key">i</span></label><input id="apiKeyAsksage" class="input" placeholder="Enter Key"></div>
               </div>
               <div style="display:flex; gap:10px; margin-top:10px">
                 <button class="cta" id="btnSaveAiKeys">Save AI API Keys</button>
@@ -339,20 +370,20 @@
       <!-- Goals & admin dashboard -->
       <div class="col">
         <div class="card" style="background:var(--accent3); color:#24160a">
-          <h3>Set Goals (Counts & Outcomes)</h3>
+          <h3>Set Goals (Counts & Outcomes) <span class="info-icon" tabindex="0" data-tooltip="More info about Set Goals (Counts & Outcomes)">i</span></h3>
           <div class="mini">Outputs/Outtakes by count; Outcomes as custom % metrics.</div>
           <div class="divider"></div>
           <div class="card" style="background:#ffffff33;border-color:#ffffff66">
-            <h3>Outputs Goals</h3><div id="goalsOutputs" class="grid"></div>
+            <h3>Outputs Goals <span class="info-icon" tabindex="0" data-tooltip="More info about Outputs Goals">i</span></h3><div id="goalsOutputs" class="grid"></div>
           </div>
           <div class="card" style="margin-top:12px;background:#ffffff33;border-color:#ffffff66">
-            <h3>Outtakes Goals</h3><div id="goalsOuttakes" class="grid"></div>
+            <h3>Outtakes Goals <span class="info-icon" tabindex="0" data-tooltip="More info about Outtakes Goals">i</span></h3><div id="goalsOuttakes" class="grid"></div>
           </div>
           <div class="card" style="margin-top:12px;background:#ffffff33;border-color:#ffffff66">
-            <h3>Outcomes (Custom % Metrics)</h3>
+            <h3>Outcomes (Custom % Metrics) <span class="info-icon" tabindex="0" data-tooltip="More info about Outcomes (Custom % Metrics)">i</span></h3>
             <div class="grid" style="grid-template-columns:1fr">
-              <div><label>Metric name</label><input id="ocmName" class="input" placeholder="e.g., Awareness lift"/></div>
-              <div><label>Description (optional)</label><input id="ocmDesc" class="input" placeholder="Short context"/></div>
+              <div><label>Metric name <span class="info-icon" tabindex="0" data-tooltip="More info about Metric name">i</span></label><input id="ocmName" class="input" placeholder="e.g., Awareness lift"/></div>
+              <div><label>Description (optional) <span class="info-icon" tabindex="0" data-tooltip="More info about Description (optional)">i</span></label><input id="ocmDesc" class="input" placeholder="Short context"/></div>
               <div><button class="cta" id="btnAddOcm" style="margin-top:8px">Add Metric</button></div>
             </div>
             <div id="ocmAdminList" class="scroll" style="margin-top:10px"></div>
@@ -363,7 +394,7 @@
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3>Admin Dashboard</h3>
+      <h3>Admin Dashboard <span class="info-icon" tabindex="0" data-tooltip="More info about Admin Dashboard">i</span></h3>
       <div class="grid grid-3">
         <div class="card" style="background:var(--accent4); color:#0d1e19"><div class="mini">Outputs</div><div style="font-size:30px;font-weight:900" id="adminOutPct">0%</div><div class="mini" id="adminOutCounts">0 / 0</div></div>
         <div class="card" style="background:var(--accent1); color:#0a141c"><div class="mini">Outtakes</div><div style="font-size:30px;font-weight:900" id="adminOtkPct">0%</div><div class="mini" id="adminOtkCounts">0 / 0</div></div>
@@ -371,8 +402,8 @@
       </div>
       <div class="divider"></div>
       <div class="grid grid-2">
-        <div class="card"><h3>Outputs by Product</h3><div class="scroll" id="adminTblOutputs"></div></div>
-        <div class="card"><h3>Outtakes by Type</h3><div class="scroll" id="adminTblOuttakes"></div></div>
+        <div class="card"><h3>Outputs by Product <span class="info-icon" tabindex="0" data-tooltip="More info about Outputs by Product">i</span></h3><div class="scroll" id="adminTblOutputs"></div></div>
+        <div class="card"><h3>Outtakes by Type <span class="info-icon" tabindex="0" data-tooltip="More info about Outtakes by Type">i</span></h3><div class="scroll" id="adminTblOuttakes"></div></div>
       </div>
     </div>
   </section>
@@ -835,19 +866,19 @@ function buildKLE(){
   const c=$('#modKLE');
   c.innerHTML=`
     <div class="card" style="margin-top:18px;background:var(--accent4);color:#041d13">
-      <h3>Community Engagement / KLE</h3>
+      <h3>Community Engagement / KLE <span class="info-icon" tabindex="0" data-tooltip="More info about Community Engagement / KLE">i</span></h3>
       <div class="grid grid-3">
-        <div><label>Date</label><input id="kleDate" class="input" type="date" value="${todayISO()}"></div>
-        <div><label>Audience / Partner</label><input id="kleAudience" class="input" placeholder="e.g., County EM, Tribe, City Council"></div>
-        <div><label>Purpose</label><input id="klePurpose" class="input" placeholder="e.g., Dam safety update"></div>
-        <div><label># Attendees</label><input id="kleAtt" class="input" type="number" min="0" value="0"></div>
-        <div><label>Talking Points (bullets)</label><textarea id="kleTP" rows="3" class="input" placeholder="- Point 1&#10;- Point 2"></textarea></div>
-        <div><label>Commitments / Follow‑ups</label><textarea id="kleCom" rows="3" class="input" placeholder="- Action / POC / due"></textarea></div>
-        <div><label>Links (comma or new line)</label><textarea id="kleLinks" rows="2" class="input" placeholder="Agenda, deck, photos…"></textarea></div>
+        <div><label>Date <span class="info-icon" tabindex="0" data-tooltip="More info about Date">i</span></label><input id="kleDate" class="input" type="date" value="${todayISO()}"></div>
+        <div><label>Audience / Partner <span class="info-icon" tabindex="0" data-tooltip="More info about Audience / Partner">i</span></label><input id="kleAudience" class="input" placeholder="e.g., County EM, Tribe, City Council"></div>
+        <div><label>Purpose <span class="info-icon" tabindex="0" data-tooltip="More info about Purpose">i</span></label><input id="klePurpose" class="input" placeholder="e.g., Dam safety update"></div>
+        <div><label># Attendees <span class="info-icon" tabindex="0" data-tooltip="More info about # Attendees">i</span></label><input id="kleAtt" class="input" type="number" min="0" value="0"></div>
+        <div><label>Talking Points (bullets) <span class="info-icon" tabindex="0" data-tooltip="More info about Talking Points (bullets)">i</span></label><textarea id="kleTP" rows="3" class="input" placeholder="- Point 1&#10;- Point 2"></textarea></div>
+        <div><label>Commitments / Follow‑ups <span class="info-icon" tabindex="0" data-tooltip="More info about Commitments / Follow‑ups">i</span></label><textarea id="kleCom" rows="3" class="input" placeholder="- Action / POC / due"></textarea></div>
+        <div><label>Links (comma or new line) <span class="info-icon" tabindex="0" data-tooltip="More info about Links (comma or new line)">i</span></label><textarea id="kleLinks" rows="2" class="input" placeholder="Agenda, deck, photos…"></textarea></div>
       </div>
       <div style="display:flex; gap:10px; margin-top:10px"><button class="cta" id="btnKLEAdd">Save KLE</button></div>
     </div>
-    <div class="card" style="margin-top:12px"><h3>KLE Log</h3><div id="kleList" class="scroll"></div></div>`;
+    <div class="card" style="margin-top:12px"><h3>KLE Log <span class="info-icon" tabindex="0" data-tooltip="More info about KLE Log">i</span></h3><div id="kleList" class="scroll"></div></div>`;
   $('#btnKLEAdd').onclick=()=>{
     if(!user) return alert('Sign in');
     const rec={id:uid(), by:user.name, date:$('#kleDate').value, audience:$('#kleAudience').value.trim(), purpose:$('#klePurpose').value.trim(), attendees:parseInt($('#kleAtt').value||'0',10), talkingPoints:$('#kleTP').value, commitments:$('#kleCom').value, links:parseLinks($('#kleLinks').value), ts:Date.now()};
@@ -876,24 +907,24 @@ function buildMedia(){
   const c=$('#modMedia');
   c.innerHTML=`
     <div class="card" style="margin-top:18px;background:var(--accent2);color:#1d0c16">
-      <h3>Media Log & Query Tracker</h3>
+      <h3>Media Log & Query Tracker <span class="info-icon" tabindex="0" data-tooltip="More info about Media Log & Query Tracker">i</span></h3>
       <div class="grid grid-3">
-        <div><label>Date</label><input id="medDate" class="input" type="date" value="${todayISO()}"></div>
-        <div><label>Outlet</label><input id="medOutlet" class="input" placeholder="e.g., KXLY, Spokesman-Review"></div>
-        <div><label>Reporter</label><input id="medReporter" class="input" placeholder="Name"></div>
-        <div><label>Topic / Query</label><input id="medTopic" class="input" placeholder="Subject"></div>
-        <div><label>Deadline</label><input id="medDeadline" class="input" type="datetime-local"></div>
-        <div><label>Status</label><select id="medStatus" class="input"><option>Open</option><option>In Progress</option><option>Responded</option><option>Closed</option></select></div>
-        <div><label>Spokesperson</label><input id="medSpox" class="input" placeholder="Name/Title"></div>
-        <div><label>Disposition</label><input id="medDisp" class="input" placeholder="Key outcome"></div>
-        <div><label>Link to Response / Story</label><input id="medLink" class="input" placeholder="https://…"></div>
+        <div><label>Date <span class="info-icon" tabindex="0" data-tooltip="More info about Date">i</span></label><input id="medDate" class="input" type="date" value="${todayISO()}"></div>
+        <div><label>Outlet <span class="info-icon" tabindex="0" data-tooltip="More info about Outlet">i</span></label><input id="medOutlet" class="input" placeholder="e.g., KXLY, Spokesman-Review"></div>
+        <div><label>Reporter <span class="info-icon" tabindex="0" data-tooltip="More info about Reporter">i</span></label><input id="medReporter" class="input" placeholder="Name"></div>
+        <div><label>Topic / Query <span class="info-icon" tabindex="0" data-tooltip="More info about Topic / Query">i</span></label><input id="medTopic" class="input" placeholder="Subject"></div>
+        <div><label>Deadline <span class="info-icon" tabindex="0" data-tooltip="More info about Deadline">i</span></label><input id="medDeadline" class="input" type="datetime-local"></div>
+        <div><label>Status <span class="info-icon" tabindex="0" data-tooltip="More info about Status">i</span></label><select id="medStatus" class="input"><option>Open</option><option>In Progress</option><option>Responded</option><option>Closed</option></select></div>
+        <div><label>Spokesperson <span class="info-icon" tabindex="0" data-tooltip="More info about Spokesperson">i</span></label><input id="medSpox" class="input" placeholder="Name/Title"></div>
+        <div><label>Disposition <span class="info-icon" tabindex="0" data-tooltip="More info about Disposition">i</span></label><input id="medDisp" class="input" placeholder="Key outcome"></div>
+        <div><label>Link to Response / Story <span class="info-icon" tabindex="0" data-tooltip="More info about Link to Response / Story">i</span></label><input id="medLink" class="input" placeholder="https://…"></div>
         <div class="grid" style="grid-template-columns:1fr auto; align-items:end; gap:10px">
-          <div><label>Notes</label><textarea id="medNotes" class="input" rows="3"></textarea></div>
+          <div><label>Notes <span class="info-icon" tabindex="0" data-tooltip="More info about Notes">i</span></label><textarea id="medNotes" class="input" rows="3"></textarea></div>
           <button class="cta" id="btnMedSave">Save</button>
         </div>
       </div>
     </div>
-    <div class="card" style="margin-top:12px"><h3>Media Queries</h3><div id="mediaList" class="scroll"></div></div>`;
+    <div class="card" style="margin-top:12px"><h3>Media Queries <span class="info-icon" tabindex="0" data-tooltip="More info about Media Queries">i</span></h3><div id="mediaList" class="scroll"></div></div>`;
   $('#btnMedSave').onclick=()=>{
     if(!user) return alert('Sign in');
     const rec={id:uid(), by:user.name, date:$('#medDate').value, outlet:$('#medOutlet').value.trim(), reporter:$('#medReporter').value.trim(), topic:$('#medTopic').value.trim(), deadline:$('#medDeadline').value, status:$('#medStatus').value, spokesperson:$('#medSpox').value.trim(), disposition:$('#medDisp').value.trim(), link:$('#medLink').value.trim(), notes:$('#medNotes').value.trim(), ts:Date.now()};
@@ -923,21 +954,21 @@ function buildSocial(){
   const c=$('#modSocial');
   c.innerHTML=`
     <div class="card" style="margin-top:18px;background:var(--accent3);color:#281a07">
-      <h3>Social Media Tracker</h3>
+      <h3>Social Media Tracker <span class="info-icon" tabindex="0" data-tooltip="More info about Social Media Tracker">i</span></h3>
       <div class="grid grid-3">
-        <div><label>Platform</label><select id="socPlatform" class="input"><option>Facebook</option><option>Instagram</option><option>X</option><option>LinkedIn</option><option>YouTube</option><option>Other</option></select></div>
-        <div><label>Handle</label><input id="socHandle" class="input" placeholder="@USACEWallaWalla"></div>
-        <div><label>Date/Time (posted)</label><input id="socDT" class="input" type="datetime-local"></div>
-        <div><label>Post Type</label><select id="socType" class="input"><option>News link</option><option>Photo</option><option>Video</option><option>Thread</option><option>Story/Reel/Short</option><option>Other</option></select></div>
-        <div><label>Public Link</label><input id="socLink" class="input" placeholder="https://…"></div>
-        <div><label>Campaign/Focus</label><input id="socCampaign" class="input" placeholder="Deliver the Mission / EWeek"></div>
-        <div><label>Reach (optional)</label><input id="socReach" class="input" type="number" min="0" value="0"></div>
-        <div><label>Engagements (optional)</label><input id="socEng" class="input" type="number" min="0" value="0"></div>
-        <div><label>Notes</label><input id="socNotes" class="input" placeholder="Alt text, captions, tagging…"></div>
+        <div><label>Platform <span class="info-icon" tabindex="0" data-tooltip="More info about Platform">i</span></label><select id="socPlatform" class="input"><option>Facebook</option><option>Instagram</option><option>X</option><option>LinkedIn</option><option>YouTube</option><option>Other</option></select></div>
+        <div><label>Handle <span class="info-icon" tabindex="0" data-tooltip="More info about Handle">i</span></label><input id="socHandle" class="input" placeholder="@USACEWallaWalla"></div>
+        <div><label>Date/Time (posted) <span class="info-icon" tabindex="0" data-tooltip="More info about Date/Time (posted)">i</span></label><input id="socDT" class="input" type="datetime-local"></div>
+        <div><label>Post Type <span class="info-icon" tabindex="0" data-tooltip="More info about Post Type">i</span></label><select id="socType" class="input"><option>News link</option><option>Photo</option><option>Video</option><option>Thread</option><option>Story/Reel/Short</option><option>Other</option></select></div>
+        <div><label>Public Link <span class="info-icon" tabindex="0" data-tooltip="More info about Public Link">i</span></label><input id="socLink" class="input" placeholder="https://…"></div>
+        <div><label>Campaign/Focus <span class="info-icon" tabindex="0" data-tooltip="More info about Campaign/Focus">i</span></label><input id="socCampaign" class="input" placeholder="Deliver the Mission / EWeek"></div>
+        <div><label>Reach (optional) <span class="info-icon" tabindex="0" data-tooltip="More info about Reach (optional)">i</span></label><input id="socReach" class="input" type="number" min="0" value="0"></div>
+        <div><label>Engagements (optional) <span class="info-icon" tabindex="0" data-tooltip="More info about Engagements (optional)">i</span></label><input id="socEng" class="input" type="number" min="0" value="0"></div>
+        <div><label>Notes <span class="info-icon" tabindex="0" data-tooltip="More info about Notes">i</span></label><input id="socNotes" class="input" placeholder="Alt text, captions, tagging…"></div>
       </div>
       <div style="display:flex; gap:10px; margin-top:10px"><button class="cta" id="btnSocSave">Save Post</button><button class="cta" id="btnSocPostApi" style="display:none; background: var(--accent2);">Post via API</button></div>
     </div>
-    <div class="card" style="margin-top:12px"><h3>Social Posts</h3><div id="socList" class="scroll"></div></div>`;
+    <div class="card" style="margin-top:12px"><h3>Social Posts <span class="info-icon" tabindex="0" data-tooltip="More info about Social Posts">i</span></h3><div id="socList" class="scroll"></div></div>`;
   $('#btnSocSave').onclick=()=>{
     if(!user) return alert('Sign in');
     const rec={id:uid(), by:user.name, datetime:$('#socDT').value, platform:$('#socPlatform').value, handle:$('#socHandle').value.trim(), postType:$('#socType').value, link:$('#socLink').value.trim(), campaign:$('#socCampaign').value.trim(), reach:parseInt($('#socReach').value||'0',10), engagements:parseInt($('#socEng').value||'0',10), notes:$('#socNotes').value.trim(), ts:Date.now()};
@@ -981,28 +1012,28 @@ function buildBrand(){
   const c=$('#modBrand');
   c.innerHTML=`
     <div class="card" style="margin-top:18px;background:var(--accent4);color:#041d13">
-      <h3>Branding Governance</h3>
+      <h3>Branding Governance <span class="info-icon" tabindex="0" data-tooltip="More info about Branding Governance">i</span></h3>
       <div class="grid grid-3">
-        <div><label>USACE Brand Guide URL</label><input id="brandGuide" class="input" placeholder="https://…"></div>
-        <div><label>.mil Host / Site</label><input id="brandMil" class="input" placeholder="https://www.nww.usace.army.mil/…"></div>
-        <div><label>Approvals Required (comma‑sep)</label><input id="brandApprovals" class="input" placeholder="PAO Release, OPSEC II, VI Caption, Accessibility, Records"></div>
+        <div><label>USACE Brand Guide URL <span class="info-icon" tabindex="0" data-tooltip="More info about USACE Brand Guide URL">i</span></label><input id="brandGuide" class="input" placeholder="https://…"></div>
+        <div><label>.mil Host / Site <span class="info-icon" tabindex="0" data-tooltip="More info about .mil Host / Site">i</span></label><input id="brandMil" class="input" placeholder="https://www.nww.usace.army.mil/…"></div>
+        <div><label>Approvals Required (comma‑sep) <span class="info-icon" tabindex="0" data-tooltip="More info about Approvals Required (comma‑sep)">i</span></label><input id="brandApprovals" class="input" placeholder="PAO Release, OPSEC II, VI Caption, Accessibility, Records"></div>
       </div>
       <div style="display:flex; gap:10px; margin-top:10px"><button class="cta" id="btnBrandSave">Save Policy</button></div>
     </div>
     <div class="card" style="margin-top:12px;background:var(--accent1);color:#06131a">
-      <h3>Channel Inventory</h3>
+      <h3>Channel Inventory <span class="info-icon" tabindex="0" data-tooltip="More info about Channel Inventory">i</span></h3>
       <div class="grid grid-3">
-        <div><label>Site / Channel</label><input id="invName" class="input" placeholder="Facebook Page / Website section / DVIDS hub"></div>
-        <div><label>URL</label><input id="invUrl" class="input" placeholder="https://…"></div>
-        <div><label>Owner</label><input id="invOwner" class="input" placeholder="PAO / Section / POC"></div>
-        <div><label>Authorized?</label><select id="invAuth" class="input"><option>Yes</option><option>No</option><option>Unknown</option></select></div>
+        <div><label>Site / Channel <span class="info-icon" tabindex="0" data-tooltip="More info about Site / Channel">i</span></label><input id="invName" class="input" placeholder="Facebook Page / Website section / DVIDS hub"></div>
+        <div><label>URL <span class="info-icon" tabindex="0" data-tooltip="More info about URL">i</span></label><input id="invUrl" class="input" placeholder="https://…"></div>
+        <div><label>Owner <span class="info-icon" tabindex="0" data-tooltip="More info about Owner">i</span></label><input id="invOwner" class="input" placeholder="PAO / Section / POC"></div>
+        <div><label>Authorized? <span class="info-icon" tabindex="0" data-tooltip="More info about Authorized?">i</span></label><select id="invAuth" class="input"><option>Yes</option><option>No</option><option>Unknown</option></select></div>
         <div class="grid" style="grid-template-columns:1fr auto; align-items:end; gap:10px">
-          <div><label>Notes</label><input id="invNotes" class="input" placeholder="Branding issues, migration, redirects…"></div>
+          <div><label>Notes <span class="info-icon" tabindex="0" data-tooltip="More info about Notes">i</span></label><input id="invNotes" class="input" placeholder="Branding issues, migration, redirects…"></div>
           <button class="cta" id="btnInvAdd">Add</button>
         </div>
       </div>
     </div>
-    <div class="card" style="margin-top:12px"><h3>Inventory</h3><div id="brandInvList" class="scroll"></div></div>`;
+    <div class="card" style="margin-top:12px"><h3>Inventory <span class="info-icon" tabindex="0" data-tooltip="More info about Inventory">i</span></h3><div id="brandInvList" class="scroll"></div></div>`;
   $('#brandGuide').value=db.brand.policy.brandGuideUrl||''; $('#brandMil').value=db.brand.policy.milHost||''; $('#brandApprovals').value=(db.brand.policy.approvalsRequired||[]).join(', ');
   $('#btnBrandSave').onclick=()=>{ db.brand.policy.brandGuideUrl=$('#brandGuide').value.trim(); db.brand.policy.milHost=$('#brandMil').value.trim(); db.brand.policy.approvalsRequired=$('#brandApprovals').value.split(',').map(s=>s.trim()).filter(Boolean); save(); alert('Brand policy saved'); };
   $('#btnInvAdd').onclick=()=>{ const rec={id:uid(), siteOrChannel:$('#invName').value.trim(), url:$('#invUrl').value.trim(), owner:$('#invOwner').value.trim(), authorized:$('#invAuth').value, notes:$('#invNotes').value.trim(), ts:Date.now()}; if(!rec.siteOrChannel) return alert('Enter a site/channel'); db.brand.inventory.push(rec); save(); renderBrandInv(); $('#invName').value=''; $('#invUrl').value=''; $('#invOwner').value=''; $('#invNotes').value=''; };
@@ -1017,31 +1048,31 @@ function buildChecklist(){
   const c=$('#modChecklist'); const approvals=db.brand.policy.approvalsRequired?.length? db.brand.policy.approvalsRequired.join(', ') : 'PAO Release, OPSEC II, VI Caption, Accessibility, Records';
   c.innerHTML=`
     <div class="card" style="margin-top:18px;background:var(--accent2);color:#1d0c16">
-      <h3>Pre‑Release Checklist (OPSEC • VI • Release)</h3>
+      <h3>Pre‑Release Checklist (OPSEC • VI • Release) <span class="info-icon" tabindex="0" data-tooltip="More info about Pre‑Release Checklist (OPSEC • VI • Release)">i</span></h3>
       <div class="mini">Required approvals: ${approvals}</div>
       <div class="grid grid-3" style="margin-top:8px">
-        <div><label>Product Title</label><input id="chkTitle" class="input" placeholder="e.g., Water Safety News Release"></div>
-          <div><label>Product Type</label><select id="chkType" class="input">${db.templates.outputs.map(t=>`<option>${t.name}</option>`).join('')}<option>Other</option></select></div>
-        <div><label>Links (comma or new line)</label><input id="chkLinks" class="input" placeholder="Drafts, assets, DVIDS, etc."></div>
+        <div><label>Product Title <span class="info-icon" tabindex="0" data-tooltip="More info about Product Title">i</span></label><input id="chkTitle" class="input" placeholder="e.g., Water Safety News Release"></div>
+          <div><label>Product Type <span class="info-icon" tabindex="0" data-tooltip="More info about Product Type">i</span></label><select id="chkType" class="input">${db.templates.outputs.map(t=>`<option>${t.name}</option>`).join('')}<option>Other</option></select></div>
+        <div><label>Links (comma or new line) <span class="info-icon" tabindex="0" data-tooltip="More info about Links (comma or new line)">i</span></label><input id="chkLinks" class="input" placeholder="Drafts, assets, DVIDS, etc."></div>
       </div>
       <div class="grid grid-2" style="margin-top:12px">
-        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>OPSEC / PII</h3>
+        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>OPSEC / PII <span class="info-icon" tabindex="0" data-tooltip="More info about OPSEC / PII">i</span></h3>
           <div><label><input type="checkbox" id="opsecOk"> OPSEC reviewed (Level II)</label></div>
-          <div class="grid grid-3"><div><label>Reviewer</label><input id="opsecRev" class="input" placeholder="Name"></div><div><label>Date</label><input id="opsecDate" class="input" type="date" value="${todayISO()}"></div><div><label>PII scrubbed?</label><select id="piiOk" class="input"><option>Yes</option><option>No</option></select></div></div>
+          <div class="grid grid-3"><div><label>Reviewer <span class="info-icon" tabindex="0" data-tooltip="More info about Reviewer">i</span></label><input id="opsecRev" class="input" placeholder="Name"></div><div><label>Date <span class="info-icon" tabindex="0" data-tooltip="More info about Date">i</span></label><input id="opsecDate" class="input" type="date" value="${todayISO()}"></div><div><label>PII scrubbed? <span class="info-icon" tabindex="0" data-tooltip="More info about PII scrubbed?">i</span></label><select id="piiOk" class="input"><option>Yes</option><option>No</option></select></div></div>
         </div>
-        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>VI Standards</h3>
-          <div class="grid grid-3"><div><label>Captions complete?</label><select id="viCap" class="input"><option>Yes</option><option>No</option></select></div><div><label>Metadata embedded?</label><select id="viMeta" class="input"><option>Yes</option><option>No</option></select></div><div><label>Archived to DVIDS/CORE?</label><select id="viArch" class="input"><option>Yes</option><option>No</option></select></div></div>
+        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>VI Standards <span class="info-icon" tabindex="0" data-tooltip="More info about VI Standards">i</span></h3>
+          <div class="grid grid-3"><div><label>Captions complete? <span class="info-icon" tabindex="0" data-tooltip="More info about Captions complete?">i</span></label><select id="viCap" class="input"><option>Yes</option><option>No</option></select></div><div><label>Metadata embedded? <span class="info-icon" tabindex="0" data-tooltip="More info about Metadata embedded?">i</span></label><select id="viMeta" class="input"><option>Yes</option><option>No</option></select></div><div><label>Archived to DVIDS/CORE? <span class="info-icon" tabindex="0" data-tooltip="More info about Archived to DVIDS/CORE?">i</span></label><select id="viArch" class="input"><option>Yes</option><option>No</option></select></div></div>
         </div>
-        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>Accessibility</h3>
-          <div class="grid grid-3"><div><label>ALT text present?</label><select id="accAlt" class="input"><option>Yes</option><option>No</option></select></div><div><label>Captions / transcripts?</label><select id="accCap" class="input"><option>Yes</option><option>No</option></select></div><div><label>Readable (contrast/size)?</label><select id="accRead" class="input"><option>Yes</option><option>No</option></select></div></div>
+        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>Accessibility <span class="info-icon" tabindex="0" data-tooltip="More info about Accessibility">i</span></h3>
+          <div class="grid grid-3"><div><label>ALT text present? <span class="info-icon" tabindex="0" data-tooltip="More info about ALT text present?">i</span></label><select id="accAlt" class="input"><option>Yes</option><option>No</option></select></div><div><label>Captions / transcripts? <span class="info-icon" tabindex="0" data-tooltip="More info about Captions / transcripts?">i</span></label><select id="accCap" class="input"><option>Yes</option><option>No</option></select></div><div><label>Readable (contrast/size)? <span class="info-icon" tabindex="0" data-tooltip="More info about Readable (contrast/size)?">i</span></label><select id="accRead" class="input"><option>Yes</option><option>No</option></select></div></div>
         </div>
-        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>Release & Records</h3>
-          <div class="grid grid-3"><div><label>Release authority</label><input id="relAuth" class="input" placeholder="PAO / Commander"></div><div><label>Release date</label><input id="relDate" class="input" type="date" value="${todayISO()}"></div><div><label>Records tagged?</label><select id="recTag" class="input"><option>Yes</option><option>No</option></select></div></div>
+        <div class="card" style="background:#0e1124;border-color:#2f355e"><h3>Release & Records <span class="info-icon" tabindex="0" data-tooltip="More info about Release & Records">i</span></h3>
+          <div class="grid grid-3"><div><label>Release authority <span class="info-icon" tabindex="0" data-tooltip="More info about Release authority">i</span></label><input id="relAuth" class="input" placeholder="PAO / Commander"></div><div><label>Release date <span class="info-icon" tabindex="0" data-tooltip="More info about Release date">i</span></label><input id="relDate" class="input" type="date" value="${todayISO()}"></div><div><label>Records tagged? <span class="info-icon" tabindex="0" data-tooltip="More info about Records tagged?">i</span></label><select id="recTag" class="input"><option>Yes</option><option>No</option></select></div></div>
         </div>
       </div>
       <div style="display:flex; gap:10px; margin-top:12px"><button class="cta" id="btnChkSave">Save Checklist</button><button class="ghost btn" id="btnChkReady">Mark Ready for Release</button></div>
     </div>
-    <div class="card" style="margin-top:12px"><h3>Checklists</h3><div id="chkList" class="scroll"></div></div>`;
+    <div class="card" style="margin-top:12px"><h3>Checklists <span class="info-icon" tabindex="0" data-tooltip="More info about Checklists">i</span></h3><div id="chkList" class="scroll"></div></div>`;
   $('#btnChkSave').onclick=()=> saveChecklist('Needs Fix'); $('#btnChkReady').onclick=()=> saveChecklist('Ready'); renderChecklist();
 }
 function saveChecklist(status){
@@ -1079,8 +1110,8 @@ function addRpieEntries(data){
 
 <!-- Ask AI Module -->
 <div id="askAIModule" class="card hide" style="margin-top:16px; max-width:600px; margin-left:auto; margin-right:auto;">
-  <h3>Ask AI</h3>
-  <div><label>Provider</label>
+  <h3>Ask AI <span class="info-icon" tabindex="0" data-tooltip="More info about Ask AI">i</span></h3>
+  <div><label>Provider <span class="info-icon" tabindex="0" data-tooltip="More info about Provider">i</span></label>
     <select id="aiProvider" class="input" style="margin-bottom:6px">
       <option value="openai">OpenAI</option>
       <option value="gemini">Gemini</option>
