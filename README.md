@@ -4,15 +4,15 @@ This is a self-contained web application that:
 
 ✅ Tracks staff metrics (outputs, outcomes, outtakes)  
 ✅ Stores user data and API keys **locally** in the browser (`localStorage`)  
-✅ Lets admins enter their OpenAI API key  
-✅ Allows any logged-in user to **prompt GPT** via OpenAI's API  
+✅ Lets admins enter API keys for **OpenAI, Gemini, CamoGPT, and AskSage**
+✅ Allows staff and admins to **ask AI** using the selected provider
 ✅ No backend required
 
 ## 📦 Features
 - PIN-based staff and admin login
 - Progress tracking (monthly, quarterly, yearly)
 - JSON import/export
-- GPT-4 integration with real-time browser fetch
+- AI integration with real-time browser fetch
 
 ## 🚀 Deployment
 You can host this as a static page:
