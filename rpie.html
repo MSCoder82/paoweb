@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>USACE NWW • R-PIE Planner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --brand-yellow:#ffd530;
+      --brand-red:#EF3340;
+      --brand-black:#030000;
+      --ink:#0f1220;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --ok:#16a34a;
+      --warn:#d97706;
+      --err:#b91c1c;
+      --radius:14px;
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 800px at 10% -10%, rgba(255,213,48,.55), transparent 60%),
+        radial-gradient(900px 600px at 90% 10%, rgba(239,51,64,.35), transparent 60%),
+        linear-gradient(180deg, #fafafa 0%, #f3f4f6 100%);
+    }
+    .wrap{max-width:1200px;margin:24px auto;padding:0 16px;}
+    header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .brand{display:flex;gap:12px;align-items:center;}
+    .badge{
+      background:linear-gradient(135deg, var(--brand-yellow), var(--brand-red));
+      color:var(--brand-black);
+      padding:10px 14px;border-radius:999px;font-weight:700;letter-spacing:.25px;box-shadow:0 6px 18px rgba(0,0,0,.1);
+    }
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;}
+    .tab{
+      background:#fff;border:1px solid #e5e7eb;border-radius:999px;padding:10px 14px;cursor:pointer;
+      box-shadow:0 4px 16px rgba(0,0,0,.06);
+    }
+    .tab.active{border-color:var(--brand-red);outline:2px solid rgba(239,51,64,.15)}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    .card{
+      background:rgba(255,255,255,.85);backdrop-filter: blur(8px);
+      border:1px solid #e5e7eb;border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(0,0,0,.08);padding:18px;
+    }
+    h1{font-size:22px;margin:0;color:var(--brand-black)}
+    h2{font-size:18px;margin:0 0 12px}
+    h3{font-size:16px;margin:18px 0 8px}
+    .help{color:var(--muted);font-size:13px}
+    label{display:block;font-weight:600;margin:12px 0 6px}
+    input, textarea{
+      width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;font-size:14px;
+    }
+    textarea{min-height:90px;resize:vertical}
+    .row{display:flex;gap:10px}
+    .row > *{flex:1}
+    .btnbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{
+      border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700;
+      transition:transform .02s ease;box-shadow:0 8px 20px rgba(0,0,0,.08);
+      background:linear-gradient(135deg, var(--brand-red), var(--brand-yellow));color:#111;
+    }
+    .btn.alt{background:#111;color:#fff}
+    .btn.ghost{background:#fff;color:#111;border:1px solid #e5e7eb}
+    .btn:active{transform:translateY(1px)}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    details{border:1px dashed #e5e7eb;border-radius:12px;background:#fff;margin:10px 0;padding:8px 10px;}
+    summary{cursor:pointer;font-weight:700}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #e5e7eb;padding:8px 10px;font-size:14px}
+    th{background:#fafafa;text-align:left}
+    .output{
+      white-space:pre-wrap;background:#0b1020;color:#f1f5f9;padding:16px;border-radius:12px;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;min-height:220px;
+    }
+    .notice{
+      background:linear-gradient(135deg, rgba(255,213,48,.2), rgba(239,51,64,.2));
+      border:1px solid rgba(0,0,0,.06);border-radius:12px;padding:10px 12px;font-size:14px
+    }
+    /* Tag checklists */
+    .taglist{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+    .taglist label{
+      display:inline-flex;align-items:center;gap:6px;border:1px solid #e5e7eb;border-radius:999px;
+      padding:6px 10px;background:#fff;font-size:13px;cursor:pointer;user-select:none;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+    }
+    .taglist input[type="checkbox"]{appearance:none;width:14px;height:14px;border:1px solid #cbd5e1;border-radius:3px}
+    .taglist input[type="checkbox"]:checked{background:linear-gradient(135deg, var(--brand-red), var(--brand-yellow));border-color:#111}
+    .tagadd{display:flex;gap:8px;margin-top:8px}
+    .tagadd input{flex:1}
+    .footer-note{font-size:12px;color:var(--muted);margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="badge">USACE • NWW</div>
+        <div>
+          <h1>R-PIE Communication Plan Builder</h1>
+          <div class="help">Staff and Admin views. Local saves. OpenAI-powered plan drafting.</div>
+        </div>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Role selector">
+        <button id="tab-staff" class="tab active" role="tab" aria-selected="true">Staff view</button>
+        <button id="tab-admin" class="tab" role="tab" aria-selected="false">Admin view</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT: INPUTS -->
+      <section class="card" id="panel-inputs" aria-labelledby="tab-staff">
+        <h2>Plan inputs</h2>
+        <div class="notice">Complete the steps, select from curated menus, then generate a draft. Save private drafts anytime.</div>
+
+        <details open>
+          <summary>Connection</summary>
+          <label for="apiKey">OpenAI API key</label>
+          <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+          <div class="row">
+            <div>
+              <label for="model">Model</label>
+              <input id="model" value="gpt-4.1-mini" />
+            </div>
+            <div>
+              <label for="temperature">Temperature</label>
+              <input id="temperature" type="number" step="0.1" min="0" max="2" value="0.2" />
+            </div>
+          </div>
+          <label for="policy">Admin guidance to include in prompt (optional)</label>
+          <textarea id="policy" placeholder="Tone, style, sensitivities, risk items, do-not-mentions..."></textarea>
+        </details>
+
+        <details open>
+          <summary>Step 1 — Identify communication requirements</summary>
+          <label for="issue">Issue statement</label>
+          <textarea id="issue" placeholder="Define the issue, scope, and required support."></textarea>
+          <label for="requirements">Requirements</label>
+          <textarea id="requirements" placeholder="Key products, approvals, timing, authorities."></textarea>
+        </details>
+
+        <details>
+          <summary>Step 2 — Analyze the current situation</summary>
+          <label for="situation">Situation analysis</label>
+          <textarea id="situation" placeholder="Context, constraints, opportunities."></textarea>
+          <div class="row">
+            <div><label for="swotS">Strengths</label><textarea id="swotS"></textarea></div>
+            <div><label for="swotW">Weaknesses</label><textarea id="swotW"></textarea></div>
+          </div>
+          <div class="row">
+            <div><label for="swotO">Opportunities</label><textarea id="swotO"></textarea></div>
+            <div><label for="swotT">Threats</label><textarea id="swotT"></textarea></div>
+          </div>
+        </details>
+
+        <details>
+          <summary>Step 3 — Stakeholders and target audiences</summary>
+          <label>Business lines</label>
+          <div id="businessLinesList" class="taglist"></div>
+          <div class="tagadd">
+            <input id="businessLinesAdd" placeholder="Add custom business line" />
+            <button class="btn ghost" data-add="businessLines">Add</button>
+          </div>
+
+          <label style="margin-top:10px">Lines of effort</label>
+          <div id="loeList" class="taglist"></div>
+          <div class="tagadd">
+            <input id="loeAdd" placeholder="Add custom line of effort" />
+            <button class="btn ghost" data-add="loe">Add</button>
+          </div>
+
+          <label style="margin-top:10px">Target audiences</label>
+          <div id="audiencesList" class="taglist"></div>
+          <div class="tagadd">
+            <input id="audiencesAdd" placeholder="Add custom audience" />
+            <button class="btn ghost" data-add="audiences">Add</button>
+          </div>
+
+          <label style="margin-top:10px">Stakeholders</label>
+          <div id="stakeholdersList" class="taglist"></div>
+          <div class="tagadd">
+            <input id="stakeholdersAdd" placeholder="Add custom stakeholder" />
+            <button class="btn ghost" data-add="stakeholders">Add</button>
+          </div>
+
+          <label for="audienceNotes" style="margin-top:10px">Notes (audience priorities, sensitivities)</label>
+          <textarea id="audienceNotes"></textarea>
+        </details>
+
+        <details>
+          <summary>Step 4 — Goals and SMART objectives</summary>
+          <label for="goals">Goals</label>
+          <textarea id="goals" placeholder="Desired end state, long term focus."></textarea>
+          <label for="objectives">SMART objectives</label>
+          <textarea id="objectives" placeholder="Specific, Measurable, Achievable, Relevant, Time-bound."></textarea>
+        </details>
+
+        <details>
+          <summary>Step 5 — Strategies, tactics, key messages, talking points</summary>
+          <label for="strategies">Strategies</label>
+          <textarea id="strategies" placeholder="How to reach goals and objectives."></textarea>
+          <label for="tactics">Tactics</label>
+          <textarea id="tactics" placeholder="Products, services, activities."></textarea>
+          <label for="messages">Key messages</label>
+          <textarea id="messages" placeholder="27-9-3 structure encouraged."></textarea>
+          <label for="talking">Talking points</label>
+          <textarea id="talking"></textarea>
+        </details>
+
+        <details>
+          <summary>Step 6 — Budget</summary>
+          <div class="row">
+            <div><label for="labor">Labor</label><input id="labor" type="text" placeholder="$ or hours"/></div>
+            <div><label for="materials">Materials</label><input id="materials" type="text" placeholder="$"/></div>
+          </div>
+          <div class="row">
+            <div><label for="postage">Postage</label><input id="postage" type="text" placeholder="$"/></div>
+            <div><label for="contract">Contractor/Facilitator</label><input id="contract" type="text" placeholder="$"/></div>
+          </div>
+          <label for="av">AV/Other</label><input id="av" type="text" placeholder="$ or notes"/>
+        </details>
+
+        <details>
+          <summary>Step 7 — Action matrix</summary>
+          <div class="help">Add rows, then include dates, actions, roles, and methods.</div>
+          <table id="am-table">
+            <thead><tr><th>Date</th><th>Action</th><th>Responsibility</th><th>When</th><th>Method</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <div class="btnbar">
+            <button class="btn ghost" id="am-add">+ Add row</button>
+            <button class="btn ghost" id="am-clear">Clear</button>
+          </div>
+        </details>
+
+        <details>
+          <summary>Step 8 — Implementation tracking</summary>
+          <label for="tracking">Tracking notes</label>
+          <textarea id="tracking" placeholder="Cadence, ownership, dashboards."></textarea>
+        </details>
+
+        <details>
+          <summary>Step 9 — Measurement plan</summary>
+          <label>Outputs (products/channels)</label>
+          <div id="outputsList" class="taglist"></div>
+          <div class="tagadd">
+            <input id="outputsAdd" placeholder="Add custom output" />
+            <button class="btn ghost" data-add="outputs">Add</button>
+          </div>
+
+          <label style="margin-top:10px">Outtakes (exposure/engagement)</label>
+          <div id="outtakesList" class="taglist"></div>
+          <div class="tagadd">
+            <input id="outtakesAdd" placeholder="Add custom outtake" />
+            <button class="btn ghost" data-add="outtakes">Add</button>
+          </div>
+
+          <label style="margin-top:10px">Outcomes (impact/behavior)</label>
+          <div id="outcomesList" class="taglist"></div>
+          <div class="tagadd">
+            <input id="outcomesAdd" placeholder="Add custom outcome" />
+            <button class="btn ghost" data-add="outcomes">Add</button>
+          </div>
+
+          <label for="measurementNotes" style="margin-top:10px">Measurement notes</label>
+          <textarea id="measurementNotes" placeholder="Baselines, targets, data sources, cadence."></textarea>
+        </details>
+
+        <details>
+          <summary>Step 10 — Evaluation and feedback</summary>
+          <label for="evaluation">Evaluation plan</label>
+          <textarea id="evaluation" placeholder="Methods, timing, follow-on research and updates."></textarea>
+        </details>
+
+        <div class="btnbar">
+          <button class="btn" id="generate">Generate plan</button>
+          <button class="btn alt" id="save">Save draft</button>
+          <button class="btn ghost" id="load">Load draft</button>
+          <button class="btn ghost" id="exportMd">Export Markdown</button>
+          <button class="btn ghost" id="exportJson">Export JSON</button>
+          <button class="btn ghost" id="clear">Clear form</button>
+        </div>
+      </section>
+
+      <!-- RIGHT: OUTPUT + ADMIN -->
+      <section class="card" id="panel-output">
+        <h2>Draft output</h2>
+        <div id="status" class="help">Ready.</div>
+        <div id="output" class="output" aria-live="polite"></div>
+        <div class="footer-note">This draft is generated from your inputs. Refine as needed before release.</div>
+
+        <hr style="margin:18px 0;border:none;border-top:1px solid #eee" />
+
+        <div id="adminGate">
+          <h2>Admin view</h2>
+          <div class="help">PIN required.</div>
+          <div class="row">
+            <input id="pin" type="password" placeholder="Enter PIN" />
+            <button class="btn alt" id="pinEnter">Unlock</button>
+          </div>
+        </div>
+
+        <div id="adminPanel" class="card" style="display:none;margin-top:14px">
+          <h3>Admin controls</h3>
+          <label for="newPin">Set new PIN</label>
+          <div class="row">
+            <input id="newPin" placeholder="New PIN" />
+            <button class="btn ghost" id="setPin">Update PIN</button>
+          </div>
+
+          <h3>Template and guardrails</h3>
+          <label for="sysPrompt">System role template</label>
+          <textarea id="sysPrompt" placeholder="Define the role, style, compliance notes."></textarea>
+          <div class="btnbar">
+            <button class="btn ghost" id="saveTemplate">Save template</button>
+            <button class="btn ghost" id="loadTemplate">Load template</button>
+            <button class="btn ghost" id="resetTemplate">Reset</button>
+          </div>
+
+          <h3>Submissions</h3>
+          <div class="btnbar">
+            <button class="btn ghost" id="exportAll">Export all drafts (JSON)</button>
+            <button class="btn ghost" id="wipeAll">Wipe all localStorage</button>
+          </div>
+          <div id="adminMsg" class="help"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ======= Curated menus =======
+    const OPTIONS = {
+      businessLines: [
+        'Flood Risk Management','Hydropower','Navigation','Regulatory',
+        'Recreation','Environmental Stewardship','Water Supply',
+        'Emergency Management','Real Estate','Planning, Engineering & Construction',
+        'Fish Passage/Ecosystem Restoration','Operations'
+      ],
+      loe: [
+        'Today — Deliver the Mission',
+        'Tomorrow — Innovate',
+        'Always — People',
+        'Safety','Readiness','Stewardship','Collaboration',
+        'Transparency','Digital Modernization'
+      ],
+      audiences: [
+        'Internal workforce','Union leadership','USACE HQ/Division',
+        'Congressional delegations/staff','State elected officials',
+        'County/City officials','Emergency managers','Tribal governments',
+        'Irrigators/Agricultural community','Hydropower customers/Utilities (e.g., BPA)',
+        'Recreation users','Commercial navigation/Ports','Environmental NGOs',
+        'Media (regional)','K-12/Education','General public','Contractors/Vendors',
+        'Federal partners (NOAA, USFWS, BOR, BLM, USFS, EPA)',
+        'State agencies (WDFW, IDFG, ODOE, ODOE, Ecology, DEQ)'
+      ],
+      stakeholders: [
+        'Project managers','Operations project staff','Regulatory applicants',
+        'Resource agencies','Tribal fisheries','Port authorities',
+        'County levee districts','Emergency operations centers',
+        'Tourism bureaus','Business chambers','Academic/research partners',
+        'Nonprofits/advocacy groups','Homeowners associations','Recreation concessionaires'
+      ],
+      outputs: [
+        'News release','Media advisory','Media engagement (interviews/briefs)',
+        'Web article/Feature','DVIDS upload (photo/video)','Social posts (FB/X/IG/LI)',
+        'Infographic','Factsheet/One-pager','FAQ/Q&A',
+        'Video package/Reel/Short','Photo set','Public meeting/Open house',
+        'Stakeholder briefing deck','Talking points/Speech','Newsletter (internal/external)',
+        'Public notice','Blog post','Radio PSA/Podcast guest','Op-ed/LTE',
+        'Email to distro/Workforce note','Congressional update'
+      ],
+      outtakes: [
+        'Reach/Impressions','Engagement rate','Reactions/Comments/Shares',
+        'Click-through rate','Video views','Average watch time',
+        'Web sessions','Time on page','Bounce rate',
+        'Media pickups','Share of voice','Earned sentiment',
+        'Event attendance','Questions received','Call/email volume',
+        'Newsletter opens','Newsletter CTR'
+      ],
+      outcomes: [
+        'Awareness lift','Understanding of issue/process','Trust/credibility indicators',
+        'Intent to participate/comply','Permit/application completeness',
+        'Public meeting civility/productivity','Rumor reduction/Misinfo countered',
+        'Safety behavior adoption (e.g., life jacket use)','Preparedness actions taken',
+        'Support for decisions/policies','Stakeholder collaboration actions'
+      ]
+    };
+
+    // ======= Helpers: render checklist chips =======
+    function renderChecklist(containerId, values){
+      const box = document.getElementById(containerId);
+      box.innerHTML = '';
+      values.forEach(v=>{
+        const id = containerId + '_' + slug(v);
+        const label = document.createElement('label');
+        const cb = document.createElement('input');
+        const text = document.createElement('span');
+        cb.type = 'checkbox'; cb.id = id; cb.value = v;
+        cb.addEventListener('change', saveShadow);
+        text.textContent = v;
+        label.appendChild(cb); label.appendChild(text);
+        box.appendChild(label);
+      });
+    }
+    function ensureOptions(containerId, baseList, selected){
+      const combined = [...baseList];
+      (selected||[]).forEach(v=>{ if(!combined.includes(v)) combined.push(v); });
+      renderChecklist(containerId, combined);
+      (selected||[]).forEach(v=>{
+        const cb = document.querySelector(`#${containerId} input[value="${cssEscape(v)}"]`);
+        if(cb) cb.checked = true;
+      });
+    }
+    function getChecklistValues(containerId){
+      return [...document.querySelectorAll(`#${containerId} input[type="checkbox"]:checked`)].map(i=>i.value);
+    }
+    function addCustom(listKey){
+      const input = document.getElementById(listKey+'Add');
+      const val = (input.value||'').trim();
+      if(!val) return;
+      const containerId = listKey+'List';
+      const box = document.getElementById(containerId);
+      const id = containerId + '_' + slug(val);
+      if(document.getElementById(id)){ input.value=''; return; }
+      const label = document.createElement('label');
+      const cb = document.createElement('input'); cb.type='checkbox'; cb.id=id; cb.value=val; cb.checked=true;
+      cb.addEventListener('change', saveShadow);
+      const text = document.createElement('span'); text.textContent = val;
+      label.appendChild(cb); label.appendChild(text);
+      box.appendChild(label);
+      input.value='';
+      saveShadow();
+    }
+    function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+    function cssEscape(s){ return s.replace(/["\\]/g, '\\$&'); }
+
+    // ======= Grab elements =======
+    const els = {
+      apiKey: document.getElementById('apiKey'),
+      model: document.getElementById('model'),
+      temperature: document.getElementById('temperature'),
+      policy: document.getElementById('policy'),
+
+      issue: document.getElementById('issue'),
+      requirements: document.getElementById('requirements'),
+      situation: document.getElementById('situation'),
+      swotS: document.getElementById('swotS'),
+      swotW: document.getElementById('swotW'),
+      swotO: document.getElementById('swotO'),
+      swotT: document.getElementById('swotT'),
+
+      businessLinesList: document.getElementById('businessLinesList'),
+      loeList: document.getElementById('loeList'),
+      audiencesList: document.getElementById('audiencesList'),
+      stakeholdersList: document.getElementById('stakeholdersList'),
+      businessLinesAdd: document.getElementById('businessLinesAdd'),
+      loeAdd: document.getElementById('loeAdd'),
+      audiencesAdd: document.getElementById('audiencesAdd'),
+      stakeholdersAdd: document.getElementById('stakeholdersAdd'),
+      audienceNotes: document.getElementById('audienceNotes'),
+
+      goals: document.getElementById('goals'),
+      objectives: document.getElementById('objectives'),
+      strategies: document.getElementById('strategies'),
+      tactics: document.getElementById('tactics'),
+      messages: document.getElementById('messages'),
+      talking: document.getElementById('talking'),
+
+      labor: document.getElementById('labor'),
+      materials: document.getElementById('materials'),
+      postage: document.getElementById('postage'),
+      contract: document.getElementById('contract'),
+      av: document.getElementById('av'),
+
+      amTable: document.getElementById('am-table').querySelector('tbody'),
+      amAdd: document.getElementById('am-add'),
+      amClear: document.getElementById('am-clear'),
+
+      tracking: document.getElementById('tracking'),
+
+      outputsList: document.getElementById('outputsList'),
+      outtakesList: document.getElementById('outtakesList'),
+      outcomesList: document.getElementById('outcomesList'),
+      outputsAdd: document.getElementById('outputsAdd'),
+      outtakesAdd: document.getElementById('outtakesAdd'),
+      outcomesAdd: document.getElementById('outcomesAdd'),
+      measurementNotes: document.getElementById('measurementNotes'),
+
+      evaluation: document.getElementById('evaluation'),
+
+      generate: document.getElementById('generate'),
+      save: document.getElementById('save'),
+      load: document.getElementById('load'),
+      exportMd: document.getElementById('exportMd'),
+      exportJson: document.getElementById('exportJson'),
+      clear: document.getElementById('clear'),
+
+      status: document.getElementById('status'),
+      output: document.getElementById('output'),
+
+      tabStaff: document.getElementById('tab-staff'),
+      tabAdmin: document.getElementById('tab-admin'),
+      adminGate: document.getElementById('adminGate'),
+      adminPanel: document.getElementById('adminPanel'),
+      pin: document.getElementById('pin'),
+      pinEnter: document.getElementById('pinEnter'),
+      newPin: document.getElementById('newPin'),
+      setPin: document.getElementById('setPin'),
+      sysPrompt: document.getElementById('sysPrompt'),
+      saveTemplate: document.getElementById('saveTemplate'),
+      loadTemplate: document.getElementById('loadTemplate'),
+      resetTemplate: document.getElementById('resetTemplate'),
+      exportAll: document.getElementById('exportAll'),
+      wipeAll: document.getElementById('wipeAll'),
+      adminMsg: document.getElementById('adminMsg'),
+    };
+
+    // Prefill API key from parent if available
+    if(window.parent && window.parent.db && window.parent.db.apiKeys?.openai){
+      els.apiKey.value = window.parent.db.apiKeys.openai;
+    }
+
+    // Render curated lists on load
+    ensureOptions('businessLinesList', OPTIONS.businessLines, []);
+    ensureOptions('loeList', OPTIONS.loe, []);
+    ensureOptions('audiencesList', OPTIONS.audiences, []);
+    ensureOptions('stakeholdersList', OPTIONS.stakeholders, []);
+    ensureOptions('outputsList', OPTIONS.outputs, []);
+    ensureOptions('outtakesList', OPTIONS.outtakes, []);
+    ensureOptions('outcomesList', OPTIONS.outcomes, []);
+
+    document.querySelectorAll('button[data-add]').forEach(btn=>{
+      btn.addEventListener('click', ()=> addCustom(btn.getAttribute('data-add')));
+    });
+
+    const activateTab = (which) => {
+      const staff = document.getElementById('panel-inputs');
+      const out = document.getElementById('panel-output');
+      if(which === 'admin'){
+        els.tabAdmin.classList.add('active'); els.tabAdmin.setAttribute('aria-selected', 'true');
+        els.tabStaff.classList.remove('active'); els.tabStaff.setAttribute('aria-selected', 'false');
+        window.scrollTo({top: out.offsetTop - 10, behavior:'smooth'});
+      } else {
+        els.tabStaff.classList.add('active'); els.tabStaff.setAttribute('aria-selected', 'true');
+        els.tabAdmin.classList.remove('active'); els.tabAdmin.setAttribute('aria-selected', 'false');
+        window.scrollTo({top: staff.offsetTop - 10, behavior:'smooth'});
+      }
+    };
+    els.tabStaff.addEventListener('click', () => activateTab('staff'));
+    els.tabAdmin.addEventListener('click', () => activateTab('admin'));
+
+    const PIN_KEY = 'nww_rpie_admin_pin';
+    const defaultPin = localStorage.getItem(PIN_KEY) || '1234';
+    let adminOK = false;
+    els.pinEnter.addEventListener('click', () => {
+      if(els.pin.value === (localStorage.getItem(PIN_KEY) || defaultPin)){
+        adminOK = true;
+        els.adminPanel.style.display = 'block';
+        els.adminGate.style.display = 'none';
+        status('Admin unlocked', 'ok');
+      } else {
+        status('Invalid PIN', 'err');
+      }
+    });
+    els.setPin.addEventListener('click', () => {
+      if(!adminOK) return status('Unlock admin first', 'warn');
+      if(!els.newPin.value) return status('Enter a new PIN', 'warn');
+      localStorage.setItem(PIN_KEY, els.newPin.value.trim());
+      status('PIN updated', 'ok');
+      els.newPin.value = '';
+    });
+
+    const TPL_KEY = 'nww_rpie_template';
+    const defaultTemplate = `You are a senior Public Affairs planner for USACE Walla Walla District.
+Produce a clean, operational communication plan using the R-PIE 10-step model.
+Align with AR 360-1/DoD PA guidance.
+Include:
+- Executive Summary
+- Risk and Sensitivity Notes
+- Goals and SMART Objectives
+- Strategies and Tactics
+- Key Messages (use 27-9-3)
+- Audiences/Stakeholders (from curated menus)
+- Lines of Effort alignments
+- Action Matrix (tabular)
+- Budget Summary
+- Measurement Framework (Outputs, Outtakes, Outcomes)
+- Evaluation and Update loop
+Style: concise headings, bullet lists, table for action matrix, professional tone.
+Only include facts provided in inputs.`;
+    els.sysPrompt.value = localStorage.getItem(TPL_KEY) || defaultTemplate;
+    els.saveTemplate.addEventListener('click', () => {
+      if(!adminOK) return status('Unlock admin first', 'warn');
+      localStorage.setItem(TPL_KEY, els.sysPrompt.value);
+      status('Template saved', 'ok');
+    });
+    els.loadTemplate.addEventListener('click', () => {
+      els.sysPrompt.value = localStorage.getItem(TPL_KEY) || defaultTemplate;
+      status('Template loaded', 'ok');
+    });
+    els.resetTemplate.addEventListener('click', () => {
+      if(!adminOK) return status('Unlock admin first', 'warn');
+      els.sysPrompt.value = defaultTemplate;
+      localStorage.setItem(TPL_KEY, defaultTemplate);
+      status('Template reset', 'ok');
+    });
+
+    const addAMRow = (row={date:'',action:'',resp:'',when:'',method:''})=>{
+      const tr = document.createElement('tr');
+      ['date','action','resp','when','method'].forEach((key, idx)=>{
+        const td = document.createElement('td');
+        const inp = document.createElement('input');
+        inp.value = row[['date','action','resp','when','method'][idx]] || '';
+        inp.addEventListener('input', saveShadow);
+        td.appendChild(inp); tr.appendChild(td);
+      });
+      els.amTable.appendChild(tr);
+    };
+    document.getElementById('am-add').addEventListener('click', ()=> addAMRow());
+    document.getElementById('am-clear').addEventListener('click', ()=>{
+      els.amTable.innerHTML=''; saveShadow();
+    });
+    addAMRow();
+
+    function collect(){
+      const am = [...els.amTable.querySelectorAll('tr')].map(tr=>{
+        const tds = tr.querySelectorAll('input');
+        return {date:tds[0].value, action:tds[1].value, responsibility:tds[2].value, when:tds[3].value, method:tds[4].value};
+      }).filter(r => Object.values(r).some(v=>v));
+      return {
+        connection:{ model: els.model.value.trim(), temperature: Number(els.temperature.value||0), policy: els.policy.value.trim() },
+        step1:{ issue: els.issue.value.trim(), requirements: els.requirements.value.trim() },
+        step2:{ situation: els.situation.value.trim(), swot:{S:els.swotS.value.trim(),W:els.swotW.value.trim(),O:els.swotO.value.trim(),T:els.swotT.value.trim()} },
+        step3:{
+          businessLines: getChecklistValues('businessLinesList'),
+          linesOfEffort: getChecklistValues('loeList'),
+          audiences: getChecklistValues('audiencesList'),
+          stakeholders: getChecklistValues('stakeholdersList'),
+          audienceNotes: els.audienceNotes.value.trim()
+        },
+        step4:{ goals: els.goals.value.trim(), objectives: els.objectives.value.trim() },
+        step5:{ strategies: els.strategies.value.trim(), tactics: els.tactics.value.trim(), messages: els.messages.value.trim(), talking: els.talking.value.trim() },
+        step6:{ budget:{ labor:els.labor.value.trim(), materials:els.materials.value.trim(), postage:els.postage.value.trim(), contract:els.contract.value.trim(), av:els.av.value.trim() } },
+        step7:{ actionMatrix: am },
+        step8:{ tracking: els.tracking.value.trim() },
+        step9:{
+          outputs: getChecklistValues('outputsList'),
+          outtakes: getChecklistValues('outtakesList'),
+          outcomes: getChecklistValues('outcomesList'),
+          notes: els.measurementNotes.value.trim()
+        },
+        step10:{ evaluation: els.evaluation.value.trim() },
+        meta:{ savedAt: new Date().toISOString() }
+      };
+    }
+
+    function toPrompt(data){
+      const tpl = (localStorage.getItem('nww_rpie_template') || els.sysPrompt.value);
+      const guard = data.connection.policy ? `\nAdmin guidance:\n${data.connection.policy}\n` : '';
+      const amTable = data.step7.actionMatrix.map(r=>`| ${r.date||''} | ${r.action||''} | ${r.responsibility||''} | ${r.when||''} | ${r.method||''} |`).join('\n') || '';
+      const budgetLines = Object.entries(data.step6.budget).filter(([k,v])=>v).map(([k,v])=>`- ${k}: ${v}`).join('\n');
+      const list = (arr)=> (arr && arr.length) ? arr.map(a=>`- ${a}`).join('\n') : 'n/a';
+
+      return `${tpl}
+${guard}
+Inputs:
+
+Step 1 — Issue and Requirements
+${data.step1.issue}
+
+Requirements
+${data.step1.requirements}
+
+Step 2 — Situation and SWOT
+${data.step2.situation}
+SWOT
+- S: ${data.step2.swot.S}
+- W: ${data.step2.swot.W}
+- O: ${data.step2.swot.O}
+- T: ${data.step2.swot.T}
+
+Step 3 — Stakeholders and Audiences
+Business Lines
+${list(data.step3.businessLines)}
+Lines of Effort
+${list(data.step3.linesOfEffort)}
+Target Audiences
+${list(data.step3.audiences)}
+Stakeholders
+${list(data.step3.stakeholders)}
+Notes
+${data.step3.audienceNotes || 'n/a'}
+
+Step 4 — Goals and SMART Objectives
+Goals
+${data.step4.goals}
+Objectives
+${data.step4.objectives}
+
+Step 5 — Strategies, Tactics, Key Messages, Talking Points
+Strategies
+${data.step5.strategies}
+Tactics
+${data.step5.tactics}
+Key Messages
+${data.step5.messages}
+Talking Points
+${data.step5.talking}
+
+Step 6 — Budget
+${budgetLines || 'n/a'}
+
+Step 7 — Action Matrix
+| Date | Action | Responsibility | When | Method |
+|---|---|---|---|---|
+${amTable || ''}
+
+Step 8 — Implementation Tracking
+${data.step8.tracking}
+
+Step 9 — Measurement
+Outputs
+${list(data.step9.outputs)}
+Outtakes
+${list(data.step9.outtakes)}
+Outcomes
+${list(data.step9.outcomes)}
+Notes
+${data.step9.notes || 'n/a'}
+
+Step 10 — Evaluation
+${data.step10.evaluation}
+
+Produce a complete, structured plan with clear headings and a table for the Action Matrix.`;
+    }
+
+    async function callOpenAI(prompt, model, temperature){
+      const key = els.apiKey.value.trim() || (window.parent?.db?.apiKeys?.openai || '');
+      if(!key){ throw new Error('API key required'); }
+      const res = await fetch('https://api.openai.com/v1/chat/completions',{
+        method:'POST',
+        headers:{ 'Content-Type':'application/json','Authorization':'Bearer ' + key },
+        body: JSON.stringify({
+          model, temperature,
+          messages:[
+            {role:'system', content:'You are a disciplined USACE public affairs planner who writes professional, concise, actionable plans aligned with Army policy.'},
+            {role:'user', content: prompt}
+          ]
+        })
+      });
+      if(!res.ok){ throw new Error('API error: ' + (await res.text())); }
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || '';
+    }
+
+    function status(msg, kind){ els.status.textContent = msg; els.status.className = 'help ' + (kind || ''); }
+
+    const DRAFT_KEY = 'nww_rpie_draft';
+    function saveDraft(){
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(collect()));
+      status('Draft saved locally', 'ok');
+    }
+    function loadDraft(){
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if(!raw) return status('No saved draft found', 'warn');
+      const d = JSON.parse(raw);
+      els.model.value = d.connection?.model || 'gpt-4.1-mini';
+      els.temperature.value = d.connection?.temperature ?? 0.2;
+      els.policy.value = d.connection?.policy || '';
+      els.issue.value = d.step1?.issue || '';
+      els.requirements.value = d.step1?.requirements || '';
+      els.situation.value = d.step2?.situation || '';
+      els.swotS.value = d.step2?.swot?.S || '';
+      els.swotW.value = d.step2?.swot?.W || '';
+      els.swotO.value = d.step2?.swot?.O || '';
+      els.swotT.value = d.step2?.swot?.T || '';
+      ensureOptions('businessLinesList', OPTIONS.businessLines, d.step3?.businessLines || []);
+      ensureOptions('loeList', OPTIONS.loe, d.step3?.linesOfEffort || []);
+      ensureOptions('audiencesList', OPTIONS.audiences, d.step3?.audiences || []);
+      ensureOptions('stakeholdersList', OPTIONS.stakeholders, d.step3?.stakeholders || []);
+      els.audienceNotes.value = d.step3?.audienceNotes || '';
+      els.goals.value = d.step4?.goals || '';
+      els.objectives.value = d.step4?.objectives || '';
+      els.strategies.value = d.step5?.strategies || '';
+      els.tactics.value = d.step5?.tactics || '';
+      els.messages.value = d.step5?.messages || '';
+      els.talking.value = d.step5?.talking || '';
+      els.labor.value = d.step6?.budget?.labor || '';
+      els.materials.value = d.step6?.budget?.materials || '';
+      els.postage.value = d.step6?.budget?.postage || '';
+      els.contract.value = d.step6?.budget?.contract || '';
+      els.av.value = d.step6?.budget?.av || '';
+      els.amTable.innerHTML = '';
+      (d.step7?.actionMatrix || []).forEach(r=>addAMRow({date:r.date,action:r.action,resp:r.responsibility,when:r.when,method:r.method}));
+      if((d.step7?.actionMatrix || []).length===0) addAMRow();
+      els.tracking.value = d.step8?.tracking || '';
+      ensureOptions('outputsList', OPTIONS.outputs, d.step9?.outputs || []);
+      ensureOptions('outtakesList', OPTIONS.outtakes, d.step9?.outtakes || []);
+      ensureOptions('outcomesList', OPTIONS.outcomes, d.step9?.outcomes || []);
+      els.measurementNotes.value = d.step9?.notes || '';
+      els.evaluation.value = d.step10?.evaluation || '';
+      status('Draft loaded', 'ok');
+    }
+    function clearForm(){
+      localStorage.removeItem(DRAFT_KEY);
+      document.querySelectorAll('input, textarea').forEach(el=>{
+        if(['apiKey','model','temperature','pin','newPin','businessLinesAdd','loeAdd','audiencesAdd','stakeholdersAdd','outputsAdd','outtakesAdd','outcomesAdd'].includes(el.id)) return;
+        if(el.type==='number') el.value = el.defaultValue || 0;
+        else el.value = '';
+      });
+      document.querySelectorAll('.taglist input[type="checkbox"]').forEach(cb=> cb.checked = false);
+      els.amTable.innerHTML = ''; addAMRow();
+      status('Form cleared', 'ok');
+    }
+    function saveShadow(){ localStorage.setItem(DRAFT_KEY, JSON.stringify(collect())); }
+
+    function exportJSON(){
+      const blob = new Blob([JSON.stringify(collect(), null, 2)], {type:'application/json'});
+      download(blob, 'rpie_draft.json');
+    }
+    function exportMarkdown(){
+      const d = collect();
+      const am = d.step7.actionMatrix.map(r=>`| ${r.date} | ${r.action} | ${r.responsibility} | ${r.when} | ${r.method} |`).join('\n');
+      const list = (arr)=> (arr && arr.length) ? arr.map(a=>`- ${a}`).join('\n') : '- n/a';
+      const md = `# Communication Plan — Draft
+
+## Executive Summary
+_TBD after generation_
+
+## Step 1 — Issue and Requirements
+${d.step1.issue || 'n/a'}
+
+**Requirements**
+${d.step1.requirements || 'n/a'}
+
+## Step 2 — Situation and SWOT
+${d.step2.situation || 'n/a'}
+
+**SWOT**
+- **S** ${d.step2.swot.S || 'n/a'}
+- **W** ${d.step2.swot.W || 'n/a'}
+- **O** ${d.step2.swot.O || 'n/a'}
+- **T** ${d.step2.swot.T || 'n/a'}
+
+## Step 3 — Stakeholders and Audiences
+**Business Lines**
+${list(d.step3.businessLines)}
+
+**Lines of Effort**
+${list(d.step3.linesOfEffort)}
+
+**Target Audiences**
+${list(d.step3.audiences)}
+
+**Stakeholders**
+${list(d.step3.stakeholders)}
+
+**Notes**
+${d.step3.audienceNotes || 'n/a'}
+
+## Step 4 — Goals and SMART Objectives
+**Goals**
+${d.step4.goals || 'n/a'}
+
+**Objectives**
+${d.step4.objectives || 'n/a'}
+
+## Step 5 — Strategies, Tactics, Messages, Talking Points
+**Strategies**
+${d.step5.strategies || 'n/a'}
+
+**Tactics**
+${d.step5.tactics || 'n/a'}
+
+**Key Messages**
+${d.step5.messages || 'n/a'}
+
+**Talking Points**
+${d.step5.talking || 'n/a'}
+
+## Step 6 — Budget
+- Labor: ${d.step6.budget.labor || 'n/a'}
+- Materials: ${d.step6.budget.materials || 'n/a'}
+- Postage: ${d.step6.budget.postage || 'n/a'}
+- Contractor: ${d.step6.budget.contract || 'n/a'}
+- AV/Other: ${d.step6.budget.av || 'n/a'}
+
+## Step 7 — Action Matrix
+| Date | Action | Responsibility | When | Method |
+|---|---|---|---|---|
+${am || '|  |  |  |  |  |'}
+
+## Step 8 — Implementation Tracking
+${d.step8.tracking || 'n/a'}
+
+## Step 9 — Measurement
+**Outputs**
+${list(d.step9.outputs)}
+
+**Outtakes**
+${list(d.step9.outtakes)}
+
+**Outcomes**
+${list(d.step9.outcomes)}
+
+**Notes**
+${d.step9.notes || 'n/a'}
+
+## Step 10 — Evaluation
+${d.step10.evaluation || 'n/a'}
+`;
+      const blob = new Blob([md], {type:'text/markdown'});
+      download(blob, 'rpie_draft.md');
+    }
+    function download(blob, filename){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    els.exportAll.addEventListener('click', ()=>{
+      if(!adminOK) return status('Unlock admin first', 'warn');
+      const all = {};
+      ['nww_rpie_admin_pin','nww_rpie_template','nww_rpie_draft'].forEach(k=> all[k] = localStorage.getItem(k));
+      const blob = new Blob([JSON.stringify(all, null, 2)], {type:'application/json'});
+      download(blob, 'nww_rpie_all.json');
+    });
+    els.wipeAll.addEventListener('click', ()=>{
+      if(!adminOK) return status('Unlock admin first', 'warn');
+      localStorage.removeItem('nww_rpie_draft');
+      localStorage.removeItem('nww_rpie_template');
+      status('Draft and template cleared', 'ok');
+      els.adminMsg.textContent = 'Draft and template cleared. PIN retained.';
+    });
+
+    els.generate.addEventListener('click', async ()=>{
+      try{
+        status('Generating...', '');
+        const data = collect();
+        const prompt = toPrompt(data);
+        const text = await callOpenAI(prompt, data.connection.model || 'gpt-4.1-mini', data.connection.temperature ?? 0.2);
+        els.output.textContent = text || '(no content)';
+        status('Draft ready', 'ok');
+        const saved = JSON.parse(localStorage.getItem('nww_rpie_draft') || '{}');
+        saved.generated = { at:new Date().toISOString(), model:data.connection.model, text };
+        localStorage.setItem('nww_rpie_draft', JSON.stringify(saved));
+        // Push metrics to parent app
+        window.parent?.addRpieEntries?.(data);
+      } catch(err){
+        status(String(err.message || err), 'err');
+      }
+    });
+    els.save.addEventListener('click', saveDraft);
+    els.load.addEventListener('click', loadDraft);
+    els.exportJson.addEventListener('click', exportJSON);
+    els.exportMd.addEventListener('click', exportMarkdown);
+    els.clear.addEventListener('click', clearForm);
+
+    document.querySelectorAll('input, textarea').forEach(el=>{
+      el.addEventListener('change', saveShadow);
+    });
+  </script>
+</body>
+</html>
