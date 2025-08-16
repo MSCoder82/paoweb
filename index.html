@@ -65,7 +65,6 @@
   label{font-size:12px; color:#b9bff0; margin-bottom:6px; display:block}
   .divider{height:1px;background:#262b4b;border:0;margin:8px 0 16px 0}
   .mini{font-size:12px;color: #001fd4;}
-  .subtle{color:#a7aed9;font-size:13px}
   .chip{display:inline-flex; align-items:center; gap:6px; border:1px solid #2a2e50; padding:6px 10px; border-radius:999px; color:#cbd2ff; background:#10132a}
   .links a{color:#91ddff; text-decoration:none}
   .scroll{max-height:420px; overflow:auto; padding-right:6px}
@@ -88,8 +87,6 @@
   .grad1{background:var(--accent4)}
   .grad2{background:var(--accent2)}
   .grad3{background:var(--accent3)}
-  .grad4{background:linear-gradient(135deg,#00e5ff,#7c4dff)}
-  .grad5{background:linear-gradient(135deg,#ff8a8a,#ffd06a)}
   .onboard{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:2000}
   .onboard.hidden{display:none}
   #onboardSpotlight{position:absolute;border:2px solid #fff;border-radius:8px;pointer-events:none}
@@ -423,7 +420,7 @@
 </div>
 
 <div id="onboardOverlay" class="onboard hidden">
-  <div id="onboardSpotlight" class="onboardSpotlight"></div>
+  <div id="onboardSpotlight"></div>
   <div class="tip">
     <div id="onboardText"></div>
     <div style="margin-top:12px;display:flex;gap:10px;justify-content:center;">
@@ -602,12 +599,12 @@ $('#btnAdminLogin').addEventListener('click', ()=>{
 function buildMenu(){
   menuItems.innerHTML='';
   const items=[
-    {id:'staff', label:'My Inputs (core metrics)', dot:'grad4', group:'Staff'},
+    {id:'staff', label:'My Inputs (core metrics)', dot:'grad1', group:'Staff'},
     {id:'kle', label:'Community Engagement / KLE', dot:'grad1', group:'Staff'},
     {id:'media', label:'Media Log & Queries', dot:'grad2', group:'Staff'},
     {id:'social', label:'Social Media', dot:'grad3', group:'Staff'},
-    {id:'brand', label:'Branding Governance', dot:'grad4', group:'Staff'},
-    {id:'check', label:'Pre‑Release Checklist', dot:'grad5', group:'Staff'},
+    {id:'brand', label:'Branding Governance', dot:'grad1', group:'Staff'},
+    {id:'check', label:'Pre‑Release Checklist', dot:'grad2', group:'Staff'},
     {id:'rpie', label:'R-PIE Planner', dot:'grad1', group:'Staff'},
     ...(role==='admin' ? [{id:'admin', label:'Admin (Goals, Staff, Templates)', dot:'grad2', group:'Admin'}] : [])
   ];
