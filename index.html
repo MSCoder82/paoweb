@@ -1133,7 +1133,15 @@ onboardNext.addEventListener('click',()=>{
 onboardPrev.addEventListener('click',()=>{ if(curStep>0){ curStep--; showStep(curStep); } });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeOnboard(); });
 window.addEventListener('resize',()=>{ if(!onboardOverlay.classList.contains('hidden')) showStep(curStep); });
-window.addEventListener('scroll',()=>{ if(!onboardOverlay.classList.contains('hidden')) showStep(curStep); });
+let onboardScrollPending=false;
+window.addEventListener('scroll',()=>{
+  if(onboardScrollPending) return;
+  onboardScrollPending=true;
+  requestAnimationFrame(()=>{
+    onboardScrollPending=false;
+    if(!onboardOverlay.classList.contains('hidden')) showStep(curStep);
+  });
+});
 
 /* ================= INIT ================= */
 (function init(){
