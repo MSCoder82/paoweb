@@ -240,6 +240,7 @@
             <h3>Outcomes — Objective progress</h3>
             <div class="grid" style="grid-template-columns:1fr">
               <div><label>Outcome Metric</label><select id="ocmKey" class="input"></select></div>
+              <div id="ocmOtherWrap" class="hide"><label>Other (specify)</label><input id="ocmOther" class="input" placeholder="e.g., Public trust"/></div>
               <div><label>My status (% toward target)</label><input id="ocmPct" type="range" min="0" max="100" value="0" /><div class="mini" id="ocmVal">0%</div></div>
               <div><button class="cta" id="btnSaveOutcome" style="margin-top:8px">Save Outcome</button></div>
             </div>
@@ -402,28 +403,71 @@
 <script>
 /* ================= DATA ================= */
 const STORAGE_KEY='nww_pao_metrics_onepage_v1';
+const defaultOutcomes=[
+  {name:'Awareness lift', desc:''},
+  {name:'Understanding of issue/process', desc:''},
+  {name:'Trust/credibility indicators', desc:''},
+  {name:'Intent to participate/comply', desc:''},
+  {name:'Permit/application completeness', desc:''},
+  {name:'Public meeting civility/productivity', desc:''},
+  {name:'Rumor reduction/Misinfo countered', desc:''},
+  {name:'Safety behavior adoption (e.g., life jacket use)', desc:''},
+  {name:'Preparedness actions taken', desc:''},
+  {name:'Support for decisions/policies', desc:''},
+  {name:'Stakeholder collaboration actions', desc:''}
+];
 const def={
   adminPIN:'0000',
   staff:[], // {id,name,pin}
   templates:{
     outputs:[
-      {name:'Story', qty:1, links:[]},
-      {name:'Photos', qty:1, links:[]},
-      {name:'Social media posts', qty:1, links:[]},
       {name:'News release', qty:1, links:[]},
-      {name:'Video', qty:1, links:[]},
-      {name:'Graphic', qty:1, links:[]},
-      {name:'Fact sheet', qty:1, links:[]}
+      {name:'Media advisory', qty:1, links:[]},
+      {name:'Media engagement (interviews/briefs)', qty:1, links:[]},
+      {name:'Web article/Feature', qty:1, links:[]},
+      {name:'DVIDS upload (photo/video)', qty:1, links:[]},
+      {name:'Social posts (FB/X/IG/LI)', qty:1, links:[]},
+      {name:'Infographic', qty:1, links:[]},
+      {name:'Factsheet/One-pager', qty:1, links:[]},
+      {name:'FAQ/Q&A', qty:1, links:[]},
+      {name:'Video package/Reel/Short', qty:1, links:[]},
+      {name:'Photo set', qty:1, links:[]},
+      {name:'Public meeting/Open house', qty:1, links:[]},
+      {name:'Stakeholder briefing deck', qty:1, links:[]},
+      {name:'Talking points/Speech', qty:1, links:[]},
+      {name:'Newsletter (internal/external)', qty:1, links:[]},
+      {name:'Public notice', qty:1, links:[]},
+      {name:'Blog post', qty:1, links:[]},
+      {name:'Radio PSA/Podcast guest', qty:1, links:[]},
+      {name:'Op-ed/LTE', qty:1, links:[]},
+      {name:'Email to distro/Workforce note', qty:1, links:[]},
+      {name:'Congressional update', qty:1, links:[]}
     ],
     outtakes:[
-      {name:'Event attendees', qty:1, notes:''},
-      {name:'Stakeholder briefings', qty:1, notes:''},
-      {name:'Media engagements', qty:1, notes:''},
-      {name:'Website clicks', qty:1, notes:''},
-      {name:'Email signups', qty:1, notes:''}
+      {name:'Reach/Impressions', qty:1, notes:''},
+      {name:'Engagement rate', qty:1, notes:''},
+      {name:'Reactions/Comments/Shares', qty:1, notes:''},
+      {name:'Click-through rate', qty:1, notes:''},
+      {name:'Video views', qty:1, notes:''},
+      {name:'Average watch time', qty:1, notes:''},
+      {name:'Web sessions', qty:1, notes:''},
+      {name:'Time on page', qty:1, notes:''},
+      {name:'Bounce rate', qty:1, notes:''},
+      {name:'Media pickups', qty:1, notes:''},
+      {name:'Share of voice', qty:1, notes:''},
+      {name:'Earned sentiment', qty:1, notes:''},
+      {name:'Event attendance', qty:1, notes:''},
+      {name:'Questions received', qty:1, notes:''},
+      {name:'Call/email volume', qty:1, notes:''},
+      {name:'Newsletter opens', qty:1, notes:''},
+      {name:'Newsletter CTR', qty:1, notes:''}
     ]
   },
-  goals:{ M:{outputs:{},outtakes:{},outcomes:[]}, Q:{outputs:{},outtakes:{},outcomes:[]}, Y:{outputs:{},outtakes:{},outcomes:[]} },
+  goals:{
+    M:{outputs:{},outtakes:{},outcomes:defaultOutcomes.slice()},
+    Q:{outputs:{},outtakes:{},outcomes:defaultOutcomes.slice()},
+    Y:{outputs:{},outtakes:{},outcomes:defaultOutcomes.slice()}
+  },
   entries:[], // metrics: {id,userId,type:'output'|'outtake'|'outcome', tf, tfKey, ts, data:{...}}
   kle:[],    // KLE
   media:[],  // media queries
@@ -626,11 +670,14 @@ function buildStaff(){
   $('#outProdType').innerHTML = [...db.templates.outputs.map(t=>t.name), 'Other (specify)'].map(t=>`<option>${t}</option>`).join('');
   $('#otkTemplate').innerHTML = `<option value="">Select template</option>` + db.templates.outtakes.map(t=>`<option>${t.name}</option>`).join('');
   $('#otkType').innerHTML    = [...db.templates.outtakes.map(t=>t.name), 'Other (specify)'].map(t=>`<option>${t}</option>`).join('');
+  const sel=$('#ocmKey');
+  sel.innerHTML = [...(db.goals[cur.tf].outcomes||[]).map(o=>o.name), 'Other (specify)'].map(o=>`<option>${o}</option>`).join('');
   buildTfPicker(tfStaffPick, tfStaffSel.value, key=>{cur.key=key; refreshStaff();});
-  const sel=$('#ocmKey'); sel.innerHTML=''; (db.goals[cur.tf].outcomes||[]).forEach(o=> sel.appendChild(new Option(o.name,o.name)));
 }
 $('#outProdType').addEventListener('change', ()=> $('#otherProdWrap').classList.toggle('hide', $('#outProdType').value!=='Other (specify)'));
 $('#otkType').addEventListener('change', ()=> $('#otkOtherWrap').classList.toggle('hide', $('#otkType').value!=='Other (specify)'));
+$('#ocmKey').addEventListener('change', ()=> $('#ocmOtherWrap').classList.toggle('hide', $('#ocmKey').value!=='Other (specify)'));
+$('#ocmKey').dispatchEvent(new Event('change'));
 $('#outTemplate').addEventListener('change', ()=>{
   const t=db.templates.outputs.find(o=>o.name===$('#outTemplate').value);
   if(t){
@@ -667,10 +714,12 @@ $('#btnAddOuttake').addEventListener('click', ()=>{
 });
 $('#btnClearOuttake').addEventListener('click', ()=>{ $('#otkQty').value=1; $('#otkNotes').value=''; $('#otkOther').value=''; });
 $('#btnSaveOutcome').addEventListener('click', ()=>{
-  if(!user) return; const key=$('#ocmKey').value; if(!key) return alert('No outcome metric defined.');
+  if(!user) return;
+  const key=$('#ocmKey').value==='Other (specify)' ? ($('#ocmOther').value.trim()||'Other') : $('#ocmKey').value;
+  if(!key) return alert('No outcome metric defined.');
   const pct=parseInt($('#ocmPct').value,10);
   db.entries.push({id:uid(), userId:user.id, type:'outcome', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{metric:key, pct}});
-  save(); refreshStaff(); refreshViewerIf();
+  save(); $('#ocmOther').value=''; refreshStaff(); refreshViewerIf();
 });
 function refreshStaff(){
   const mine=db.entries.filter(e=> e.userId===user?.id && e.tf===cur.tf && e.tfKey===cur.key);
