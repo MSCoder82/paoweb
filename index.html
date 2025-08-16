@@ -319,8 +319,16 @@
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
               <h3>Templates</h3>
               <div class="grid" style="grid-template-columns:1fr">
-                <div><label>Output Product Types</label><textarea id="tplOutputs" rows="6" class="input"></textarea></div>
-                <div><label>Outtake Types</label><textarea id="tplOuttakes" rows="6" class="input"></textarea></div>
+                <div>
+                  <label>Output Product Types</label>
+                  <div id="tplOutputs"></div>
+                  <button class="ghost small" id="btnAddTplOutput" style="margin-top:4px">Add Template</button>
+                </div>
+                <div>
+                  <label>Outtake Types</label>
+                  <div id="tplOuttakes"></div>
+                  <button class="ghost small" id="btnAddTplOuttake" style="margin-top:4px">Add Template</button>
+                </div>
               </div>
               <div style="display:flex; gap:10px; margin-top:10px">
                 <button class="cta" id="btnSaveTemplates">Save Templates</button>
@@ -477,23 +485,23 @@ const def={
       {name:'Congressional update', qty:1, links:[]}
     ],
     outtakes:[
-      {name:'Reach/Impressions', qty:1, notes:''},
-      {name:'Engagement rate', qty:1, notes:''},
-      {name:'Reactions/Comments/Shares', qty:1, notes:''},
-      {name:'Click-through rate', qty:1, notes:''},
-      {name:'Video views', qty:1, notes:''},
-      {name:'Average watch time', qty:1, notes:''},
-      {name:'Web sessions', qty:1, notes:''},
-      {name:'Time on page', qty:1, notes:''},
-      {name:'Bounce rate', qty:1, notes:''},
-      {name:'Media pickups', qty:1, notes:''},
-      {name:'Share of voice', qty:1, notes:''},
-      {name:'Earned sentiment', qty:1, notes:''},
-      {name:'Event attendance', qty:1, notes:''},
-      {name:'Questions received', qty:1, notes:''},
-      {name:'Call/email volume', qty:1, notes:''},
-      {name:'Newsletter opens', qty:1, notes:''},
-      {name:'Newsletter CTR', qty:1, notes:''}
+      {name:'Reach/Impressions', qty:1, links:[]},
+      {name:'Engagement rate', qty:1, links:[]},
+      {name:'Reactions/Comments/Shares', qty:1, links:[]},
+      {name:'Click-through rate', qty:1, links:[]},
+      {name:'Video views', qty:1, links:[]},
+      {name:'Average watch time', qty:1, links:[]},
+      {name:'Web sessions', qty:1, links:[]},
+      {name:'Time on page', qty:1, links:[]},
+      {name:'Bounce rate', qty:1, links:[]},
+      {name:'Media pickups', qty:1, links:[]},
+      {name:'Share of voice', qty:1, links:[]},
+      {name:'Earned sentiment', qty:1, links:[]},
+      {name:'Event attendance', qty:1, links:[]},
+      {name:'Questions received', qty:1, links:[]},
+      {name:'Call/email volume', qty:1, links:[]},
+      {name:'Newsletter opens', qty:1, links:[]},
+      {name:'Newsletter CTR', qty:1, links:[]}
     ]
   },
   goals:{
@@ -520,6 +528,13 @@ function toPct(v){return `${Math.round((v||0)*100)}%`}
 function sum(o){return Object.values(o).reduce((a,b)=>a+(b||0),0)}
 function todayISO(){return new Date().toISOString().slice(0,10)}
 function parseLinks(txt){return (txt||'').split(/[\n,]/).map(s=>s.trim()).filter(Boolean)}
+// migrate legacy template format (arrays of strings)
+if(Array.isArray(db.templates?.outputs)){
+  db.templates.outputs = db.templates.outputs.map(t=> typeof t==='string'? {name:t, qty:1, links:[]} : {name:t.name, qty:t.qty||1, links:t.links||[]});
+}
+if(Array.isArray(db.templates?.outtakes)){
+  db.templates.outtakes = db.templates.outtakes.map(t=> typeof t==='string'? {name:t, qty:1, links:[]} : {name:t.name, qty:t.qty||1, links:t.links||[]});
+}
 function year(d){return d.getFullYear()}
 function monthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
 function quarter(d){return Math.floor(d.getMonth()/3)+1}
@@ -735,7 +750,6 @@ $('#otkTemplate').addEventListener('change', ()=>{
   if(t){
     $('#otkType').value=t.name;
     $('#otkQty').value=t.qty||1;
-    $('#otkNotes').value=t.notes||'';
     $('#otkType').dispatchEvent(new Event('change'));
   }
 });
@@ -780,8 +794,22 @@ function refreshViewerIf(){ if(!$('#screenViewer').classList.contains('hide')) r
 /* ===== Admin ===== */
 const tfAdminSel=$('#tfAdmin'), tfAdminPick=$('#tfAdminPick');
 tfAdminSel?.addEventListener('change', ()=> buildTfPicker(tfAdminPick, tfAdminSel.value, key=>{cur.tf=tfAdminSel.value; cur.key=key; buildGoalsEditors(); refreshAdminDash();}));
+function tplRow(t={}){
+  const row=document.createElement('div');
+  row.className='tplRow';
+  row.style.cssText='display:flex;gap:6px;margin:4px 0;align-items:center;';
+  row.innerHTML=`<input class="input tplName" placeholder="Name" value="${t.name||''}"><input type="number" min="1" class="input tplQty" style="width:60px" value="${t.qty||1}"><input class="input tplLinks" placeholder="Links" value="${(t.links||[]).join(', ')}"><button class="danger small tplRemove">Remove</button>`;
+  row.querySelector('.tplRemove').addEventListener('click',()=>row.remove());
+  return row;
+}
+function renderTpls(id, arr){ const box=$('#'+id); box.innerHTML=''; arr.forEach(t=> box.appendChild(tplRow(t))); }
+function collectTpls(id){ return Array.from($('#'+id).children).map(r=>{ const name=r.querySelector('.tplName').value.trim(); if(!name) return null; const qty=parseInt(r.querySelector('.tplQty').value||'1',10)||1; const links=parseLinks(r.querySelector('.tplLinks').value); return {name, qty, links}; }).filter(Boolean); }
+
 function buildAdmin(){
-  $('#tplOutputs').value=db.templates.outputs.map(t=>t.name).join('\n'); $('#tplOuttakes').value=db.templates.outtakes.map(t=>t.name).join('\n');
+  renderTpls('tplOutputs', db.templates.outputs);
+  renderTpls('tplOuttakes', db.templates.outtakes);
+  $('#btnAddTplOutput').onclick=()=> $('#tplOutputs').appendChild(tplRow({name:'', qty:1, links:[]}));
+  $('#btnAddTplOuttake').onclick=()=> $('#tplOuttakes').appendChild(tplRow({name:'', qty:1, links:[]}));
   buildTfPicker(tfAdminPick, tfAdminSel.value, key=>{cur.key=key; buildGoalsEditors(); refreshAdminDash();});
   renderStaffList();
   if(db.apiKeys){
@@ -816,8 +844,8 @@ function buildAdmin(){
 }
   $('#btnAddStaff').onclick=()=>{ const name=$('#staffName').value.trim(), pin=$('#staffNewPIN').value.trim(); if(!name||!pin) return alert('Name & PIN required'); let rec=db.staff.find(s=>s.name.toLowerCase()===name.toLowerCase()); if(rec) rec.pin=pin; else db.staff.push({id:uid(),name,pin}); save(); $('#staffName').value=''; $('#staffNewPIN').value=''; renderStaffList(); };
   $('#btnSaveTemplates').onclick=()=>{
-    db.templates.outputs=$('#tplOutputs').value.split('\n').map(s=>s.trim()).filter(Boolean).map(name=>({name, qty:1, links:[]}));
-    db.templates.outtakes=$('#tplOuttakes').value.split('\n').map(s=>s.trim()).filter(Boolean).map(name=>({name, qty:1, notes:''}));
+    db.templates.outputs=collectTpls('tplOutputs');
+    db.templates.outtakes=collectTpls('tplOuttakes');
     save(); alert('Templates saved');
   };
   $('#btnExport').onclick=()=>{ const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nww_pao_metrics_export.json'; a.click(); };
