@@ -16,6 +16,8 @@
       --warn:#d97706;
       --err:#b91c1c;
       --radius:14px;
+      --tooltip-bg:#111; /* dark tooltip background */
+      --tooltip-fg:#fff; /* light tooltip text */
     }
     html,body{height:100%}
     body{
@@ -94,6 +96,11 @@
     .tagadd{display:flex;gap:8px;margin-top:8px}
     .tagadd input{flex:1}
     .footer-note{font-size:12px;color:var(--muted);margin-top:10px}
+    .tooltip{position:relative;cursor:help}
+    .tooltip:hover::after,
+    .tooltip:focus::after{content:attr(data-tip);position:absolute;left:50%;bottom:100%;transform:translate(-50%,-4px);background:var(--tooltip-bg);color:var(--tooltip-fg);padding:4px 8px;border-radius:4px;font-size:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.2);z-index:1000}
+    .tooltip:hover::before,
+    .tooltip:focus::before{content:"";position:absolute;left:50%;bottom:100%;transform:translate(-50%,2px);border:6px solid transparent;border-top-color:var(--tooltip-bg)}
   </style>
 </head>
 <body>

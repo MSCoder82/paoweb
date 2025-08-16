@@ -20,6 +20,8 @@
     --accent2: linear-gradient(135deg,#ff6ec4 0%, #7873f5 100%); /* admin/menu */
     --accent3: linear-gradient(135deg,#f6d365 0%, #fda085 100%); /* goals */
     --accent4: linear-gradient(135deg,#42e695 0%, #3bb2b8 100%); /* staff cards */
+    --tooltip-bg: #f9fafb; /* light tooltip background */
+    --tooltip-fg: #111;    /* dark tooltip text */
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -88,6 +90,11 @@
   .grad3{background:var(--accent3)}
   .grad4{background:linear-gradient(135deg,#00e5ff,#7c4dff)}
   .grad5{background:linear-gradient(135deg,#ff8a8a,#ffd06a)}
+  .tooltip{position:relative;cursor:help}
+  .tooltip:hover::after,
+  .tooltip:focus::after{content:attr(data-tip);position:absolute;left:50%;bottom:100%;transform:translate(-50%,-4px);background:var(--tooltip-bg);color:var(--tooltip-fg);padding:4px 8px;border-radius:4px;font-size:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.3);z-index:1000}
+  .tooltip:hover::before,
+  .tooltip:focus::before{content:"";position:absolute;left:50%;bottom:100%;transform:translate(-50%,2px);border:6px solid transparent;border-top-color:var(--tooltip-bg)}
 </style>
 </head>
 <body>
