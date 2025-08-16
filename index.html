@@ -100,6 +100,8 @@
     <div style="display:flex; gap:8px; align-items:center">
       <span class="pill" id="whoPill">Not signed in</span>
       <button class="ghost small" id="homeBtn" title="Back to role selection">⟵ Home</button>
+      <button class="ghost small" id="btnSaveProgress" style="display:none">💾 Save</button>
+      <label class="ghost small" id="lblLoadProgress" style="display:none;cursor:pointer">📁 Load<input id="inputLoadProgress" type="file" accept="application/json" class="hide" /></label>
     </div>
   </div>
 
@@ -119,10 +121,10 @@
   <!-- STAFF AUTH -->
   <section id="screenStaffAuth" class="card hide" style="margin-top:18px">
     <h3>Staff Sign‑In</h3>
-    <div class="grid grid-3">
+    <div class="grid" style="grid-template-columns:1fr">
       <div><label>Select your name</label><select id="staffUser" class="input"></select></div>
       <div><label>Your PIN</label><input id="staffPIN" type="password" class="input" placeholder="••••" /></div>
-      <div style="display:flex;align-items:flex-end"><button class="cta" id="btnStaffLogin">Sign in</button></div>
+      <div><button class="cta" id="btnStaffLogin" style="margin-top:8px">Sign in</button></div>
     </div>
     <div class="mini" style="margin-top:8px">Need to be added? Admin can create you in Settings.</div>
   </section>
@@ -130,9 +132,9 @@
   <!-- ADMIN AUTH -->
   <section id="screenAdminAuth" class="card hide" style="margin-top:18px">
     <h3>Admin Sign‑In</h3>
-    <div class="grid grid-2" style="grid-template-columns:1fr auto">
+    <div class="grid" style="grid-template-columns:1fr">
       <div><label>Admin PIN</label><input id="adminPIN" type="password" class="input" placeholder="Default 0000 (change in Settings)" /></div>
-      <div style="display:flex;align-items:flex-end"><button class="cta" id="btnAdminLogin">Sign in</button></div>
+      <div><button class="cta" id="btnAdminLogin" style="margin-top:8px">Sign in</button></div>
     </div>
   </section>
 
@@ -187,7 +189,7 @@
 
   <!-- STAFF (inputs) -->
   <section id="screenStaff" class="hide">
-    <div class="row" style="margin-top:18px">
+    <div class="row" style="margin-top:18px; flex-direction:column">
       <div class="col">
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
@@ -200,7 +202,7 @@
             </span>
           </div>
           <div class="divider"></div>
-          <div class="grid grid-2">
+          <div class="grid" style="grid-template-columns:1fr">
             <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
               <h3>Outputs — Products I produced</h3>
               <div class="grid grid-2">
@@ -232,10 +234,10 @@
 
           <div class="card" style="margin-top:16px;background:rgba(21,23,42,.75); border-color:#323761">
             <h3>Outcomes — Objective progress</h3>
-            <div class="grid grid-3">
+            <div class="grid" style="grid-template-columns:1fr">
               <div><label>Outcome Metric</label><select id="ocmKey" class="input"></select></div>
               <div><label>My status (% toward target)</label><input id="ocmPct" type="range" min="0" max="100" value="0" /><div class="mini" id="ocmVal">0%</div></div>
-              <div style="display:flex;align-items:flex-end"><button class="cta" id="btnSaveOutcome">Save Outcome</button></div>
+              <div><button class="cta" id="btnSaveOutcome" style="margin-top:8px">Save Outcome</button></div>
             </div>
             <div class="scroll" id="ocmList" style="margin-top:10px"></div>
           </div>
@@ -256,7 +258,7 @@
 
   <!-- ADMIN -->
   <section id="screenAdmin" class="hide">
-    <div class="row" style="margin-top:18px">
+    <div class="row" style="margin-top:18px; flex-direction:column">
       <div class="col">
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
@@ -269,18 +271,18 @@
             </span>
           </div>
           <div class="divider"></div>
-          <div class="grid grid-3">
+          <div class="grid" style="grid-template-columns:1fr">
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
               <h3>Admin PIN & Staff</h3>
-              <div class="grid grid-3">
+              <div class="grid" style="grid-template-columns:1fr">
                 <div><label>Set Admin PIN</label><input id="setAdminPIN" type="password" class="input" placeholder="New PIN"></div>
-                <div style="display:flex;align-items:flex-end"><button class="cta" id="btnSaveAdminPIN">Save PIN</button></div>
+                <div><button class="cta" id="btnSaveAdminPIN" style="margin-top:8px">Save PIN</button></div>
               </div>
               <div class="divider"></div>
-              <div class="grid grid-3">
+              <div class="grid" style="grid-template-columns:1fr">
                 <div><label>Staff Name</label><input id="staffName" class="input" placeholder="e.g., A. Johnson"></div>
                 <div><label>PIN</label><input id="staffNewPIN" type="password" class="input" placeholder="Set PIN"></div>
-                <div style="display:flex;align-items:flex-end"><button class="cta" id="btnAddStaff">Add / Update</button></div>
+                <div><button class="cta" id="btnAddStaff" style="margin-top:8px">Add / Update</button></div>
               </div>
               <div class="scroll" id="staffList" style="margin-top:10px"></div>
               <div style="display:flex; gap:8px; margin-top:12px">
@@ -293,7 +295,7 @@
             </div>
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
               <h3>Templates</h3>
-              <div class="grid grid-2">
+              <div class="grid" style="grid-template-columns:1fr">
                 <div><label>Output Product Types</label><textarea id="tplOutputs" rows="6" class="input"></textarea></div>
                 <div><label>Outtake Types</label><textarea id="tplOuttakes" rows="6" class="input"></textarea></div>
               </div>
@@ -331,10 +333,10 @@
           </div>
           <div class="card" style="margin-top:12px;background:#ffffff33;border-color:#ffffff66">
             <h3>Outcomes (Custom % Metrics)</h3>
-            <div class="grid grid-3">
+            <div class="grid" style="grid-template-columns:1fr">
               <div><label>Metric name</label><input id="ocmName" class="input" placeholder="e.g., Awareness lift"/></div>
               <div><label>Description (optional)</label><input id="ocmDesc" class="input" placeholder="Short context"/></div>
-              <div style="display:flex;align-items:flex-end"><button class="cta" id="btnAddOcm">Add Metric</button></div>
+              <div><button class="cta" id="btnAddOcm" style="margin-top:8px">Add Metric</button></div>
             </div>
             <div id="ocmAdminList" class="scroll" style="margin-top:10px"></div>
           </div>
@@ -417,13 +419,23 @@ function tfKeyOf(tf, dLike){const d = dLike? new Date(dLike): new Date(); if(tf=
 let role=null, user=null, cur={tf:'M',key:tfKeyOf('M')};
 const whoPill=$('#whoPill'); const homeBtn=$('#homeBtn'); const scrollTopBtn=$('#scrollTop');
 const btnHamburger=$('#btnHamburger'); const drawer=$('#drawer'); const menuItems=$('#menuItems');
+const btnSaveProgress=$('#btnSaveProgress'); const lblLoadProgress=$('#lblLoadProgress'); const inputLoadProgress=$('#inputLoadProgress');
 
 /* ================= NAV ================= */
 homeBtn.addEventListener('click', ()=> show('role'));
 scrollTopBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+btnSaveProgress.addEventListener('click', ()=>{
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='pao_metrics_progress.json'; a.click();
+});
+inputLoadProgress.addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return; const fr=new FileReader();
+  fr.onload=()=>{ try{ db=JSON.parse(fr.result); save(); alert('Progress loaded'); location.reload(); }catch(err){ alert('Invalid JSON'); } };
+  fr.readAsText(f); inputLoadProgress.value='';
+});
 function show(which){
   ['screenRole','screenStaffAuth','screenAdminAuth','screenViewer','screenStaff','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist'].forEach(id=> $('#'+id).classList.add('hide'));
-  if(which==='role'){role=null;user=null;whoPill.textContent='Not signed in'; btnHamburger.style.display='none'; $('#screenRole').classList.remove('hide'); return;}
+  if(which==='role'){role=null;user=null;whoPill.textContent='Not signed in'; btnHamburger.style.display='none'; btnSaveProgress.style.display='none'; lblLoadProgress.style.display='none'; $('#screenRole').classList.remove('hide'); return;}
   if(which==='viewer') $('#screenViewer').classList.remove('hide');
   if(which==='staffAuth') $('#screenStaffAuth').classList.remove('hide');
   if(which==='adminAuth') $('#screenAdminAuth').classList.remove('hide');
@@ -446,11 +458,15 @@ $('#btnStaffLogin').addEventListener('click', ()=>{
   const id=staffUserSel.value; const pin=$('#staffPIN').value.trim(); const rec=db.staff.find(s=>s.id===id);
   if(!rec) return alert('Select your name'); if(rec.pin!==pin) return alert('Incorrect PIN');
   user={id:rec.id, name:rec.name}; whoPill.textContent=`Staff: ${rec.name}`; btnHamburger.style.display='inline-flex';
+  btnSaveProgress.style.display='inline-flex'; lblLoadProgress.style.display='inline-flex';
+  $('#staffPIN').value='';
   buildStaff(); show('staff');
 });
 $('#btnAdminLogin').addEventListener('click', ()=>{
   const pin=$('#adminPIN').value.trim(); if(pin!==db.adminPIN) return alert('Incorrect Admin PIN');
   user={id:'admin', name:'Admin'}; whoPill.textContent='Admin'; btnHamburger.style.display='inline-flex';
+  btnSaveProgress.style.display='inline-flex'; lblLoadProgress.style.display='inline-flex';
+  $('#adminPIN').value='';
   buildAdmin(); show('admin');
 });
 
@@ -621,7 +637,7 @@ function buildAdmin(){
     save();
     alert('API Keys saved');
   };
-  $('#btnSaveAdminPIN').onclick=()=>{ const p=$('#setAdminPIN').value.trim(); if(!p) return alert('Enter a PIN'); db.adminPIN=p; save(); alert('Admin PIN updated'); };
+  $('#btnSaveAdminPIN').onclick=()=>{ const p=$('#setAdminPIN').value.trim(); if(!p) return alert('Enter a PIN'); db.adminPIN=p; save(); $('#setAdminPIN').value=''; alert('Admin PIN updated'); };
 }
   $('#btnAddStaff').onclick=()=>{ const name=$('#staffName').value.trim(), pin=$('#staffNewPIN').value.trim(); if(!name||!pin) return alert('Name & PIN required'); let rec=db.staff.find(s=>s.name.toLowerCase()===name.toLowerCase()); if(rec) rec.pin=pin; else db.staff.push({id:uid(),name,pin}); save(); $('#staffName').value=''; $('#staffNewPIN').value=''; renderStaffList(); };
   $('#btnSaveTemplates').onclick=()=>{ db.templates.outputs=$('#tplOutputs').value.split('\n').map(s=>s.trim()).filter(Boolean); db.templates.outtakes=$('#tplOuttakes').value.split('\n').map(s=>s.trim()).filter(Boolean); save(); alert('Templates saved'); };
