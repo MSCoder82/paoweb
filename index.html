@@ -88,6 +88,11 @@
   .grad3{background:var(--accent3)}
   .grad4{background:linear-gradient(135deg,#00e5ff,#7c4dff)}
   .grad5{background:linear-gradient(135deg,#ff8a8a,#ffd06a)}
+  .onboard{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:2000}
+  .onboard.hidden{display:none}
+  #onboardSpotlight{position:absolute;border:2px solid #fff;border-radius:8px;pointer-events:none}
+  .onboard .tip{background:#fff;color:#000;padding:20px;border-radius:12px;max-width:90%;text-align:center}
+  body.noscroll{overflow:hidden}
 </style>
 </head>
 <body>
@@ -398,11 +403,26 @@
   </div>
 </div>
 
+<div id="onboardOverlay" class="onboard hidden">
+  <div id="onboardSpotlight" class="onboardSpotlight"></div>
+  <div class="tip">
+    <div id="onboardText"></div>
+    <div style="margin-top:12px;display:flex;gap:10px;justify-content:center;">
+      <button class="ghost small" id="onboardPrev">Prev</button>
+      <button class="ghost small" id="onboardNext">Next</button>
+    </div>
+    <label style="margin-top:8px;display:flex;align-items:center;gap:6px;justify-content:center;font-size:14px;">
+      <input type="checkbox" id="onboardSkip"> Don't show again
+    </label>
+  </div>
+</div>
+
 <button class="ghost small" id="scrollTop" style="position:fixed;right:22px;bottom:22px;z-index:99">↑ Top</button>
 
 <script>
 /* ================= DATA ================= */
 const STORAGE_KEY='nww_pao_metrics_onepage_v1';
+const ONBOARD_KEY='nww_onboard_done';
 const defaultOutcomes=[
   {name:'Awareness lift', desc:''},
   {name:'Understanding of issue/process', desc:''},
@@ -498,6 +518,16 @@ let role=null, user=null, cur={tf:'M',key:tfKeyOf('M')};
 const whoPill=$('#whoPill'); const homeBtn=$('#homeBtn'); const scrollTopBtn=$('#scrollTop');
 const btnHamburger=$('#btnHamburger'); const drawer=$('#drawer'); const menuItems=$('#menuItems');
 const btnSaveProgress=$('#btnSaveProgress'); const lblLoadProgress=$('#lblLoadProgress'); const inputLoadProgress=$('#inputLoadProgress');
+const onboardOverlay=$('#onboardOverlay'), onboardSpotlight=$('#onboardSpotlight'), onboardText=$('#onboardText');
+const onboardPrev=$('#onboardPrev'), onboardNext=$('#onboardNext'), onboardSkip=$('#onboardSkip');
+const steps=[
+  {id:'btnHamburger', text:'Open the main menu'},
+  {id:'btnStaffLogin', text:'Sign in as staff'},
+  {id:'btnAddOutput', text:'Record an output'},
+  {id:'btnAddOuttake', text:'Track outtakes'},
+  {id:'btnSaveGoals', text:'Save your goals'}
+];
+let curStep=0;
 
 /* ================= NAV ================= */
 homeBtn.addEventListener('click', ()=> show('role'));
@@ -1069,11 +1099,48 @@ function addRpieEntries(data){
   save();
 }
 
+/* ================= ONBOARDING ================= */
+function startOnboard(){
+  if(localStorage.getItem(ONBOARD_KEY)) return;
+  onboardOverlay.classList.remove('hidden');
+  document.body.classList.add('noscroll');
+  curStep=0;
+  showStep(curStep);
+}
+function showStep(i){
+  const step=steps[i];
+  if(!step){ closeOnboard(true); return; }
+  const el=document.getElementById(step.id);
+  if(!el) return;
+  const r=el.getBoundingClientRect();
+  onboardSpotlight.style.top=r.top+'px';
+  onboardSpotlight.style.left=r.left+'px';
+  onboardSpotlight.style.width=r.width+'px';
+  onboardSpotlight.style.height=r.height+'px';
+  onboardText.textContent=step.text;
+  onboardPrev.style.display=i===0?'none':'';
+  onboardNext.textContent=i===steps.length-1?'Done':'Next';
+}
+function closeOnboard(fin){
+  onboardOverlay.classList.add('hidden');
+  document.body.classList.remove('noscroll');
+  if(fin || onboardSkip.checked) localStorage.setItem(ONBOARD_KEY,'1');
+}
+onboardNext.addEventListener('click',()=>{
+  curStep++;
+  if(curStep>=steps.length) closeOnboard(true); else showStep(curStep);
+});
+onboardPrev.addEventListener('click',()=>{ if(curStep>0){ curStep--; showStep(curStep); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeOnboard(); });
+window.addEventListener('resize',()=>{ if(!onboardOverlay.classList.contains('hidden')) showStep(curStep); });
+window.addEventListener('scroll',()=>{ if(!onboardOverlay.classList.contains('hidden')) showStep(curStep); });
+
 /* ================= INIT ================= */
 (function init(){
   show('role');
   // Viewer picker default
   if(tfViewerSel){ buildTfPicker(tfViewerPick, tfViewerSel.value, key=>{cur.key=key; refreshViewer();}); }
+  startOnboard();
 })();
 </script>
 
