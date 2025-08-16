@@ -539,6 +539,65 @@
       btn.addEventListener('click', ()=> addCustom(btn.getAttribute('data-add')));
     });
 
+    let currentStep = Number(localStorage.getItem('rpie_step')) || 1;
+
+    function showStep(n){
+      currentStep = n;
+      localStorage.setItem('rpie_step', String(n));
+      document.querySelectorAll('.step-pane[data-step]').forEach(pane=>{
+        pane.style.display = Number(pane.getAttribute('data-step')) === n ? '' : 'none';
+      });
+      document.querySelectorAll('.stepper [data-step]').forEach(btn=>{
+        if(Number(btn.getAttribute('data-step')) === n){
+          btn.setAttribute('aria-current','step');
+        } else {
+          btn.removeAttribute('aria-current');
+        }
+      });
+    }
+
+    function validateStep(n){
+      const pane = document.querySelector(`.step-pane[data-step="${n}"]`);
+      if(!pane) return true;
+      pane.querySelectorAll('.err').forEach(el=>el.remove());
+      let ok = true;
+      pane.querySelectorAll('[required]').forEach(field=>{
+        let valid = true;
+        if(field.type === 'checkbox' || field.type === 'radio'){
+          const group = pane.querySelectorAll(`input[name="${field.name}"]`);
+          valid = [...group].some(i=>i.checked);
+        } else {
+          valid = field.value.trim().length > 0;
+        }
+        if(!valid){
+          ok = false;
+          const msg = document.createElement('span');
+          msg.className = 'err';
+          msg.textContent = 'Required';
+          field.insertAdjacentElement('afterend', msg);
+        }
+      });
+      return ok;
+    }
+
+    document.querySelectorAll('.stepper [data-step]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const target = Number(btn.getAttribute('data-step'));
+        if(target > currentStep && !validateStep(currentStep)) return;
+        showStep(target);
+      });
+    });
+    document.querySelectorAll('.step-pane [data-nav]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const dir = btn.getAttribute('data-nav');
+        const target = dir === 'next' ? currentStep + 1 : currentStep - 1;
+        if(dir === 'next' && !validateStep(currentStep)) return;
+        showStep(target);
+      });
+    });
+
+    showStep(currentStep);
+
     const activateTab = (which) => {
       const staff = document.getElementById('panel-inputs');
       const out = document.getElementById('panel-output');
