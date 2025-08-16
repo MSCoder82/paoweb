@@ -398,7 +398,7 @@ const def={
   social:[], // social posts
   brand:{ policy:{brandGuideUrl:'', milHost:'', approvalsRequired:['PAO Release','OPSEC II','Caption/VI','Accessibility','Records Tag']}, inventory:[] },
   checklists:[], // pre-release
-  apiKeys:{ facebook:'', instagram:'', x:'', linkedin:'' }
+  apiKeys:{ facebook:'', instagram:'', x:'', linkedin:'', openai:'', gemini:'', camogpt:'', asksage:'' }
 };
 let db = load(); function load(){ try{const raw=localStorage.getItem(STORAGE_KEY); return raw? JSON.parse(raw): (localStorage.setItem(STORAGE_KEY, JSON.stringify(def)), structuredClone(def)); }catch(e){ return structuredClone(def);} }
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
@@ -408,6 +408,18 @@ const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelec
 function uid(){return Math.random().toString(36).slice(2,9)}
 function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
 function toPct(v){return `${Math.round((v||0)*100)}%`}
+function hasAIKey(){
+  return db.apiKeys && ['openai','gemini','camogpt','asksage'].some(k=> (db.apiKeys[k]||'').trim());
+}
+function refreshAIProviders(){
+  const sel=$('#aiProvider');
+  if(!sel) return;
+  const opts=['openai','gemini','camogpt','asksage']
+    .filter(k=> db.apiKeys && (db.apiKeys[k]||'').trim())
+    .map(k=> `<option value="${k}">${k.charAt(0).toUpperCase()+k.slice(1)}</option>`)
+    .join('');
+  sel.innerHTML=opts;
+}
 function sum(o){return Object.values(o).reduce((a,b)=>a+(b||0),0)}
 function todayISO(){return new Date().toISOString().slice(0,10)}
 function parseLinks(txt){return (txt||'').split(/[\n,]/).map(s=>s.trim()).filter(Boolean)}
@@ -432,8 +444,8 @@ function show(which){
   if(which==='viewer') $('#screenViewer').classList.remove('hide');
   if(which==='staffAuth') $('#screenStaffAuth').classList.remove('hide');
   if(which==='adminAuth') $('#screenAdminAuth').classList.remove('hide');
-  if(which==='staff'){ $('#screenStaff').classList.remove('hide'); $('#askAI')?.classList.remove('hide'); }
-  if(which==='admin'){ $('#screenAdmin').classList.remove('hide'); $('#askAI')?.classList.remove('hide'); }
+  if(which==='staff'){ $('#screenStaff').classList.remove('hide'); if(hasAIKey()) {refreshAIProviders(); $('#askAI').classList.remove('hide');} }
+  if(which==='admin'){ $('#screenAdmin').classList.remove('hide'); if(hasAIKey()) {refreshAIProviders(); $('#askAI').classList.remove('hide');} }
   if(which.startsWith('mod')) $('#'+which).classList.remove('hide');
 }
 $('#screenRole').addEventListener('click', e=>{
@@ -633,6 +645,8 @@ function buildAdmin(){
     db.apiKeys.asksage = $('#apiKeyAsksage').value.trim();
     save();
     alert('API Keys saved');
+    if(hasAIKey()){ refreshAIProviders(); $('#askAI')?.classList.remove('hide'); }
+    else $('#askAI')?.classList.add('hide');
   };
   $('#btnSaveAdminPIN').onclick=()=>{ const p=$('#setAdminPIN').value.trim(); if(!p) return alert('Enter a PIN'); db.adminPIN=p; save(); alert('Admin PIN updated'); };
 }
@@ -908,12 +922,7 @@ function buildAdmin()  { /* wired above */ }
   <h3>Ask AI</h3>
   <div class="grid">
     <div><label>Provider</label>
-      <select id="aiProvider" class="input">
-        <option value="openai">OpenAI</option>
-        <option value="gemini">Gemini</option>
-        <option value="camogpt">CamoGPT</option>
-        <option value="asksage">AskSage</option>
-      </select>
+      <select id="aiProvider" class="input"></select>
     </div>
     <div style="grid-column:1/-1"><label>Prompt</label>
       <textarea id="aiPrompt" rows="3" class="input" placeholder="Ask a question..."></textarea>
@@ -953,7 +962,7 @@ async function callAI(){
     $('#aiOutput').textContent='Error: '+err.message;
   }
 }
-$('#btnAskAI').addEventListener('click',callAI);
+$('#btnAskAI').onclick=callAI;
 </script>
 
 </body>
