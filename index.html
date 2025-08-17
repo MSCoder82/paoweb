@@ -155,7 +155,7 @@
   <section id="screenStaffAuth" class="card hide" style="margin-top:18px">
     <h3>Staff Sign‑In</h3>
     <div class="grid" style="grid-template-columns:1fr">
-      <div><label>Unit</label><input id="staffUnit" class="input" placeholder="e.g., Unit A" /></div>
+      <div><label>Unit</label><select id="staffUnit" class="input"></select></div>
       <div><label>Select your name</label><select id="staffUser" class="input"></select></div>
       <div><label>Your PIN</label><input id="staffPIN" type="password" class="input" placeholder="••••" /></div>
       <div><button class="cta" id="btnStaffLogin" style="margin-top:8px">Sign in</button></div>
@@ -167,7 +167,7 @@
   <section id="screenChiefAuth" class="card hide" style="margin-top:18px">
     <h3>PAO Chief Sign‑In</h3>
     <div class="grid" style="grid-template-columns:1fr">
-      <div><label>Unit</label><input id="chiefUnit" class="input" placeholder="e.g., Unit A" /></div>
+      <div><label>Unit</label><select id="chiefUnit" class="input"></select></div>
       <div><label>PAO PIN</label><input id="chiefPIN" type="password" class="input" placeholder="Default 0000 (change in Settings)" /></div>
       <div><button class="cta" id="btnChiefLogin" style="margin-top:8px">Sign in</button></div>
     </div>
@@ -337,7 +337,6 @@
                 <label class="ghost btn" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px">
                   <input id="importFile" type="file" accept="application/json" class="hide" />Import JSON
                 </label>
-                <button class="danger" id="btnReset">Factory Reset</button>
               </div>
             </div>
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
@@ -425,6 +424,10 @@
     <div class="grid" style="grid-template-columns:1fr">
       <div><label>Select Unit</label><select id="adminUnit" class="input"></select></div>
       <div><button class="cta" id="btnAdminOpen" style="margin-top:8px">Open Unit</button></div>
+      <div class="divider"></div>
+      <div><h4>Registered Units</h4><div id="unitList" class="scroll"></div></div>
+      <div class="divider"></div>
+      <div><button class="danger small" id="btnReset">Factory Reset</button></div>
       <div class="divider"></div>
       <div><label>Set Admin PIN</label><input id="setGlobalPIN" type="password" class="input" placeholder="New PIN" /></div>
       <div><button class="ghost small" id="btnSaveGlobalPIN" style="margin-top:8px">Save PIN</button></div>
@@ -555,6 +558,14 @@ function ensureUnitList(unit){
   const list = JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
   if(!list.includes(unit)){ list.push(unit); localStorage.setItem(UNITS_KEY, JSON.stringify(list)); }
 }
+function populateUnitSelect(sel){
+  const el = typeof sel==='string'? $(sel) : sel;
+  if(!el) return;
+  el.innerHTML='';
+  const units = JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
+  units.forEach(u=>{ const o=document.createElement('option'); o.value=u; o.textContent=u; el.appendChild(o); });
+  el.value=currentUnit;
+}
 function load(unit){
   currentUnit = unit;
   STORAGE_KEY = `${STORAGE_KEY_BASE}_${unit}`;
@@ -576,13 +587,7 @@ function load(unit){
 }
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); ensureUnitList(currentUnit); }
 
-function buildUnitPicker(){
-  const sel = $('#unitSel');
-  if(!sel) return;
-  sel.innerHTML = '';
-  const units = JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
-  units.forEach(u=>{ const o=document.createElement('option'); o.value=u; o.textContent=u; sel.appendChild(o); });
-}
+function buildUnitPicker(){ populateUnitSelect('#unitSel'); }
 
 /* ================= HELPERS ================= */
 const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
@@ -648,13 +653,13 @@ function show(which){
     $('#screenRole').classList.remove('hide');
     return;
   }
-  if(which==='viewer') $('#screenViewer').classList.remove('hide');
-  if(which==='staffAuth') $('#screenStaffAuth').classList.remove('hide');
-  if(which==='chiefAuth') $('#screenChiefAuth').classList.remove('hide');
-  if(which==='adminAuth') $('#screenAdminAuth').classList.remove('hide');
-  if(which==='staff'){ $('#screenStaff').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); }
-  if(which==='chief'){ $('#screenChief').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); }
-  if(which==='admin') $('#screenAdmin').classList.remove('hide');
+  if(which==='viewer'){ $('#screenViewer').classList.remove('hide'); return; }
+  if(which==='staffAuth'){ populateUnitSelect('#staffUnit'); db=load(currentUnit); populateStaffList(); $('#screenStaffAuth').classList.remove('hide'); return; }
+  if(which==='chiefAuth'){ populateUnitSelect('#chiefUnit'); db=load(currentUnit); $('#screenChiefAuth').classList.remove('hide'); return; }
+  if(which==='adminAuth'){ $('#screenAdminAuth').classList.remove('hide'); return; }
+  if(which==='staff'){ $('#screenStaff').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); return; }
+  if(which==='chief'){ $('#screenChief').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); return; }
+  if(which==='admin'){ buildAdmin(); $('#screenAdmin').classList.remove('hide'); return; }
   if(which.startsWith('mod')) $('#'+which).classList.remove('hide');
 }
 $('#btnUnitGo').addEventListener('click', ()=>{
@@ -699,7 +704,7 @@ $('#btnAdminLogin').addEventListener('click', ()=>{
   user={id:'admin', name:'Admin'}; whoPill.textContent='Admin'; btnHamburger.style.display='inline-flex';
   btnSaveProgress.style.display='inline-flex'; lblLoadProgress.style.display='inline-flex';
   $('#adminPIN').value='';
-  buildAdmin(); show('admin');
+  show('admin');
 });
 
 /* ================= HAMBURGER ================= */
@@ -938,7 +943,7 @@ function buildChief(){
   };
   $('#btnExport').onclick=()=>{ const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nww_pao_metrics_export.json'; a.click(); };
   $('#importFile').onchange=(e)=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ db=JSON.parse(fr.result); save(); alert('Imported. Reloading…'); location.reload(); }catch(err){ alert('Invalid JSON'); } }; fr.readAsText(f); };
-  $('#btnReset').onclick=()=>{ if(!confirm('Wipe all local data?'))return; localStorage.removeItem(STORAGE_KEY); location.reload(); };
+$('#btnReset').onclick=()=>{ if(!confirm('Wipe all local data?'))return; localStorage.clear(); location.reload(); };
 function renderStaffList(){
   const box=$('#staffList'); box.innerHTML=''; if(!db.staff.length){ box.innerHTML='<div class="mini">No staff yet.</div>'; return; }
   db.staff.forEach(s=>{
@@ -990,9 +995,38 @@ function refreshChiefDash(){
 }
 
 function buildAdmin(){
-  const sel=$('#adminUnit'); sel.innerHTML='';
+  const sel=$('#adminUnit'); const list=$('#unitList');
+  sel.innerHTML=''; list.innerHTML='';
   const units=JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
-  units.forEach(u=>{ const o=document.createElement('option'); o.value=u; o.textContent=u; sel.appendChild(o); });
+  units.forEach(u=>{
+    const o=document.createElement('option'); o.value=u; o.textContent=u; sel.appendChild(o);
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;';
+    row.innerHTML=`<div>${u}</div><div><button class="ghost small" data-edit="${u}">Rename</button> <button class="danger small" data-del="${u}">Delete</button></div>`;
+    list.appendChild(row);
+  });
+  sel.value=currentUnit;
+  list.querySelectorAll('[data-edit]').forEach(b=> b.addEventListener('click', e=>{
+    const old=e.target.dataset.edit;
+    const neu=prompt('Rename unit', old);
+    if(!neu || neu===old) return;
+    const units=JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
+    if(units.includes(neu)) return alert('Unit exists');
+    const idx=units.indexOf(old); units[idx]=neu; localStorage.setItem(UNITS_KEY, JSON.stringify(units));
+    const oldKey=`${STORAGE_KEY_BASE}_${old}`; const data=localStorage.getItem(oldKey);
+    if(data!==null){ localStorage.setItem(`${STORAGE_KEY_BASE}_${neu}`, data); localStorage.removeItem(oldKey); }
+    if(currentUnit===old) currentUnit=neu;
+    buildAdmin(); buildUnitPicker();
+  }));
+  list.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{
+    const unit=e.target.dataset.del;
+    if(!confirm('Delete unit '+unit+'?')) return;
+    const units=JSON.parse(localStorage.getItem(UNITS_KEY)||'[]').filter(u=>u!==unit);
+    localStorage.setItem(UNITS_KEY, JSON.stringify(units));
+    localStorage.removeItem(`${STORAGE_KEY_BASE}_${unit}`);
+    if(currentUnit===unit){ currentUnit=units[0]||'default'; db=load(currentUnit); }
+    buildAdmin(); buildUnitPicker();
+  }));
 }
 $('#btnAdminOpen').onclick=()=>{ const unit=$('#adminUnit').value; if(!unit) return alert('Select unit'); db=load(unit); role='chief'; whoPill.textContent=`PAO Chief (${unit})`; buildChief(); show('chief'); };
 $('#btnSaveGlobalPIN').onclick=()=>{ const p=$('#setGlobalPIN').value.trim(); if(!p) return alert('Enter a PIN'); globalAdminPIN=p; localStorage.setItem(GLOBAL_PIN_KEY,p); $('#setGlobalPIN').value=''; alert('Admin PIN updated'); };
