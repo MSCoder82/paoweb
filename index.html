@@ -396,7 +396,11 @@
               <div><label>Description (optional)</label><input id="ocmDesc" class="input" placeholder="Short context"/></div>
               <div><button class="cta" id="btnAddOcm" style="margin-top:8px">Add Metric</button></div>
             </div>
-            <div id="ocmChiefList" class="scroll" style="margin-top:10px"></div>
+              <div style="margin-top:10px">
+                <label>Existing Metrics</label>
+                <select id="ocmChiefList" class="input"></select>
+                <button class="danger small" id="btnRemoveOcm" style="margin-top:8px">Remove Selected</button>
+              </div>
           </div>
           <div style="display:flex; gap:10px; margin-top:12px"><button class="cta" id="btnSaveGoals">Save All Goals</button></div>
         </div>
@@ -973,15 +977,25 @@ function buildGoalsEditors(){
   gt.querySelectorAll('.goalOtkRange').forEach(r=> r.addEventListener('input', e=> e.target.parentElement.querySelector('.val').textContent=e.target.value));
 }
 function renderChiefOutcomes(){
-  const box=$('#ocmChiefList'); const arr=db.goals[cur.tf].outcomes||[]; box.innerHTML= arr.length? '' : '<div class="mini">No outcome metrics yet.</div>';
+  const sel=$('#ocmChiefList'); const arr=db.goals[cur.tf].outcomes||[]; sel.innerHTML='';
+  if(!arr.length){
+    const opt=document.createElement('option');
+    opt.textContent='No outcome metrics yet.';
+    opt.disabled=true; opt.selected=true;
+    sel.appendChild(opt);
+    $('#btnRemoveOcm').disabled=true;
+    return;
+  }
   arr.forEach((o,idx)=>{
-    const row=document.createElement('div'); row.className='card'; row.style.cssText='background:#0e1124;border-color:#2f355e;display:flex;justify-content:space-between;align-items:center;gap:8px;';
-    row.innerHTML=`<div><strong>${o.name}</strong><div class="mini">${o.desc||''}</div></div><div><button class="danger small" data-del="${idx}">Remove</button></div>`;
-    box.appendChild(row);
+    const opt=document.createElement('option');
+    opt.value=idx;
+    opt.textContent=o.desc? `${o.name} – ${o.desc}` : o.name;
+    sel.appendChild(opt);
   });
-  box.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{ const i=+e.target.dataset.del; db.goals[cur.tf].outcomes.splice(i,1); save(); renderChiefOutcomes(); refreshChiefDash(); }));
+  $('#btnRemoveOcm').disabled=false;
 }
 $('#btnAddOcm')?.addEventListener('click', ()=>{ const name=$('#ocmName').value.trim(); if(!name) return alert('Metric name required.'); const desc=$('#ocmDesc').value.trim(); const arr=db.goals[cur.tf].outcomes||(db.goals[cur.tf].outcomes=[]); if(arr.find(o=>o.name.toLowerCase()===name.toLowerCase())) return alert('Metric exists.'); arr.push({name,desc}); save(); $('#ocmName').value=''; $('#ocmDesc').value=''; renderChiefOutcomes(); });
+$('#btnRemoveOcm')?.addEventListener('click', ()=>{ const idx=parseInt($('#ocmChiefList').value,10); if(isNaN(idx)) return; db.goals[cur.tf].outcomes.splice(idx,1); save(); renderChiefOutcomes(); refreshChiefDash(); });
 $('#btnSaveGoals')?.addEventListener('click', ()=>{ const g=db.goals[cur.tf]; const outs={}; $$('.goalOutRange').forEach(r=> outs[r.dataset.name]=parseInt(r.value,10)||0 ); const otks={}; $$('.goalOtkRange').forEach(r=> otks[r.dataset.name]=parseInt(r.value,10)||0 ); g.outputs=outs; g.outtakes=otks; save(); alert('Goals saved'); refreshChiefDash(); });
 function refreshChiefDash(){
   const p=calcProgress(cur.tf, cur.key);
