@@ -41,7 +41,7 @@
   .pill{border:1px solid #2b3157; border-radius:999px; padding:8px 12px; color:var(--muted); background:#0f1225}
   .ghost.small{padding:6px 10px; font-weight:600; background:#10132a; border:1px solid #293055; color:#cbd2ff; border-radius:12px; cursor:pointer}
   .hamburger{
-    display:none; width:40px;height:40px;border-radius:12px;border:1px solid #2a2d4a; background:#0f1224;
+    display:flex; width:40px;height:40px;border-radius:12px;border:1px solid #2a2d4a; background:#0f1224;
     align-items:center;justify-content:center;cursor:pointer;color:#cfe0ff;
   }
   .hamburger svg{width:22px;height:22px}
@@ -102,7 +102,6 @@
   @media (max-width:768px){
     .row{flex-direction:column}
     .grid-3,.grid-2{grid-template-columns:1fr}
-    .hamburger{display:flex}
   }
   @media (max-width:360px){
     .topbar{flex-direction:column;align-items:flex-start}
@@ -655,6 +654,7 @@ function toPct(v){return `${Math.round((v||0)*100)}%`}
 function sum(o){return Object.values(o).reduce((a,b)=>a+(b||0),0)}
 function todayISO(){return new Date().toISOString().slice(0,10)}
 function parseLinks(txt){return (txt||'').split(/[\n,]/).map(s=>s.trim()).filter(Boolean)}
+function uniqByName(arr){const seen=new Set();return arr.filter(o=>{if(seen.has(o.name))return false;seen.add(o.name);return true;})}
 function year(d){return d.getFullYear()}
 function monthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
 function quarter(d){return Math.floor(d.getMonth()/3)+1}
@@ -880,20 +880,25 @@ const tfStaffSel=$('#tfStaff'), tfStaffPick=$('#tfStaffPick');
 tfStaffSel?.addEventListener('change', ()=> buildTfPicker(tfStaffPick, tfStaffSel.value, key=>{cur.tf=tfStaffSel.value; cur.key=key; refreshStaff();}));
 function buildStaff(){
   // populate pickers
-  $('#outTemplate').innerHTML = `<option value="">Select template</option>` + db.templates.outputs.map(t=>`<option>${t.name}</option>`).join('');
-  $('#outProdType').innerHTML = [...db.templates.outputs.map(t=>t.name), 'Other (specify)'].map(t=>`<option>${t}</option>`).join('');
-  $('#otkTemplate').innerHTML = `<option value="">Select template</option>` + db.templates.outtakes.map(t=>`<option>${t.name}</option>`).join('');
-  $('#otkType').innerHTML    = [...db.templates.outtakes.map(t=>t.name), 'Other (specify)'].map(t=>`<option>${t}</option>`).join('');
+  const outTemplates = uniqByName([...(def.templates.outputs||[]), ...(db.templates.outputs||[])]);
+  $('#outTemplate').innerHTML = `<option value="">Select template</option>` + outTemplates.map(t=>`<option>${t.name}</option>`).join('');
+  $('#outProdType').innerHTML = [...new Set(outTemplates.map(t=>t.name).concat('Other (specify)'))].map(t=>`<option>${t}</option>`).join('');
+  const otkTemplates = uniqByName([...(def.templates.outtakes||[]), ...(db.templates.outtakes||[])]);
+  $('#otkTemplate').innerHTML = `<option value="">Select template</option>` + otkTemplates.map(t=>`<option>${t.name}</option>`).join('');
+  $('#otkType').innerHTML    = [...new Set(otkTemplates.map(t=>t.name).concat('Other (specify)'))].map(t=>`<option>${t}</option>`).join('');
   const sel=$('#ocmKey');
-  sel.innerHTML = [...Object.keys(db.goals[cur.tf].outcomes||{}), 'Other (specify)'].map(o=>`<option>${o}</option>`).join('');
+  const outcomeNames = [...new Set([...defaultOutcomes.map(o=>o.name), ...Object.keys(db.goals[cur.tf].outcomes||{})])];
+  sel.innerHTML = [...outcomeNames, 'Other (specify)'].map(o=>`<option>${o}</option>`).join('');
   buildTfPicker(tfStaffPick, tfStaffSel.value, key=>{cur.key=key; refreshStaff();});
 }
 $('#outProdType').addEventListener('change', ()=> $('#otherProdWrap').classList.toggle('hide', $('#outProdType').value!=='Other (specify)'));
 $('#otkType').addEventListener('change', ()=> $('#otkOtherWrap').classList.toggle('hide', $('#otkType').value!=='Other (specify)'));
 $('#ocmKey').addEventListener('change', ()=> $('#ocmOtherWrap').classList.toggle('hide', $('#ocmKey').value!=='Other (specify)'));
 $('#ocmKey').dispatchEvent(new Event('change'));
+const findOutputTemplate=name=>[...(def.templates.outputs||[]), ...(db.templates.outputs||[])]
+  .find(o=>o.name===name);
 $('#outTemplate').addEventListener('change', ()=>{
-  const t=db.templates.outputs.find(o=>o.name===$('#outTemplate').value);
+  const t=findOutputTemplate($('#outTemplate').value);
   if(t){
     $('#outProdType').value=t.name;
     $('#outQty').value=t.qty||1;
@@ -901,8 +906,10 @@ $('#outTemplate').addEventListener('change', ()=>{
     $('#outProdType').dispatchEvent(new Event('change'));
   }
 });
+const findOuttakeTemplate=name=>[...(def.templates.outtakes||[]), ...(db.templates.outtakes||[])]
+  .find(o=>o.name===name);
 $('#otkTemplate').addEventListener('change', ()=>{
-  const t=db.templates.outtakes.find(o=>o.name===$('#otkTemplate').value);
+  const t=findOuttakeTemplate($('#otkTemplate').value);
   if(t){
     $('#otkType').value=t.name;
     $('#otkQty').value=t.qty||1;
@@ -1050,7 +1057,8 @@ function buildGoalsEditors(){
   const g=db.goals[cur.tf];
   // Outputs setup
   const outSel=$('#outSel'), outOther=$('#outOther'), outRange=$('#outRange'), outVal=$('#outVal');
-  outSel.innerHTML = db.templates.outputs.map(t=>`<option>${t.name}</option>`).join('') + '<option value="__other">Other</option>';
+  const outNames=[...new Set([...(def.templates.outputs||[]).map(t=>t.name), ...(db.templates.outputs||[]).map(t=>t.name)])];
+  outSel.innerHTML = outNames.map(n=>`<option>${n}</option>`).join('') + '<option value="__other">Other</option>';
   outSel.value=''; outOther.style.display='none';
   outSel.onchange=()=>{ outOther.style.display = outSel.value==='__other'? '' : 'none'; };
   outRange.oninput=()=> outVal.textContent=outRange.value;
@@ -1074,7 +1082,8 @@ function buildGoalsEditors(){
 
   // Outtakes setup
   const otkSel=$('#otkSel'), otkOther=$('#otkOtherGoal'), otkRange=$('#otkRange'), otkVal=$('#otkVal');
-  otkSel.innerHTML = db.templates.outtakes.map(t=>`<option>${t.name}</option>`).join('') + '<option value="__other">Other</option>';
+  const otkNames=[...new Set([...(def.templates.outtakes||[]).map(t=>t.name), ...(db.templates.outtakes||[]).map(t=>t.name)])];
+  otkSel.innerHTML = otkNames.map(n=>`<option>${n}</option>`).join('') + '<option value="__other">Other</option>';
   otkSel.value=''; otkOther.style.display='none';
   otkSel.onchange=()=>{ otkOther.style.display = otkSel.value==='__other'? '' : 'none'; };
   otkRange.oninput=()=> otkVal.textContent=otkRange.value;
