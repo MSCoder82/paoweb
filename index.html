@@ -1435,6 +1435,9 @@ async function callAI(){
       { emailRedirectTo: window.location.origin }
     );
     $("status").textContent = error ? `Signup error: ${error.message}` : "Check your email to confirm.";
+    $("su-email").value = "";
+    $("su-pass").value = "";
+    $("su-pass-confirm").value = "";
   };
 
   window.nwwSignIn = async () => {
