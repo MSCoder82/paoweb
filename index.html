@@ -155,24 +155,43 @@
 
   <!-- AUTH -->
   <section id="screenAuth" class="card hide" style="margin-top:18px">
-    <!-- Auth UI -->
-    <section>
-      <h3>Sign up</h3>
-      <input id="su-email" type="email" placeholder="Email" required />
-      <input id="su-pass" type="password" placeholder="Password" required />
-      <input id="su-pass-confirm" type="password" placeholder="Confirm Password" required />
-      <button onclick="nwwSignUp()">Create account</button>
-    </section>
+    <!-- Admin Supabase auth -->
+    <div id="adminAuth" class="hide">
+      <section>
+        <h3>Sign up</h3>
+        <input id="su-email" type="email" placeholder="Email" required />
+        <input id="su-pass" type="password" placeholder="Password" required />
+        <input id="su-pass-confirm" type="password" placeholder="Confirm Password" required />
+        <button onclick="nwwSignUp()">Create account</button>
+      </section>
 
-    <section>
-      <h3>Sign in</h3>
-      <input id="si-email" type="email" placeholder="Email" required />
-      <input id="si-pass" type="password" placeholder="Password" required />
-      <button onclick="nwwSignIn()">Sign in</button>
-      <button onclick="nwwSignOut()">Sign out</button>
-    </section>
+      <section>
+        <h3>Sign in</h3>
+        <input id="si-email" type="email" placeholder="Email" required />
+        <input id="si-pass" type="password" placeholder="Password" required />
+        <button onclick="nwwSignIn()">Sign in</button>
+        <button onclick="nwwSignOut()">Sign out</button>
+      </section>
 
-    <pre id="status">Not signed in</pre>
+      <pre id="status">Not signed in</pre>
+    </div>
+
+    <!-- PAO Chief PIN auth -->
+    <div id="chiefAuth" class="hide">
+      <h3>Enter PAO PIN</h3>
+      <input id="chiefPINInput" type="password" class="input" placeholder="PIN" />
+      <div><button class="cta" id="btnChiefLogin" style="margin-top:8px">Continue</button></div>
+    </div>
+
+    <!-- Staff PIN auth -->
+    <div id="staffAuth" class="hide">
+      <h3>Staff Sign‑in</h3>
+      <div class="grid" style="grid-template-columns:1fr">
+        <div><label>Select Staff</label><select id="staffPick" class="input"></select></div>
+        <div><label>PIN</label><input id="staffPINInput" type="password" class="input" placeholder="PIN" /></div>
+        <div><button class="cta" id="btnStaffLogin" style="margin-top:8px">Continue</button></div>
+      </div>
+    </div>
   </section>
 
   <!-- VIEWER -->
@@ -228,6 +247,14 @@
   <section id="screenStaff" class="hide staff-only">
     <div class="row" style="margin-top:18px; flex-direction:column">
       <div class="col">
+        <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
+          <h3>My PIN</h3>
+          <div class="grid" style="grid-template-columns:1fr">
+            <div><label>Change My PIN</label><input id="staffSetPIN" type="password" class="input" placeholder="New PIN" /></div>
+            <div><button class="cta" id="btnStaffSavePIN" style="margin-top:8px">Save PIN</button></div>
+          </div>
+        </div>
+
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <h3>My Inputs</h3>
@@ -448,6 +475,13 @@
       <div class="divider"></div>
       <div><label>Set Admin PIN</label><input id="setGlobalPIN" type="password" class="input" placeholder="New PIN" /></div>
       <div><button class="ghost small" id="btnSaveGlobalPIN" style="margin-top:8px">Save PIN</button></div>
+      <div class="divider"></div>
+      <div><label>Reset PAO Chief PIN</label><input id="adminChiefPIN" type="password" class="input" placeholder="New Chief PIN" /></div>
+      <div><button class="ghost small" id="btnAdminSaveChiefPIN" style="margin-top:8px">Save PAO PIN</button></div>
+      <div class="divider"></div>
+      <div><label>Select Staff</label><select id="adminStaffSel" class="input"></select></div>
+      <div><label>New Staff PIN</label><input id="adminStaffPIN" type="password" class="input" placeholder="New Staff PIN" /></div>
+      <div><button class="ghost small" id="btnAdminSaveStaffPIN" style="margin-top:8px">Save Staff PIN</button></div>
     </div>
   </section>
 
@@ -658,6 +692,7 @@ function show(which){
   $('#askAIModule')?.classList.add('hide');
   if(which==='unit'){
     role=null;user=null;whoPill.textContent='Select unit';
+    document.body.classList.remove('is-authed','is-admin');
     homeBtn.style.display='none';
     btnHamburger.style.display='none';
     btnSaveProgress.style.display='none';
@@ -668,6 +703,7 @@ function show(which){
   }
   if(which==='role'){
     role=null;user=null;whoPill.textContent='Not signed in';
+    document.body.classList.remove('is-authed','is-admin');
     homeBtn.style.display='';
     btnHamburger.style.display='none';
     btnSaveProgress.style.display='none';
@@ -676,7 +712,28 @@ function show(which){
     return;
   }
   if(which==='viewer'){ $('#screenViewer').classList.remove('hide'); return; }
-  if(which==='staffAuth' || which==='chiefAuth' || which==='adminAuth'){ $('#screenAuth').classList.remove('hide'); return; }
+  if(which==='staffAuth'){
+    buildStaffAuth();
+    $('#screenAuth').classList.remove('hide');
+    $('#staffAuth').classList.remove('hide');
+    $('#chiefAuth').classList.add('hide');
+    $('#adminAuth').classList.add('hide');
+    return;
+  }
+  if(which==='chiefAuth'){
+    $('#screenAuth').classList.remove('hide');
+    $('#chiefAuth').classList.remove('hide');
+    $('#staffAuth').classList.add('hide');
+    $('#adminAuth').classList.add('hide');
+    return;
+  }
+  if(which==='adminAuth'){
+    $('#screenAuth').classList.remove('hide');
+    $('#adminAuth').classList.remove('hide');
+    $('#staffAuth').classList.add('hide');
+    $('#chiefAuth').classList.add('hide');
+    return;
+  }
   if(which==='staff'){ $('#screenStaff').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); return; }
   if(which==='chief'){ $('#screenChief').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); return; }
   if(which==='admin'){ buildAdmin(); $('#screenAdmin').classList.remove('hide'); return; }
@@ -949,6 +1006,46 @@ function renderStaffList(){
   box.querySelectorAll('[data-reset]').forEach(b=> b.addEventListener('click', e=>{ const s=db.staff.find(x=>x.id===e.target.dataset.reset); const np=prompt('New PIN for '+s.name); if(np){ s.pin=np; save(); alert('PIN updated'); }}));
   box.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{ const id=e.target.dataset.del; if(!confirm('Remove staff?'))return; db.staff=db.staff.filter(x=>x.id!==id); save(); renderStaffList(); }));
 }
+
+function buildStaffAuth(){
+  const sel = $('#staffPick');
+  sel.innerHTML='';
+  db.staff.forEach(s=>{
+    const o=document.createElement('option');
+    o.value=s.id; o.textContent=s.name; sel.appendChild(o);
+  });
+}
+
+$('#btnStaffLogin').onclick=()=>{
+  const id=$('#staffPick').value;
+  const pin=$('#staffPINInput').value.trim();
+  const rec=db.staff.find(s=>s.id===id);
+  if(!rec || rec.pin!==pin) return alert('Invalid PIN');
+  user=rec;
+  whoPill.textContent=`Staff — ${rec.name}`;
+  $('#staffPINInput').value='';
+  document.body.classList.add('is-authed');
+  document.body.classList.remove('is-admin');
+  show('staff');
+};
+
+$('#btnChiefLogin').onclick=()=>{
+  const pin=$('#chiefPINInput').value.trim();
+  if(pin!==db.chiefPIN) return alert('Invalid PIN');
+  user={id:'chief'};
+  whoPill.textContent='PAO Chief';
+  $('#chiefPINInput').value='';
+  document.body.classList.add('is-authed');
+  document.body.classList.remove('is-admin');
+  show('chief');
+};
+
+$('#btnStaffSavePIN').onclick=()=>{
+  const p=$('#staffSetPIN').value.trim();
+  if(!p) return alert('Enter a PIN');
+  const rec=db.staff.find(s=>s.id===user.id);
+  if(rec){ rec.pin=p; save(); $('#staffSetPIN').value=''; alert('PIN updated'); }
+};
 function buildGoalsEditors(){
   const g=db.goals[cur.tf];
   // Outputs setup
@@ -1048,6 +1145,15 @@ function buildAdmin(){
     list.appendChild(row);
   });
   sel.value=currentUnit;
+  sel.onchange=e=>{ db=load(e.target.value); buildAdmin(); };
+
+  const staffSel=$('#adminStaffSel');
+  if(staffSel){
+    staffSel.innerHTML='';
+    db.staff.forEach(s=>{
+      const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; staffSel.appendChild(o);
+    });
+  }
   list.querySelectorAll('[data-edit]').forEach(b=> b.addEventListener('click', e=>{
     const old=e.target.dataset.edit;
     const neu=prompt('Rename unit', old);
@@ -1072,6 +1178,23 @@ function buildAdmin(){
 }
 $('#btnAdminOpen').onclick=()=>{ const unit=$('#adminUnit').value; if(!unit) return alert('Select unit'); db=load(unit); role='chief'; whoPill.textContent=`PAO Chief (${unit})`; buildChief(); show('chief'); };
 $('#btnSaveGlobalPIN').onclick=()=>{ const p=$('#setGlobalPIN').value.trim(); if(!p) return alert('Enter a PIN'); globalAdminPIN=p; localStorage.setItem(GLOBAL_PIN_KEY,p); $('#setGlobalPIN').value=''; alert('Admin PIN updated'); };
+$('#btnAdminSaveChiefPIN').onclick=()=>{
+  const unit=$('#adminUnit').value;
+  const p=$('#adminChiefPIN').value.trim();
+  if(!p) return alert('Enter a PIN');
+  const data=load(unit); data.chiefPIN=p; db=data; save();
+  $('#adminChiefPIN').value=''; alert('PAO PIN updated'); buildAdmin();
+};
+$('#btnAdminSaveStaffPIN').onclick=()=>{
+  const unit=$('#adminUnit').value;
+  const id=$('#adminStaffSel').value;
+  const p=$('#adminStaffPIN').value.trim();
+  if(!id||!p) return alert('Select staff and enter PIN');
+  const data=load(unit); const rec=data.staff.find(s=>s.id===id);
+  if(!rec) return alert('Staff not found');
+  rec.pin=p; db=data; save();
+  $('#adminStaffPIN').value=''; alert('Staff PIN updated'); buildAdmin();
+};
 
 /* ================= MODULES (Hamburger) ================= */
 function buildKLE(){
@@ -1446,6 +1569,7 @@ async function callAI(){
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     $("status").textContent = error ? `Signin error: ${error.message}` : "Signed in.";
     refreshAuthUI();
+    if(!error && role==='admin'){ buildAdmin(); show('admin'); }
   };
 
   window.nwwSignOut = async () => {
