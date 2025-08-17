@@ -108,32 +108,16 @@
           <div class="help">Staff and Admin views. Local saves. OpenAI-powered plan drafting.</div>
         </div>
       </div>
-      <div class="tabs" role="tablist" aria-label="Role selector">
-        <button id="tab-staff" class="tab active" role="tab" aria-selected="true">Staff view</button>
-        <button id="tab-chief" class="tab" role="tab" aria-selected="false">PAO Chief view</button>
-      </div>
     </header>
 
     <div class="grid">
       <!-- LEFT: INPUTS -->
-      <section class="card" id="panel-inputs" aria-labelledby="tab-staff">
+      <section class="card" id="panel-inputs">
         <h2>Plan inputs</h2>
         <div class="notice">Complete the steps, select from curated menus, then generate a draft. Save private drafts anytime.</div>
 
         <details open>
-          <summary>Connection</summary>
-          <label for="apiKey">OpenAI API key</label>
-          <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
-          <div class="row">
-            <div>
-              <label for="model">Model</label>
-              <input id="model" value="gpt-4.1-mini" />
-            </div>
-            <div>
-              <label for="temperature">Temperature</label>
-              <input id="temperature" type="number" step="0.1" min="0" max="2" value="0.2" />
-            </div>
-          </div>
+          <summary>Guidance</summary>
           <label for="policy">Admin guidance to include in prompt (optional)</label>
           <textarea id="policy" placeholder="Tone, style, sensitivities, risk items, do-not-mentions..."></textarea>
         </details>
@@ -313,48 +297,12 @@
         </div>
       </section>
 
-      <!-- RIGHT: OUTPUT + ADMIN -->
+      <!-- RIGHT: OUTPUT -->
       <section class="card" id="panel-output">
         <h2>Draft output</h2>
         <div id="status" class="help">Ready.</div>
         <div id="output" class="output" aria-live="polite"></div>
         <div class="footer-note">This draft is generated from your inputs. Refine as needed before release.</div>
-
-        <hr style="margin:18px 0;border:none;border-top:1px solid #eee" />
-
-        <div id="chiefGate">
-          <h2>Admin view</h2>
-          <div class="help">PIN required.</div>
-          <div class="row">
-            <input id="pin" type="password" placeholder="Enter PIN" />
-            <button class="btn alt" id="pinEnter">Unlock</button>
-          </div>
-        </div>
-
-        <div id="chiefPanel" class="card" style="display:none;margin-top:14px">
-          <h3>Admin controls</h3>
-          <label for="newPin">Set new PIN</label>
-          <div class="row">
-            <input id="newPin" placeholder="New PIN" />
-            <button class="btn ghost" id="setPin">Update PIN</button>
-          </div>
-
-          <h3>Template and guardrails</h3>
-          <label for="sysPrompt">System role template</label>
-          <textarea id="sysPrompt" placeholder="Define the role, style, compliance notes."></textarea>
-          <div class="btnbar">
-            <button class="btn ghost" id="saveTemplate">Save template</button>
-            <button class="btn ghost" id="loadTemplate">Load template</button>
-            <button class="btn ghost" id="resetTemplate">Reset</button>
-          </div>
-
-          <h3>Submissions</h3>
-          <div class="btnbar">
-            <button class="btn ghost" id="exportAll">Export all drafts (JSON)</button>
-            <button class="btn ghost" id="wipeAll">Wipe all localStorage</button>
-          </div>
-          <div id="chiefMsg" class="help"></div>
-        </div>
       </section>
     </div>
   </div>
@@ -470,9 +418,6 @@
 
     // ======= Grab elements =======
     const els = {
-      apiKey: document.getElementById('apiKey'),
-      model: document.getElementById('model'),
-      temperature: document.getElementById('temperature'),
       policy: document.getElementById('policy'),
 
       issue: document.getElementById('issue'),
@@ -534,28 +479,7 @@
 
       status: document.getElementById('status'),
       output: document.getElementById('output'),
-
-      tabStaff: document.getElementById('tab-staff'),
-      tabChief: document.getElementById('tab-chief'),
-      chiefGate: document.getElementById('chiefGate'),
-      chiefPanel: document.getElementById('chiefPanel'),
-      pin: document.getElementById('pin'),
-      pinEnter: document.getElementById('pinEnter'),
-      newPin: document.getElementById('newPin'),
-      setPin: document.getElementById('setPin'),
-      sysPrompt: document.getElementById('sysPrompt'),
-      saveTemplate: document.getElementById('saveTemplate'),
-      loadTemplate: document.getElementById('loadTemplate'),
-      resetTemplate: document.getElementById('resetTemplate'),
-      exportAll: document.getElementById('exportAll'),
-      wipeAll: document.getElementById('wipeAll'),
-      chiefMsg: document.getElementById('chiefMsg'),
     };
-
-    // Prefill API key from parent if available
-    if(window.parent && window.parent.db && window.parent.db.apiKeys?.openai){
-      els.apiKey.value = window.parent.db.apiKeys.openai;
-    }
 
     // Render curated lists on load
     ensureOptions('businessLinesList', OPTIONS.businessLines, []);
@@ -646,44 +570,6 @@
 
     showStep(currentStep);
 
-    const activateTab = (which) => {
-      const staff = document.getElementById('panel-inputs');
-      const out = document.getElementById('panel-output');
-      if(which === 'chief'){
-        els.tabChief.classList.add('active'); els.tabChief.setAttribute('aria-selected', 'true');
-        els.tabStaff.classList.remove('active'); els.tabStaff.setAttribute('aria-selected', 'false');
-        window.scrollTo({top: out.offsetTop - 10, behavior:'smooth'});
-      } else {
-        els.tabStaff.classList.add('active'); els.tabStaff.setAttribute('aria-selected', 'true');
-        els.tabChief.classList.remove('active'); els.tabChief.setAttribute('aria-selected', 'false');
-        window.scrollTo({top: staff.offsetTop - 10, behavior:'smooth'});
-      }
-    };
-    els.tabStaff.addEventListener('click', () => activateTab('staff'));
-    els.tabChief.addEventListener('click', () => activateTab('chief'));
-
-    const PIN_KEY = 'nww_rpie_chief_pin';
-    const defaultPin = localStorage.getItem(PIN_KEY) || '1234';
-    let chiefOK = false;
-    els.pinEnter.addEventListener('click', () => {
-      if(els.pin.value === (localStorage.getItem(PIN_KEY) || defaultPin)){
-        chiefOK = true;
-        els.chiefPanel.style.display = 'block';
-        els.chiefGate.style.display = 'none';
-        status('PAO Chief unlocked', 'ok');
-      } else {
-        status('Invalid PIN', 'err');
-      }
-    });
-    els.setPin.addEventListener('click', () => {
-      if(!chiefOK) return status('Unlock PAO Chief first', 'warn');
-      if(!els.newPin.value) return status('Enter a new PIN', 'warn');
-      localStorage.setItem(PIN_KEY, els.newPin.value.trim());
-      status('PIN updated', 'ok');
-      els.newPin.value = '';
-    });
-
-    const TPL_KEY = 'nww_rpie_template';
     const defaultTemplate = `You are a senior Public Affairs planner for USACE Walla Walla District.
 Produce a clean, operational communication plan using the R-PIE 10-step model.
 Align with AR 360-1/DoD PA guidance.
@@ -701,22 +587,9 @@ Include:
 - Evaluation and Update loop
 Style: concise headings, bullet lists, table for action matrix, professional tone.
 Only include facts provided in inputs.`;
-    els.sysPrompt.value = localStorage.getItem(TPL_KEY) || defaultTemplate;
-    els.saveTemplate.addEventListener('click', () => {
-      if(!chiefOK) return status('Unlock PAO Chief first', 'warn');
-      localStorage.setItem(TPL_KEY, els.sysPrompt.value);
-      status('Template saved', 'ok');
-    });
-    els.loadTemplate.addEventListener('click', () => {
-      els.sysPrompt.value = localStorage.getItem(TPL_KEY) || defaultTemplate;
-      status('Template loaded', 'ok');
-    });
-    els.resetTemplate.addEventListener('click', () => {
-      if(!chiefOK) return status('Unlock PAO Chief first', 'warn');
-      els.sysPrompt.value = defaultTemplate;
-      localStorage.setItem(TPL_KEY, defaultTemplate);
-      status('Template reset', 'ok');
-    });
+
+    const DEFAULT_MODEL = 'gpt-4.1-mini';
+    const DEFAULT_TEMP = 0.2;
 
     const addAMRow = (row={date:'',action:'',resp:'',when:'',method:''})=>{
       const tr = document.createElement('tr');
@@ -741,7 +614,7 @@ Only include facts provided in inputs.`;
         return {date:tds[0].value, action:tds[1].value, responsibility:tds[2].value, when:tds[3].value, method:tds[4].value};
       }).filter(r => Object.values(r).some(v=>v));
       return {
-        connection:{ model: els.model.value.trim(), temperature: Number(els.temperature.value||0), policy: els.policy.value.trim() },
+        connection:{ policy: els.policy.value.trim() },
         step1:{ issue: els.issue.value.trim(), requirements: els.requirements.value.trim() },
         step2:{ situation: els.situation.value.trim(), swot:{S:els.swotS.value.trim(),W:els.swotW.value.trim(),O:els.swotO.value.trim(),T:els.swotT.value.trim()} },
         step3:{
@@ -768,7 +641,7 @@ Only include facts provided in inputs.`;
     }
 
     function toPrompt(data){
-      const tpl = (localStorage.getItem('nww_rpie_template') || els.sysPrompt.value);
+      const tpl = defaultTemplate;
       const guard = data.connection.policy ? `\nAdmin guidance:\n${data.connection.policy}\n` : '';
       const amTable = data.step7.actionMatrix.map(r=>`| ${r.date||''} | ${r.action||''} | ${r.responsibility||''} | ${r.when||''} | ${r.method||''} |`).join('\n') || '';
       const budgetLines = Object.entries(data.step6.budget).filter(([k,v])=>v).map(([k,v])=>`- ${k}: ${v}`).join('\n');
@@ -847,14 +720,15 @@ ${data.step10.evaluation}
 Produce a complete, structured plan with clear headings and a table for the Action Matrix.`;
     }
 
-    async function callOpenAI(prompt, model, temperature){
-      const key = els.apiKey.value.trim() || (window.parent?.db?.apiKeys?.openai || '');
+    async function callOpenAI(prompt){
+      const key = window.parent?.db?.apiKeys?.openai || '';
       if(!key){ throw new Error('API key required'); }
       const res = await fetch('https://api.openai.com/v1/chat/completions',{
         method:'POST',
         headers:{ 'Content-Type':'application/json','Authorization':'Bearer ' + key },
         body: JSON.stringify({
-          model, temperature,
+          model: DEFAULT_MODEL,
+          temperature: DEFAULT_TEMP,
           messages:[
             {role:'system', content:'You are a disciplined USACE public affairs planner who writes professional, concise, actionable plans aligned with Army policy.'},
             {role:'user', content: prompt}
@@ -877,8 +751,6 @@ Produce a complete, structured plan with clear headings and a table for the Acti
       const raw = localStorage.getItem(DRAFT_KEY);
       if(!raw) return status('No saved draft found', 'warn');
       const d = JSON.parse(raw);
-      els.model.value = d.connection?.model || 'gpt-4.1-mini';
-      els.temperature.value = d.connection?.temperature ?? 0.2;
       els.policy.value = d.connection?.policy || '';
       els.issue.value = d.step1?.issue || '';
       els.requirements.value = d.step1?.requirements || '';
@@ -917,7 +789,7 @@ Produce a complete, structured plan with clear headings and a table for the Acti
     function clearForm(){
       localStorage.removeItem(DRAFT_KEY);
       document.querySelectorAll('input, textarea').forEach(el=>{
-        if(['apiKey','model','temperature','pin','newPin','businessLinesAdd','loeAdd','audiencesAdd','stakeholdersAdd','outputsAdd','outtakesAdd','outcomesAdd'].includes(el.id)) return;
+        if(['businessLinesAdd','loeAdd','audiencesAdd','stakeholdersAdd','outputsAdd','outtakesAdd','outcomesAdd'].includes(el.id)) return;
         if(el.type==='number') el.value = el.defaultValue || 0;
         else el.value = '';
       });
@@ -1031,31 +903,16 @@ ${d.step10.evaluation || 'n/a'}
       URL.revokeObjectURL(url);
     }
 
-    els.exportAll.addEventListener('click', ()=>{
-      if(!chiefOK) return status('Unlock PAO Chief first', 'warn');
-      const all = {};
-      ['nww_rpie_chief_pin','nww_rpie_template','nww_rpie_draft'].forEach(k=> all[k] = localStorage.getItem(k));
-      const blob = new Blob([JSON.stringify(all, null, 2)], {type:'application/json'});
-      download(blob, 'nww_rpie_all.json');
-    });
-    els.wipeAll.addEventListener('click', ()=>{
-      if(!chiefOK) return status('Unlock PAO Chief first', 'warn');
-      localStorage.removeItem('nww_rpie_draft');
-      localStorage.removeItem('nww_rpie_template');
-      status('Draft and template cleared', 'ok');
-      els.chiefMsg.textContent = 'Draft and template cleared. PIN retained.';
-    });
-
     els.generate.addEventListener('click', async ()=>{
       try{
         status('Generating...', '');
         const data = collect();
         const prompt = toPrompt(data);
-        const text = await callOpenAI(prompt, data.connection.model || 'gpt-4.1-mini', data.connection.temperature ?? 0.2);
+        const text = await callOpenAI(prompt);
         els.output.textContent = text || '(no content)';
         status('Draft ready', 'ok');
         const saved = JSON.parse(localStorage.getItem('nww_rpie_draft') || '{}');
-        saved.generated = { at:new Date().toISOString(), model:data.connection.model, text };
+        saved.generated = { at:new Date().toISOString(), model:DEFAULT_MODEL, text };
         localStorage.setItem('nww_rpie_draft', JSON.stringify(saved));
       } catch(err){
         status(String(err.message || err), 'err');
