@@ -119,11 +119,21 @@
     </div>
     <div style="display:flex; gap:8px; align-items:center">
       <span class="pill" id="whoPill">Not signed in</span>
-      <button class="ghost small" id="homeBtn" title="Back to role selection">⟵ Home</button>
+      <button class="ghost small" id="homeBtn" title="Back to unit selection">⟵ Home</button>
       <button class="ghost small" id="btnSaveProgress" style="display:none">💾 Save</button>
       <label class="ghost small" id="lblLoadProgress" style="display:none;cursor:pointer">📁 Load<input id="inputLoadProgress" type="file" accept="application/json" class="hide" /></label>
     </div>
   </div>
+
+  <!-- UNIT PICK -->
+  <section id="screenUnit" class="card" style="margin-top:18px">
+    <h3>Choose Unit</h3>
+    <div class="grid" style="grid-template-columns:1fr">
+      <div><label>Existing Units</label><select id="unitSel" class="input"></select></div>
+      <div><label>Or enter new unit</label><input id="unitNew" class="input" placeholder="e.g., Unit A" /></div>
+      <div><button class="cta" id="btnUnitGo" style="margin-top:8px">Continue</button></div>
+    </div>
+  </section>
 
   <!-- ROLE PICK -->
   <section id="screenRole" class="grid grid-2" style="margin-top:18px">
@@ -566,6 +576,14 @@ function load(unit){
 }
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); ensureUnitList(currentUnit); }
 
+function buildUnitPicker(){
+  const sel = $('#unitSel');
+  if(!sel) return;
+  sel.innerHTML = '';
+  const units = JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
+  units.forEach(u=>{ const o=document.createElement('option'); o.value=u; o.textContent=u; sel.appendChild(o); });
+}
+
 /* ================= HELPERS ================= */
 const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
 function uid(){return Math.random().toString(36).slice(2,9)}
@@ -597,7 +615,7 @@ const steps=[
 let curStep=0;
 
 /* ================= NAV ================= */
-homeBtn.addEventListener('click', ()=> show('role'));
+homeBtn.addEventListener('click', ()=> show('unit'));
 scrollTopBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 btnSaveProgress.addEventListener('click', ()=>{
   const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
@@ -609,9 +627,27 @@ inputLoadProgress.addEventListener('change', e=>{
   fr.readAsText(f); inputLoadProgress.value='';
 });
 function show(which){
-  ['screenRole','screenStaffAuth','screenChiefAuth','screenAdminAuth','screenViewer','screenStaff','screenChief','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist','modRpie'].forEach(id=> $('#'+id).classList.add('hide'));
+  ['screenUnit','screenRole','screenStaffAuth','screenChiefAuth','screenAdminAuth','screenViewer','screenStaff','screenChief','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist','modRpie'].forEach(id=> $('#'+id).classList.add('hide'));
   $('#askAIModule')?.classList.add('hide');
-  if(which==='role'){role=null;user=null;whoPill.textContent='Not signed in'; btnHamburger.style.display='none'; btnSaveProgress.style.display='none'; lblLoadProgress.style.display='none'; $('#screenRole').classList.remove('hide'); return;}
+  if(which==='unit'){
+    role=null;user=null;whoPill.textContent='Select unit';
+    homeBtn.style.display='none';
+    btnHamburger.style.display='none';
+    btnSaveProgress.style.display='none';
+    lblLoadProgress.style.display='none';
+    buildUnitPicker();
+    $('#screenUnit').classList.remove('hide');
+    return;
+  }
+  if(which==='role'){
+    role=null;user=null;whoPill.textContent='Not signed in';
+    homeBtn.style.display='';
+    btnHamburger.style.display='none';
+    btnSaveProgress.style.display='none';
+    lblLoadProgress.style.display='none';
+    $('#screenRole').classList.remove('hide');
+    return;
+  }
   if(which==='viewer') $('#screenViewer').classList.remove('hide');
   if(which==='staffAuth') $('#screenStaffAuth').classList.remove('hide');
   if(which==='chiefAuth') $('#screenChiefAuth').classList.remove('hide');
@@ -621,6 +657,13 @@ function show(which){
   if(which==='admin') $('#screenAdmin').classList.remove('hide');
   if(which.startsWith('mod')) $('#'+which).classList.remove('hide');
 }
+$('#btnUnitGo').addEventListener('click', ()=>{
+  const unit=$('#unitNew').value.trim()||$('#unitSel').value;
+  if(!unit) return alert('Select or enter a unit');
+  db=load(unit);
+  $('#unitNew').value='';
+  show('role');
+});
 $('#screenRole').addEventListener('click', e=>{
   const card=e.target.closest('[data-role]'); if(!card) return;
   const r=card.dataset.role;
@@ -1231,7 +1274,7 @@ window.addEventListener('scroll',()=>{
 
 /* ================= INIT ================= */
 (function init(){
-  show('role');
+  show('unit');
   // Viewer picker default
   if(tfViewerSel){ buildTfPicker(tfViewerPick, tfViewerSel.value, key=>{cur.key=key; refreshViewer();}); }
   startOnboard();
