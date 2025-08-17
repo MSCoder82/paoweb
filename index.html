@@ -160,6 +160,7 @@
       <h3>Sign up</h3>
       <input id="su-email" type="email" placeholder="Email" required />
       <input id="su-pass" type="password" placeholder="Password" required />
+      <input id="su-pass-confirm" type="password" placeholder="Confirm Password" required />
       <button onclick="nwwSignUp()">Create account</button>
     </section>
 
@@ -1424,7 +1425,15 @@ async function callAI(){
   window.nwwSignUp = async () => {
     const email = $("su-email").value;
     const password = $("su-pass").value;
-    const { error } = await supabase.auth.signUp({ email, password });
+    const confirm = $("su-pass-confirm").value;
+    if (password !== confirm) {
+      $("status").textContent = "Passwords do not match.";
+      return;
+    }
+    const { error } = await supabase.auth.signUp(
+      { email, password },
+      { emailRedirectTo: window.location.origin }
+    );
     $("status").textContent = error ? `Signup error: ${error.message}` : "Check your email to confirm.";
   };
 
