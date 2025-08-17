@@ -689,13 +689,14 @@ inputLoadProgress.addEventListener('change', e=>{
   fr.readAsText(f); inputLoadProgress.value='';
 });
 function show(which){
+  const hideHamburger=['unit','role','viewer','staffAuth','chiefAuth','adminAuth'];
+  btnHamburger.style.display = hideHamburger.includes(which) ? 'none' : '';
   ['screenUnit','screenRole','screenAuth','screenViewer','screenStaff','screenChief','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist','modRpie'].forEach(id=> $('#'+id).classList.add('hide'));
   $('#askAIModule')?.classList.add('hide');
   if(which==='unit'){
     role=null;user=null;whoPill.textContent='Select unit';
     document.body.classList.remove('is-authed','is-admin');
     homeBtn.style.display='none';
-    btnHamburger.style.display='none';
     btnSaveProgress.style.display='none';
     lblLoadProgress.style.display='none';
     buildUnitPicker();
@@ -706,7 +707,6 @@ function show(which){
     role=null;user=null;whoPill.textContent='Not signed in';
     document.body.classList.remove('is-authed','is-admin');
     homeBtn.style.display='';
-    btnHamburger.style.display='none';
     btnSaveProgress.style.display='none';
     lblLoadProgress.style.display='none';
     $('#screenRole').classList.remove('hide');
