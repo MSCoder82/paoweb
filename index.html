@@ -132,7 +132,6 @@
     <h3>Choose Unit</h3>
     <div class="grid" style="grid-template-columns:1fr">
       <div><label>Existing Units</label><select id="unitSel" class="input"></select></div>
-      <div><label>Or enter new unit</label><input id="unitNew" class="input" placeholder="e.g., Unit A" /></div>
       <div><button class="cta" id="btnUnitGo" style="margin-top:8px">Continue</button></div>
     </div>
   </section>
@@ -470,6 +469,8 @@
       <div><button class="cta" id="btnAdminOpen" style="margin-top:8px">Open Unit</button></div>
       <div class="divider"></div>
       <div><h4>Registered Units</h4><div id="unitList" class="scroll"></div></div>
+      <div><label>Add Unit</label><input id="adminNewUnit" class="input" placeholder="e.g., Unit A" /></div>
+      <div><button class="ghost small" id="btnAdminAddUnit" style="margin-top:8px">Add Unit</button></div>
       <div class="divider"></div>
       <div><button class="danger small" id="btnReset">Factory Reset</button></div>
       <div class="divider"></div>
@@ -740,10 +741,9 @@ function show(which){
   if(which.startsWith('mod')) $('#'+which).classList.remove('hide');
 }
 $('#btnUnitGo').addEventListener('click', ()=>{
-  const unit=$('#unitNew').value.trim()||$('#unitSel').value;
-  if(!unit) return alert('Select or enter a unit');
+  const unit=$('#unitSel').value;
+  if(!unit) return alert('Select a unit');
   db=load(unit);
-  $('#unitNew').value='';
   show('role');
 });
 $('#screenRole').addEventListener('click', e=>{
@@ -1177,6 +1177,16 @@ function buildAdmin(){
   }));
 }
 $('#btnAdminOpen').onclick=()=>{ const unit=$('#adminUnit').value; if(!unit) return alert('Select unit'); db=load(unit); role='chief'; whoPill.textContent=`PAO Chief (${unit})`; buildChief(); show('chief'); };
+$('#btnAdminAddUnit').onclick=()=>{
+  const unit=$('#adminNewUnit').value.trim();
+  if(!unit) return alert('Enter a unit');
+  const units=JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
+  if(units.includes(unit)) return alert('Unit exists');
+  localStorage.setItem(`${STORAGE_KEY_BASE}_${unit}`, JSON.stringify(def));
+  units.push(unit); localStorage.setItem(UNITS_KEY, JSON.stringify(units));
+  $('#adminNewUnit').value='';
+  buildAdmin(); buildUnitPicker();
+};
 $('#btnSaveGlobalPIN').onclick=()=>{ const p=$('#setGlobalPIN').value.trim(); if(!p) return alert('Enter a PIN'); globalAdminPIN=p; localStorage.setItem(GLOBAL_PIN_KEY,p); $('#setGlobalPIN').value=''; alert('Admin PIN updated'); };
 $('#btnAdminSaveChiefPIN').onclick=()=>{
   const unit=$('#adminUnit').value;
