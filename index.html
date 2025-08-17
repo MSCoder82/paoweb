@@ -70,7 +70,9 @@
   .kpi h4{margin:0 0 6px 0; font-size:13px; color:#27314e}
   .kpi .big{font-size:24px; font-weight:900; color:#0b1733}
   .hide{display:none !important}
-  #screenViewer,#screenStaff,#screenAdmin,#modKLE,#modMedia,#modSocial,#modBrand,#modChecklist,#modRpie{content-visibility:auto;contain-intrinsic-size:0 500px;}
+  body:not(.is-authed) .staff-only{display:none}
+  body:not(.is-admin) .admin-only{display:none}
+  #screenAuth,#screenViewer,#screenStaff,#screenAdmin,#modKLE,#modMedia,#modSocial,#modBrand,#modChecklist,#modRpie{content-visibility:auto;contain-intrinsic-size:0 500px;}
   /* drawer */
   .drawer{position:fixed; inset:0; display:none; z-index:1000}
   .drawer.open{display:block}
@@ -151,39 +153,29 @@
     </button>
   </section>
 
-  <!-- STAFF AUTH -->
-  <section id="screenStaffAuth" class="card hide" style="margin-top:18px">
-    <h3>Staff Sign‑In</h3>
-    <div class="grid" style="grid-template-columns:1fr">
-      <div><label>Unit</label><select id="staffUnit" class="input"></select></div>
-      <div><label>Select your name</label><select id="staffUser" class="input"></select></div>
-      <div><label>Your PIN</label><input id="staffPIN" type="password" class="input" placeholder="••••" /></div>
-      <div><button class="cta" id="btnStaffLogin" style="margin-top:8px">Sign in</button></div>
-    </div>
-    <div class="mini" style="margin-top:8px">Need to be added? PAO Chief can create you in Settings.</div>
-  </section>
+  <!-- AUTH -->
+  <section id="screenAuth" class="card hide" style="margin-top:18px">
+    <!-- Auth UI -->
+    <section>
+      <h3>Sign up</h3>
+      <input id="su-email" type="email" placeholder="Email" required />
+      <input id="su-pass" type="password" placeholder="Password" required />
+      <button onclick="nwwSignUp()">Create account</button>
+    </section>
 
-  <!-- PAO CHIEF AUTH -->
-  <section id="screenChiefAuth" class="card hide" style="margin-top:18px">
-    <h3>PAO Chief Sign‑In</h3>
-    <div class="grid" style="grid-template-columns:1fr">
-      <div><label>Unit</label><select id="chiefUnit" class="input"></select></div>
-      <div><label>PAO PIN</label><input id="chiefPIN" type="password" class="input" placeholder="Default 0000 (change in Settings)" /></div>
-      <div><button class="cta" id="btnChiefLogin" style="margin-top:8px">Sign in</button></div>
-    </div>
-  </section>
+    <section>
+      <h3>Sign in</h3>
+      <input id="si-email" type="email" placeholder="Email" required />
+      <input id="si-pass" type="password" placeholder="Password" required />
+      <button onclick="nwwSignIn()">Sign in</button>
+      <button onclick="nwwSignOut()">Sign out</button>
+    </section>
 
-  <!-- ADMIN AUTH -->
-  <section id="screenAdminAuth" class="card hide" style="margin-top:18px">
-    <h3>Admin Sign‑In</h3>
-    <div class="grid" style="grid-template-columns:1fr">
-      <div><label>Admin PIN</label><input id="adminPIN" type="password" class="input" placeholder="Default 0000 (change in Settings)" /></div>
-      <div><button class="cta" id="btnAdminLogin" style="margin-top:8px">Sign in</button></div>
-    </div>
+    <pre id="status">Not signed in</pre>
   </section>
 
   <!-- VIEWER -->
-  <section id="screenViewer" class="hide">
+  <section id="screenViewer" class="hide staff-only">
     <div class="row" style="margin-top:18px">
       <div class="col">
         <div class="card">
@@ -232,7 +224,7 @@
   </section>
 
   <!-- STAFF (inputs) -->
-  <section id="screenStaff" class="hide">
+  <section id="screenStaff" class="hide staff-only">
     <div class="row" style="margin-top:18px; flex-direction:column">
       <div class="col">
         <div class="card">
@@ -304,7 +296,7 @@
   </section>
 
   <!-- PAO CHIEF -->
-  <section id="screenChief" class="hide">
+  <section id="screenChief" class="hide staff-only">
     <div class="row" style="margin-top:18px; flex-direction:column">
       <div class="col">
         <div class="card">
@@ -443,7 +435,7 @@
   </section>
 
   <!-- ADMIN (global) -->
-  <section id="screenAdmin" class="card hide" style="margin-top:18px">
+  <section id="screenAdmin" class="card hide admin-only" style="margin-top:18px">
     <h3>Admin Dashboard</h3>
     <div class="grid" style="grid-template-columns:1fr">
       <div><label>Select Unit</label><select id="adminUnit" class="input"></select></div>
@@ -459,12 +451,12 @@
   </section>
 
   <!-- NEW MODULES (via hamburger) -->
-  <section id="modKLE" class="hide"></section>
-  <section id="modMedia" class="hide"></section>
-  <section id="modSocial" class="hide"></section>
-  <section id="modBrand" class="hide"></section>
-  <section id="modChecklist" class="hide"></section>
-  <section id="modRpie" class="hide"><iframe src="rpie.html" id="rpieFrame" style="width:100%;height:80vh;border:none"></iframe></section>
+  <section id="modKLE" class="hide staff-only"></section>
+  <section id="modMedia" class="hide staff-only"></section>
+  <section id="modSocial" class="hide staff-only"></section>
+  <section id="modBrand" class="hide staff-only"></section>
+  <section id="modChecklist" class="hide staff-only"></section>
+  <section id="modRpie" class="hide staff-only"><iframe src="rpie.html" id="rpieFrame" style="width:100%;height:80vh;border:none"></iframe></section>
 </div>
 
 <!-- Drawer -->
@@ -642,7 +634,6 @@ const onboardOverlay=$('#onboardOverlay'), onboardSpotlight=$('#onboardSpotlight
 const onboardPrev=$('#onboardPrev'), onboardNext=$('#onboardNext'), onboardSkip=$('#onboardSkip');
 const steps=[
   {id:'btnHamburger', text:'Open the main menu'},
-  {id:'btnStaffLogin', text:'Sign in as staff'},
   {id:'btnAddOutput', text:'Record an output'},
   {id:'btnAddOuttake', text:'Track outtakes'},
   {id:'btnSaveGoals', text:'Save your goals'}
@@ -662,7 +653,7 @@ inputLoadProgress.addEventListener('change', e=>{
   fr.readAsText(f); inputLoadProgress.value='';
 });
 function show(which){
-  ['screenUnit','screenRole','screenStaffAuth','screenChiefAuth','screenAdminAuth','screenViewer','screenStaff','screenChief','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist','modRpie'].forEach(id=> $('#'+id).classList.add('hide'));
+  ['screenUnit','screenRole','screenAuth','screenViewer','screenStaff','screenChief','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist','modRpie'].forEach(id=> $('#'+id).classList.add('hide'));
   $('#askAIModule')?.classList.add('hide');
   if(which==='unit'){
     role=null;user=null;whoPill.textContent='Select unit';
@@ -684,9 +675,7 @@ function show(which){
     return;
   }
   if(which==='viewer'){ $('#screenViewer').classList.remove('hide'); return; }
-  if(which==='staffAuth'){ populateUnitSelect('#staffUnit'); db=load(currentUnit); populateStaffList(); $('#screenStaffAuth').classList.remove('hide'); return; }
-  if(which==='chiefAuth'){ populateUnitSelect('#chiefUnit'); db=load(currentUnit); $('#screenChiefAuth').classList.remove('hide'); return; }
-  if(which==='adminAuth'){ $('#screenAdminAuth').classList.remove('hide'); return; }
+  if(which==='staffAuth' || which==='chiefAuth' || which==='adminAuth'){ $('#screenAuth').classList.remove('hide'); return; }
   if(which==='staff'){ $('#screenStaff').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); return; }
   if(which==='chief'){ $('#screenChief').classList.remove('hide'); $('#askAIModule')?.classList.remove('hide'); return; }
   if(which==='admin'){ buildAdmin(); $('#screenAdmin').classList.remove('hide'); return; }
@@ -706,35 +695,6 @@ $('#screenRole').addEventListener('click', e=>{
   if(r==='staff'){ role='staff'; whoPill.textContent='Staff — sign in'; show('staffAuth'); }
   if(r==='chief'){ role='chief'; whoPill.textContent='PAO Chief — sign in'; show('chiefAuth'); }
   if(r==='admin'){ role='admin'; whoPill.textContent='Admin — sign in'; show('adminAuth'); }
-});
-
-/* ================= AUTH ================= */
-const staffUserSel=$('#staffUser');
-function populateStaffList(){ staffUserSel.innerHTML=''; db.staff.forEach(s=>{const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; staffUserSel.appendChild(o);}); }
-$('#staffUnit').addEventListener('change', ()=>{ const unit=$('#staffUnit').value.trim()||'default'; db=load(unit); populateStaffList(); });
-$('#btnStaffLogin').addEventListener('click', ()=>{
-  const unit=$('#staffUnit').value.trim()||'default'; db=load(unit);
-  const id=staffUserSel.value; const pin=$('#staffPIN').value.trim(); const rec=db.staff.find(s=>s.id===id);
-  if(!rec) return alert('Select your name'); if(rec.pin!==pin) return alert('Incorrect PIN');
-  user={id:rec.id, name:rec.name}; whoPill.textContent=`Staff: ${rec.name} (${unit})`; btnHamburger.style.display='inline-flex';
-  btnSaveProgress.style.display='inline-flex'; lblLoadProgress.style.display='inline-flex';
-  $('#staffPIN').value='';
-  buildStaff(); show('staff');
-});
-$('#btnChiefLogin').addEventListener('click', ()=>{
-  const unit=$('#chiefUnit').value.trim()||'default'; db=load(unit);
-  const pin=$('#chiefPIN').value.trim(); if(pin!==db.chiefPIN) return alert('Incorrect PAO PIN');
-  user={id:'chief', name:'PAO Chief'}; whoPill.textContent=`PAO Chief (${unit})`; btnHamburger.style.display='inline-flex';
-  btnSaveProgress.style.display='inline-flex'; lblLoadProgress.style.display='inline-flex';
-  $('#chiefPIN').value='';
-  buildChief(); show('chief');
-});
-$('#btnAdminLogin').addEventListener('click', ()=>{
-  const pin=$('#adminPIN').value.trim(); if(pin!==globalAdminPIN) return alert('Incorrect Admin PIN');
-  user={id:'admin', name:'Admin'}; whoPill.textContent='Admin'; btnHamburger.style.display='inline-flex';
-  btnSaveProgress.style.display='inline-flex'; lblLoadProgress.style.display='inline-flex';
-  $('#adminPIN').value='';
-  show('admin');
 });
 
 /* ================= HAMBURGER ================= */
@@ -1448,6 +1408,88 @@ async function callAI(){
     aiOutputEl.textContent='Error: '+err.message;
   }
 }
+</script>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  const supabase = createClient(
+    "https://ydjjahywgzlecmawzjxp.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkamphaHl3Z3psZWNtYXd6anhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzNjI4MDQsImV4cCI6MjA3MDkzODgwNH0.75MG7WcHkYd02TsiLnqUORTFT9uDQ7HdUZAXwdP0AuA"
+  );
+
+  const $ = (id) => document.getElementById(id);
+
+  // Sign up / Sign in / Sign out
+  window.nwwSignUp = async () => {
+    const email = $("su-email").value;
+    const password = $("su-pass").value;
+    const { error } = await supabase.auth.signUp({ email, password });
+    $("status").textContent = error ? `Signup error: ${error.message}` : "Check your email to confirm.";
+  };
+
+  window.nwwSignIn = async () => {
+    const email = $("si-email").value;
+    const password = $("si-pass").value;
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    $("status").textContent = error ? `Signin error: ${error.message}` : "Signed in.";
+    refreshAuthUI();
+  };
+
+  window.nwwSignOut = async () => {
+    await supabase.auth.signOut();
+    refreshAuthUI();
+  };
+
+  async function refreshAuthUI() {
+    const { data: { session } } = await supabase.auth.getSession();
+    const authed = !!session?.user;
+    document.body.classList.toggle("is-authed", authed);
+
+    if (!authed) {
+      document.body.classList.remove("is-admin");
+      $("status").textContent = "Not signed in";
+      return;
+    }
+
+    const uid = session.user.id;
+    const { data: prof } = await supabase.from("profiles")
+      .select("role, full_name, email")
+      .eq("id", uid)
+      .single();
+
+    document.body.classList.toggle("is-admin", prof?.role === "admin");
+    $("status").textContent = `Signed in as ${prof?.email || session.user.email}`;
+  }
+
+  supabase.auth.onAuthStateChange(() => refreshAuthUI());
+  refreshAuthUI();
+
+  // Example: save an Output (wire to your existing buttons later)
+  window.addOutput = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { alert("Sign in first"); return; }
+    const timeframe = getSelectedTimeframe();   // implement to read your UI
+    const product  = getProductType();          // implement to read your UI
+    const other    = getOtherProductType();     // optional
+    const qty      = parseInt(getQuantity(), 10) || 1;
+    const links    = getLinksTextarea();        // optional
+
+    const { error } = await supabase.from("outputs").insert([{
+      user_id: user.id, timeframe, product_type: product, other, quantity: qty, links
+    }]);
+    if (error) alert(error.message); else refreshOutputs();
+  };
+
+  window.refreshOutputs = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const tf = getSelectedTimeframe();
+    const { data } = await supabase.from("outputs")
+      .select("*").eq("user_id", user.id).eq("timeframe", tf)
+      .order("created_at", { ascending: false });
+    renderOutputsList(data); // implement to draw into your UI
+  };
 </script>
 
 </body>
