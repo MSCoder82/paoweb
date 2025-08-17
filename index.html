@@ -384,23 +384,43 @@
           <div class="mini">Outputs/Outtakes by count; Outcomes as custom % metrics.</div>
           <div class="divider"></div>
           <div class="card" style="background:#ffffff33;border-color:#ffffff66">
-            <h3>Outputs Goals</h3><div id="goalsOutputs" class="grid"></div>
+            <h3>Outputs Goals</h3>
+            <div class="grid" style="grid-template-columns:1fr">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <select id="outSel" class="input"></select>
+                <input id="outOther" class="input" placeholder="Metric name" style="display:none"/>
+                <input type="range" id="outRange" min="0" max="50" value="0"/>
+                <span class="mini" id="outVal">0</span>
+                <button class="cta small" id="addOut">Add metric</button>
+              </div>
+              <div id="outTable"></div>
+            </div>
           </div>
           <div class="card" style="margin-top:12px;background:#ffffff33;border-color:#ffffff66">
-            <h3>Outtakes Goals</h3><div id="goalsOuttakes" class="grid"></div>
+            <h3>Outtakes Goals</h3>
+            <div class="grid" style="grid-template-columns:1fr">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <select id="otkSel" class="input"></select>
+                <input id="otkOtherGoal" class="input" placeholder="Metric name" style="display:none"/>
+                <input type="range" id="otkRange" min="0" max="50" value="0"/>
+                <span class="mini" id="otkVal">0</span>
+                <button class="cta small" id="addOtk">Add metric</button>
+              </div>
+              <div id="otkTable"></div>
+            </div>
           </div>
           <div class="card" style="margin-top:12px;background:#ffffff33;border-color:#ffffff66">
             <h3>Outcomes (Custom % Metrics)</h3>
             <div class="grid" style="grid-template-columns:1fr">
-              <div><label>Metric name</label><input id="ocmName" class="input" placeholder="e.g., Awareness lift"/></div>
-              <div><label>Description (optional)</label><input id="ocmDesc" class="input" placeholder="Short context"/></div>
-              <div><button class="cta" id="btnAddOcm" style="margin-top:8px">Add Metric</button></div>
-            </div>
-              <div style="margin-top:10px">
-                <label>Existing Metrics</label>
-                <select id="ocmChiefList" class="input"></select>
-                <button class="danger small" id="btnRemoveOcm" style="margin-top:8px">Remove Selected</button>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <select id="ocmSel" class="input"></select>
+                <input id="ocmOtherGoal" class="input" placeholder="Metric name" style="display:none"/>
+                <input type="range" id="ocmRange" min="0" max="100" value="0"/>
+                <span class="mini" id="ocmVal">0%</span>
+                <button class="cta small" id="addOcm">Add metric</button>
               </div>
+              <div id="ocmTable"></div>
+            </div>
           </div>
           <div style="display:flex; gap:10px; margin-top:12px"><button class="cta" id="btnSaveGoals">Save All Goals</button></div>
         </div>
@@ -545,9 +565,9 @@ const def={
     ]
   },
   goals:{
-    M:{outputs:{},outtakes:{},outcomes:defaultOutcomes.slice()},
-    Q:{outputs:{},outtakes:{},outcomes:defaultOutcomes.slice()},
-    Y:{outputs:{},outtakes:{},outcomes:defaultOutcomes.slice()}
+    M:{outputs:{},outtakes:{},outcomes:{}},
+    Q:{outputs:{},outtakes:{},outcomes:{}},
+    Y:{outputs:{},outtakes:{},outcomes:{}}
   },
   entries:[], // metrics: {id,userId,type:'output'|'outtake'|'outcome', tf, tfKey, ts, data:{...}}
   kle:[],    // KLE
@@ -584,6 +604,12 @@ function load(unit){
     if(Array.isArray(data.templates?.outtakes) && typeof data.templates.outtakes[0] === 'string'){
       data.templates.outtakes = data.templates.outtakes.map(name=>({name, qty:1, notes:''}));
     }
+    ['M','Q','Y'].forEach(tf=>{
+      const oc=data.goals?.[tf]?.outcomes;
+      if(Array.isArray(oc)){
+        data.goals[tf].outcomes=Object.fromEntries(oc.map(o=>[o.name||o, o.goal||0]));
+      }
+    });
     return data;
   }catch(e){
     return structuredClone(def);
@@ -771,16 +797,20 @@ function calcProgress(tf, tfKey){
   const entries=db.entries.filter(e=> e.tf===tf && e.tfKey===tfKey);
   const outSum=entries.filter(e=>e.type==='output').reduce((m,e)=> (m[e.data.product]=(m[e.data.product]||0)+e.data.qty, m),{});
   const otkSum=entries.filter(e=>e.type==='outtake').reduce((m,e)=> (m[e.data.kind]=(m[e.data.kind]||0)+e.data.qty, m),{});
-  const outGoal=g.outputs||{}, otkGoal=g.outtakes||{};
+  const outGoal=g.outputs||{}, otkGoal=g.outtakes||{}, ocmGoal=g.outcomes||{};
   const outTotGoal=sum(outGoal), otkTotGoal=sum(otkGoal);
   const outTotDone=Object.entries(outGoal).reduce((S,[k,v])=> S + Math.min(outSum[k]||0, v||0), 0);
   const otkTotDone=Object.entries(otkGoal).reduce((S,[k,v])=> S + Math.min(otkSum[k]||0, v||0), 0);
   const outPct = outTotGoal? outTotDone/outTotGoal : 0;
   const otkPct = otkTotGoal? otkTotDone/otkTotGoal : 0;
-  const metrics=(g.outcomes||[]).map(o=>o.name);
+  const metrics=Object.keys(ocmGoal);
   const latestByMetric={};
   entries.filter(e=>e.type==='outcome').forEach(e=> latestByMetric[e.data.metric]=Math.max(latestByMetric[e.data.metric]||0, e.data.pct||0));
-  const ocmPct = metrics.length? metrics.reduce((a,m)=> a + (latestByMetric[m]||0), 0)/(metrics.length*100) : 0;
+  const ocmPct = metrics.length? metrics.reduce((a,m)=>{
+    const goal=ocmGoal[m]||0; if(!goal) return a;
+    const done=Math.min(latestByMetric[m]||0, goal);
+    return a + (goal? done/goal : 0);
+  },0)/metrics.length : 0;
   return { outPct, otkPct, ocmPct, outTotals:{done:outTotDone, goal:outTotGoal}, otkTotals:{done:otkTotDone, goal:otkTotGoal}, outBreak:{sum:outSum, goal:outGoal}, otkBreak:{sum:otkSum, goal:otkGoal}, metrics };
 }
 
@@ -821,7 +851,7 @@ function refreshViewer(){
   }
   $('#leadersOut').textContent=leaders('output','qty');
   $('#leadersOtk').textContent=leaders('outtake','qty');
-  const metrics=(db.goals[cur.tf].outcomes||[]).map(o=>o.name); const byUser={};
+  const metrics=Object.keys(db.goals[cur.tf].outcomes||{}); const byUser={};
   db.entries.filter(e=> e.tf===cur.tf && e.tfKey===cur.key && e.type==='outcome').forEach(e=>{ byUser[e.userId]=byUser[e.userId]||{}; byUser[e.userId][e.data.metric]=Math.max(byUser[e.userId][e.data.metric]||0, e.data.pct||0); });
   const lead=Object.entries(byUser).map(([id,obj])=>{ const avg = metrics.length? metrics.reduce((a,m)=> a+(obj[m]||0),0)/metrics.length : 0; return {name:db.staff.find(s=>s.id===id)?.name||'—', avg}; }).sort((a,b)=>b.avg-a.avg).slice(0,3).map(x=> `${x.name} (${Math.round(x.avg)}%)`).join(', ') || '—';
   $('#leadersOcm').textContent=lead;
@@ -837,7 +867,7 @@ function buildStaff(){
   $('#otkTemplate').innerHTML = `<option value="">Select template</option>` + db.templates.outtakes.map(t=>`<option>${t.name}</option>`).join('');
   $('#otkType').innerHTML    = [...db.templates.outtakes.map(t=>t.name), 'Other (specify)'].map(t=>`<option>${t}</option>`).join('');
   const sel=$('#ocmKey');
-  sel.innerHTML = [...(db.goals[cur.tf].outcomes||[]).map(o=>o.name), 'Other (specify)'].map(o=>`<option>${o}</option>`).join('');
+  sel.innerHTML = [...Object.keys(db.goals[cur.tf].outcomes||{}), 'Other (specify)'].map(o=>`<option>${o}</option>`).join('');
   buildTfPicker(tfStaffPick, tfStaffSel.value, key=>{cur.key=key; refreshStaff();});
 }
 $('#outProdType').addEventListener('change', ()=> $('#otherProdWrap').classList.toggle('hide', $('#outProdType').value!=='Other (specify)'));
@@ -960,48 +990,85 @@ function renderStaffList(){
 }
 function buildGoalsEditors(){
   const g=db.goals[cur.tf];
-  const go=$('#goalsOutputs'); go.innerHTML=''; db.templates.outputs.forEach(t=>{
-    const name=t.name;
-    const val=g.outputs[name]||0; const r=document.createElement('div'); r.className='card'; r.style.cssText='background:#0e1124;border-color:#2f355e';
-    r.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="chip">${name}</span></div><div style="min-width:180px"><input type="range" min="0" max="50" value="${val}" data-name="${name}" class="goalOutRange"><div class="mini"><span class="val">${val}</span> products</div></div></div>`;
-    go.appendChild(r);
-  });
-  const gt=$('#goalsOuttakes'); gt.innerHTML=''; db.templates.outtakes.forEach(t=>{
-    const name=t.name;
-    const val=g.outtakes[name]||0; const r=document.createElement('div'); r.className='card'; r.style.cssText='background:#0e1124;border-color:#2f355e';
-    r.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><span class="chip">${name}</span></div><div style="min-width:180px"><input type="range" min="0" max="50" value="${val}" data-name="${name}" class="goalOtkRange"><div class="mini"><span class="val">${val}</span> events/qty</div></div></div>`;
-    gt.appendChild(r);
-  });
-  renderChiefOutcomes();
-  go.querySelectorAll('.goalOutRange').forEach(r=> r.addEventListener('input', e=> e.target.parentElement.querySelector('.val').textContent=e.target.value));
-  gt.querySelectorAll('.goalOtkRange').forEach(r=> r.addEventListener('input', e=> e.target.parentElement.querySelector('.val').textContent=e.target.value));
-}
-function renderChiefOutcomes(){
-  const sel=$('#ocmChiefList'); const arr=db.goals[cur.tf].outcomes||[]; sel.innerHTML='';
-  if(!arr.length){
-    const opt=document.createElement('option');
-    opt.textContent='No outcome metrics yet.';
-    opt.disabled=true; opt.selected=true;
-    sel.appendChild(opt);
-    $('#btnRemoveOcm').disabled=true;
-    return;
+  // Outputs setup
+  const outSel=$('#outSel'), outOther=$('#outOther'), outRange=$('#outRange'), outVal=$('#outVal');
+  outSel.innerHTML = db.templates.outputs.map(t=>`<option>${t.name}</option>`).join('') + '<option value="__other">Other</option>';
+  outSel.value=''; outOther.style.display='none';
+  outSel.onchange=()=>{ outOther.style.display = outSel.value==='__other'? '' : 'none'; };
+  outRange.oninput=()=> outVal.textContent=outRange.value;
+  $('#addOut').onclick=()=>{
+    const name=outSel.value==='__other'? outOther.value.trim() : outSel.value;
+    if(!name) return alert('Metric name required.');
+    g.outputs[name]=parseInt(outRange.value,10)||0;
+    outOther.value=''; outSel.value=''; outRange.value=0; outVal.textContent='0';
+    renderOutTable();
+  };
+  function renderOutTable(){
+    const rows=Object.entries(g.outputs||{}).map(([metric,goal])=>({metric,goal}));
+    tbl($('#outTable'), rows, [
+      {label:'Metric',render:r=>r.metric},
+      {label:'Goal',render:r=>r.goal},
+      {label:'',render:r=>`<button class="danger small" data-del="${r.metric}">Remove</button>`}
+    ]);
+    $('#outTable').querySelectorAll('[data-del]').forEach(btn=> btn.addEventListener('click', e=>{ delete g.outputs[e.target.dataset.del]; renderOutTable(); }));
   }
-  arr.forEach((o,idx)=>{
-    const opt=document.createElement('option');
-    opt.value=idx;
-    opt.textContent=o.desc? `${o.name} – ${o.desc}` : o.name;
-    sel.appendChild(opt);
-  });
-  $('#btnRemoveOcm').disabled=false;
+  renderOutTable();
+
+  // Outtakes setup
+  const otkSel=$('#otkSel'), otkOther=$('#otkOtherGoal'), otkRange=$('#otkRange'), otkVal=$('#otkVal');
+  otkSel.innerHTML = db.templates.outtakes.map(t=>`<option>${t.name}</option>`).join('') + '<option value="__other">Other</option>';
+  otkSel.value=''; otkOther.style.display='none';
+  otkSel.onchange=()=>{ otkOther.style.display = otkSel.value==='__other'? '' : 'none'; };
+  otkRange.oninput=()=> otkVal.textContent=otkRange.value;
+  $('#addOtk').onclick=()=>{
+    const name=otkSel.value==='__other'? otkOther.value.trim() : otkSel.value;
+    if(!name) return alert('Metric name required.');
+    g.outtakes[name]=parseInt(otkRange.value,10)||0;
+    otkOther.value=''; otkSel.value=''; otkRange.value=0; otkVal.textContent='0';
+    renderOtkTable();
+  };
+  function renderOtkTable(){
+    const rows=Object.entries(g.outtakes||{}).map(([metric,goal])=>({metric,goal}));
+    tbl($('#otkTable'), rows, [
+      {label:'Metric',render:r=>r.metric},
+      {label:'Goal',render:r=>r.goal},
+      {label:'',render:r=>`<button class="danger small" data-del="${r.metric}">Remove</button>`}
+    ]);
+    $('#otkTable').querySelectorAll('[data-del]').forEach(btn=> btn.addEventListener('click', e=>{ delete g.outtakes[e.target.dataset.del]; renderOtkTable(); }));
+  }
+  renderOtkTable();
+
+  // Outcomes setup
+  const ocmSel=$('#ocmSel'), ocmOther=$('#ocmOtherGoal'), ocmRange=$('#ocmRange'), ocmVal=$('#ocmVal');
+  const outcomeNames=[...new Set([...defaultOutcomes.map(o=>o.name), ...Object.keys(g.outcomes||{})])];
+  ocmSel.innerHTML = outcomeNames.map(n=>`<option>${n}</option>`).join('') + '<option value="__other">Other</option>';
+  ocmSel.value=''; ocmOther.style.display='none';
+  ocmSel.onchange=()=>{ ocmOther.style.display = ocmSel.value==='__other'? '' : 'none'; };
+  ocmRange.oninput=()=> ocmVal.textContent=`${ocmRange.value}%`;
+  $('#addOcm').onclick=()=>{
+    const name=ocmSel.value==='__other'? ocmOther.value.trim() : ocmSel.value;
+    if(!name) return alert('Metric name required.');
+    g.outcomes[name]=parseInt(ocmRange.value,10)||0;
+    ocmOther.value=''; ocmSel.value=''; ocmRange.value=0; ocmVal.textContent='0%';
+    renderOcmTable();
+  };
+  function renderOcmTable(){
+    const rows=Object.entries(g.outcomes||{}).map(([metric,goal])=>({metric,goal}));
+    tbl($('#ocmTable'), rows, [
+      {label:'Metric',render:r=>r.metric},
+      {label:'Goal',render:r=>`${r.goal}%`},
+      {label:'',render:r=>`<button class="danger small" data-del="${r.metric}">Remove</button>`}
+    ]);
+    $('#ocmTable').querySelectorAll('[data-del]').forEach(btn=> btn.addEventListener('click', e=>{ delete g.outcomes[e.target.dataset.del]; renderOcmTable(); }));
+  }
+  renderOcmTable();
 }
-$('#btnAddOcm')?.addEventListener('click', ()=>{ const name=$('#ocmName').value.trim(); if(!name) return alert('Metric name required.'); const desc=$('#ocmDesc').value.trim(); const arr=db.goals[cur.tf].outcomes||(db.goals[cur.tf].outcomes=[]); if(arr.find(o=>o.name.toLowerCase()===name.toLowerCase())) return alert('Metric exists.'); arr.push({name,desc}); save(); $('#ocmName').value=''; $('#ocmDesc').value=''; renderChiefOutcomes(); });
-$('#btnRemoveOcm')?.addEventListener('click', ()=>{ const idx=parseInt($('#ocmChiefList').value,10); if(isNaN(idx)) return; db.goals[cur.tf].outcomes.splice(idx,1); save(); renderChiefOutcomes(); refreshChiefDash(); });
-$('#btnSaveGoals')?.addEventListener('click', ()=>{ const g=db.goals[cur.tf]; const outs={}; $$('.goalOutRange').forEach(r=> outs[r.dataset.name]=parseInt(r.value,10)||0 ); const otks={}; $$('.goalOtkRange').forEach(r=> otks[r.dataset.name]=parseInt(r.value,10)||0 ); g.outputs=outs; g.outtakes=otks; save(); alert('Goals saved'); refreshChiefDash(); });
+$('#btnSaveGoals')?.addEventListener('click', ()=>{ save(); alert('Goals saved'); refreshChiefDash(); });
 function refreshChiefDash(){
   const p=calcProgress(cur.tf, cur.key);
   $('#chiefOutPct').textContent=toPct(p.outPct); $('#chiefOutCounts').textContent=`${p.outTotals.done} / ${p.outTotals.goal}`;
   $('#chiefOtkPct').textContent=toPct(p.otkPct); $('#chiefOtkCounts').textContent=`${p.otkTotals.done} / ${p.otkTotals.goal}`;
-  $('#chiefOcmPct').textContent=toPct(p.ocmPct); $('#chiefOcmCounts').textContent=(db.goals[cur.tf].outcomes||[]).length? `${(db.goals[cur.tf].outcomes||[]).length} metrics`:'—';
+  $('#chiefOcmPct').textContent=toPct(p.ocmPct); $('#chiefOcmCounts').textContent=Object.keys(db.goals[cur.tf].outcomes||{}).length? `${Object.keys(db.goals[cur.tf].outcomes||{}).length} metrics`:'—';
   const outRows=Object.keys(p.outBreak.goal).map(k=>({product:k, goal:p.outBreak.goal[k]||0, done:p.outBreak.sum[k]||0}));
   const otkRows=Object.keys(p.otkBreak.goal).map(k=>({kind:k, goal:p.otkBreak.goal[k]||0, done:p.otkBreak.sum[k]||0}));
   tbl($('#chiefTblOutputs'), outRows, [{label:'Product',render:r=>r.product},{label:'Goal',render:r=>r.goal},{label:'Done',render:r=>r.done},{label:'% Complete',render:r=> toPct(r.goal? r.done/r.goal : 0)}]);
