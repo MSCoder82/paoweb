@@ -462,10 +462,8 @@
       <div><h4>PAO Chiefs</h4><div id="chiefAdminList" class="scroll"></div></div>
       <div><label>Add PAO Chief</label><input id="adminNewChief" class="input" placeholder="Name" /></div>
       <div><label>PIN</label><input id="adminNewChiefPIN" type="password" class="input" placeholder="PIN" /></div>
+      <div><label>Assign to Unit</label><select id="adminNewChiefUnit" class="input"></select></div>
       <div><button class="ghost small" id="btnAdminAddChief" style="margin-top:8px">Add PAO Chief</button></div>
-      <div class="divider"></div>
-      <div><label>Assign Chief to Unit</label><select id="adminAssignChief" class="input"></select></div>
-      <div><button class="ghost small" id="btnAdminAssignChief" style="margin-top:8px">Assign Chief</button></div>
       <div class="divider"></div>
       <div><label>Select Staff</label><select id="adminStaffSel" class="input"></select></div>
       <div><label>New Staff PIN</label><input id="adminStaffPIN" type="password" class="input" placeholder="New Staff PIN" /></div>
@@ -1181,13 +1179,15 @@ function buildAdmin(){
       const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; staffSel.appendChild(o);
     });
   }
-  const chiefAssign=$('#adminAssignChief');
+  const newChiefUnitSel=$('#adminNewChiefUnit');
+  if(newChiefUnitSel){
+    newChiefUnitSel.innerHTML='';
+    units.forEach(u=>{ const o=document.createElement('option'); o.value=u; o.textContent=u; newChiefUnitSel.appendChild(o); });
+    newChiefUnitSel.value=currentUnit;
+  }
   const chiefList=$('#chiefAdminList');
-  if(chiefAssign && chiefList){
+  if(chiefList){
     const chiefs=loadChiefs();
-    chiefAssign.innerHTML='<option value="">-- none --</option>';
-    chiefs.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; chiefAssign.appendChild(o); });
-    chiefAssign.value=db.chiefId||'';
     chiefList.innerHTML='';
     chiefs.forEach(c=>{
       const row=document.createElement('div');
@@ -1239,18 +1239,17 @@ $('#btnSaveGlobalPIN').onclick=()=>{ const p=$('#setGlobalPIN').value.trim(); if
 $('#btnAdminAddChief').onclick=()=>{
   const name=$('#adminNewChief').value.trim();
   const pin=$('#adminNewChiefPIN').value.trim();
-  if(!name||!pin) return alert('Name & PIN required');
+  const unit=$('#adminNewChiefUnit').value;
+  if(!name||!pin||!unit) return alert('Name, PIN & Unit required');
   const chiefs=loadChiefs();
-  chiefs.push({id:uid(), name, pin});
+  const id=uid();
+  chiefs.push({id, name, pin});
   saveChiefs(chiefs);
+  const prevUnit=currentUnit;
+  const data=load(unit); data.chiefId=id; save();
+  db=load(prevUnit);
   $('#adminNewChief').value=''; $('#adminNewChiefPIN').value='';
   buildAdmin();
-};
-$('#btnAdminAssignChief').onclick=()=>{
-  const unit=$('#adminUnit').value;
-  const id=$('#adminAssignChief').value;
-  const data=load(unit); data.chiefId=id; db=data; save();
-  alert('Chief assigned'); buildAdmin();
 };
 $('#btnAdminSaveStaffPIN').onclick=()=>{
   const unit=$('#adminUnit').value;
