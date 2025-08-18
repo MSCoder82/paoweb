@@ -1634,7 +1634,7 @@ async function callAI(){
     const prof = await refreshAuthUI();
     // If the profile fetch fails, fall back to the role selected on the role
     // screen so admins can still access the admin view after signing in.
-    const isAdmin = prof?.role === 'admin' || (!prof && role === 'admin');
+    const isAdmin = role === "admin" || prof?.role === "admin";
     if (!error && isAdmin) { buildAdmin(); window.show('admin'); }
   };
 
@@ -1657,7 +1657,7 @@ async function callAI(){
       .eq("id", uid)
       .single();
 
-    role = prof?.role || role;
+    role = role || prof?.role;
     document.body.classList.toggle("is-admin", role === "admin");
     $("status").textContent = `Signed in as ${prof?.email || session.user.email}`;
     resetIdle();
