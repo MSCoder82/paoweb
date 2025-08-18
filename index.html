@@ -159,7 +159,7 @@
         <h3>Sign in</h3>
         <input id="si-email" type="email" placeholder="Email" required />
         <input id="si-pass" type="password" placeholder="Password" required />
-        <button onclick="nwwSignIn()">Sign in</button>
+        <button type="button" onclick="nwwSignIn()">Sign in</button>
       </section>
 
       <pre id="status">Not signed in</pre>
@@ -1246,7 +1246,9 @@ $('#btnAdminAddChief').onclick=()=>{
   chiefs.push({id, name, pin});
   saveChiefs(chiefs);
   const prevUnit=currentUnit;
-  const data=load(unit); data.chiefId=id; save();
+  db=load(unit);
+  db.chiefId=id;
+  save();
   db=load(prevUnit);
   $('#adminNewChief').value=''; $('#adminNewChiefPIN').value='';
   buildAdmin();
