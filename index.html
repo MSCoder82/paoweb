@@ -662,7 +662,7 @@ function quarterKey(d){return `${d.getFullYear()}-Q${quarter(d)}`}
 function tfKeyOf(tf, dLike){const d = dLike? new Date(dLike): new Date(); if(tf==='M') return monthKey(d); if(tf==='Q') return quarterKey(d); return String(year(d))}
 
 /* ================= STATE ================= */
-let role=null, user=null, cur={tf:'M',key:tfKeyOf('M')};
+var role=null, user=null, cur={tf:'M',key:tfKeyOf('M')};
 const whoPill=$('#whoPill'); const homeBtn=$('#homeBtn'); const scrollTopBtn=$('#scrollTop');
 const btnHamburger=$('#btnHamburger'); const drawer=$('#drawer'); const menuItems=$('#menuItems');
 const btnSaveProgress=$('#btnSaveProgress'); const lblLoadProgress=$('#lblLoadProgress'); const inputLoadProgress=$('#inputLoadProgress');
@@ -1588,7 +1588,7 @@ async function callAI(){
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     $("status").textContent = error ? `Signin error: ${error.message}` : "Signed in.";
     refreshAuthUI();
-    if(!error && role==='admin'){ buildAdmin(); show('admin'); }
+    if(!error && window.role==='admin'){ buildAdmin(); show('admin'); }
   };
 
   window.nwwSignOut = async () => {
