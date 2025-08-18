@@ -8,7 +8,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const dom = new JSDOM(html, { pretendToBeVisual: true });
   const { document } = dom.window;
   document.documentElement.setAttribute('data-theme', theme);
-  const btn = document.getElementById('homeBtn');
+  const btn = document.getElementById('backBtn');
   const events = [];
   btn.addEventListener('focus', () => events.push('focus'));
   btn.addEventListener('blur', () => events.push('blur'));
