@@ -1632,7 +1632,10 @@ async function callAI(){
     });
     $("status").textContent = error ? `Signin error: ${error.message}` : "Signed in.";
     const prof = await refreshAuthUI();
-    if(!error && prof?.role==='admin'){ buildAdmin(); window.show('admin'); }
+    // If the profile fetch fails, fall back to the role selected on the role
+    // screen so admins can still access the admin view after signing in.
+    const isAdmin = prof?.role === 'admin' || (!prof && role === 'admin');
+    if (!error && isAdmin) { buildAdmin(); window.show('admin'); }
   };
 
   async function refreshAuthUI() {
