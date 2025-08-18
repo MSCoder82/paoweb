@@ -120,7 +120,7 @@
     </div>
     <div style="display:flex; gap:8px; align-items:center">
       <span class="pill" id="whoPill">Not signed in</span>
-      <button class="ghost small" id="homeBtn" title="Back to unit selection">⟵ Home</button>
+      <button class="ghost small" id="backBtn" title="Go back">⟵ Back</button>
       <button class="ghost small" id="btnSaveProgress" style="display:none">💾 Save</button>
       <label class="ghost small" id="lblLoadProgress" style="display:none;cursor:pointer">📁 Load<input id="inputLoadProgress" type="file" accept="application/json" class="hide" /></label>
     </div>
@@ -659,7 +659,7 @@ function tfKeyOf(tf, dLike){const d = dLike? new Date(dLike): new Date(); if(tf=
 
 /* ================= STATE ================= */
 var role=null, user=null, cur={tf:'M',key:tfKeyOf('M')};
-const whoPill=$('#whoPill'); const homeBtn=$('#homeBtn'); const scrollTopBtn=$('#scrollTop');
+const whoPill=$('#whoPill'); const backBtn=$('#backBtn'); const scrollTopBtn=$('#scrollTop');
 const btnHamburger=$('#btnHamburger'); const drawer=$('#drawer'); const menuItems=$('#menuItems');
 const btnSaveProgress=$('#btnSaveProgress'); const lblLoadProgress=$('#lblLoadProgress'); const inputLoadProgress=$('#inputLoadProgress');
 const onboardOverlay=$('#onboardOverlay'), onboardSpotlight=$('#onboardSpotlight'), onboardText=$('#onboardText');
@@ -673,7 +673,13 @@ const steps=[
 let curStep=0;
 
 /* ================= NAV ================= */
-homeBtn.addEventListener('click', ()=> show('unit'));
+let currentScreen='unit';
+const screenHistory=[];
+backBtn.addEventListener('click', ()=>{
+  const prev=screenHistory.pop();
+  if(prev) show(prev, true);
+});
+backBtn.style.display='none';
 scrollTopBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 btnSaveProgress.addEventListener('click', ()=>{
   const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
@@ -684,25 +690,28 @@ inputLoadProgress.addEventListener('change', e=>{
   fr.onload=()=>{ try{ db=JSON.parse(fr.result); save(); alert('Progress loaded'); location.reload(); }catch(err){ alert('Invalid JSON'); } };
   fr.readAsText(f); inputLoadProgress.value='';
 });
-function show(which){
-  const hideHamburger=['unit','role','viewer'];
+function show(which, isBack=false){
+  const hideHamburger=['unit','role','viewer','staffAuth','chiefAuth','adminAuth'];
+  if(!isBack && currentScreen && which!==currentScreen) screenHistory.push(currentScreen);
+  currentScreen=which;
+  backBtn.style.display = screenHistory.length ? '' : 'none';
   btnHamburger.style.display = hideHamburger.includes(which) ? 'none' : '';
   ['screenUnit','screenRole','screenAuth','screenViewer','screenStaff','screenChief','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist','modRpie'].forEach(id=> $('#'+id).classList.add('hide'));
   $('#askAIModule')?.classList.add('hide');
   if(which==='unit'){
     role=null;user=null;whoPill.textContent='Select unit';
     document.body.classList.remove('is-authed','is-admin');
-    homeBtn.style.display='none';
     btnSaveProgress.style.display='none';
     lblLoadProgress.style.display='none';
     buildUnitPicker();
+    screenHistory.length=0;
+    backBtn.style.display='none';
     $('#screenUnit').classList.remove('hide');
     return;
   }
   if(which==='role'){
     role=null;user=null;whoPill.textContent='Not signed in';
     document.body.classList.remove('is-authed','is-admin');
-    homeBtn.style.display='';
     btnSaveProgress.style.display='none';
     lblLoadProgress.style.display='none';
     $('#screenRole').classList.remove('hide');
@@ -764,7 +773,8 @@ function buildMenu(){
     {id:'check', label:'Pre‑Release Checklist', dot:'grad2', group:'Staff'},
     {id:'rpie', label:'R-PIE Planner', dot:'grad1', group:'Staff'},
     ...(role==='chief' ? [{id:'chief', label:'PAO Chief (Goals & Staff)', dot:'grad2', group:'PAO Chief'}] : []),
-    ...(role==='admin' ? [{id:'admin', label:'Admin (Manage Units)', dot:'grad2', group:'Admin'}] : [])
+    ...(role==='admin' ? [{id:'admin', label:'Admin (Manage Units)', dot:'grad2', group:'Admin'}] : []),
+    ...(role ? [{id:'signout', label:'Sign out', dot:'grad1'}] : [])
   ];
   const groups={}; const ungrouped=[];
   items.forEach(it=>{ if(it.group) (groups[it.group] ||= []).push(it); else ungrouped.push(it); });
@@ -783,6 +793,7 @@ function buildMenu(){
       if(it.id==='rpie'){ show('modRpie'); }
       if(it.id==='chief'){ buildChief(); show('chief'); }
       if(it.id==='admin'){ buildAdmin(); show('admin'); }
+      if(it.id==='signout'){ window.supabase?.auth.signOut(); show('unit'); }
     });
     return el;
   };
@@ -1595,10 +1606,20 @@ async function callAI(){
 
   const supabase = createClient(
     "https://ydjjahywgzlecmawzjxp.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkamphaHl3Z3psZWNtYXd6anhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzNjI4MDQsImV4cCI6MjA3MDkzODgwNH0.75MG7WcHkYd02TsiLnqUORTFT9uDQ7HdUZAXwdP0AuA"
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkamphaHl3Z3psZWNtYXd6anhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzNjI4MDQsImV4cCI6MjA3MDkzODgwNH0.75MG7WcHkYd02TsiLnqUORTFT9uDQ7HdUZAXwdP0AuA",
+    { auth: { storage: sessionStorage, autoRefreshToken: true, persistSession: true } }
   );
+  window.supabase = supabase;
 
   const $ = (id) => document.getElementById(id);
+
+  const IDLE_LIMIT = 30 * 60 * 1000;
+  let idleTimer;
+  function resetIdle(){
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(()=>{ supabase.auth.signOut(); window.show('unit'); }, IDLE_LIMIT);
+  }
+  ['mousemove','keydown','click','scroll'].forEach(evt=> window.addEventListener(evt, resetIdle));
 
   // Sign in
   window.nwwSignIn = async () => {
@@ -1610,8 +1631,8 @@ async function callAI(){
       options: { shouldCreateUser: false }
     });
     $("status").textContent = error ? `Signin error: ${error.message}` : "Signed in.";
-    refreshAuthUI();
-    if(!error && window.role==='admin'){ buildAdmin(); show('admin'); }
+    const prof = await refreshAuthUI();
+    if(!error && prof?.role==='admin'){ buildAdmin(); window.show('admin'); }
   };
 
   async function refreshAuthUI() {
@@ -1621,8 +1642,10 @@ async function callAI(){
 
     if (!authed) {
       document.body.classList.remove("is-admin");
+      role=null;
       $("status").textContent = "Not signed in";
-      return;
+      clearTimeout(idleTimer);
+      return null;
     }
 
     const uid = session.user.id;
@@ -1631,8 +1654,11 @@ async function callAI(){
       .eq("id", uid)
       .single();
 
-    document.body.classList.toggle("is-admin", prof?.role === "admin");
+    role = prof?.role || role;
+    document.body.classList.toggle("is-admin", role === "admin");
     $("status").textContent = `Signed in as ${prof?.email || session.user.email}`;
+    resetIdle();
+    return prof;
   }
 
   supabase.auth.onAuthStateChange(() => refreshAuthUI());
