@@ -144,7 +144,7 @@
       <div style="font-size:22px;font-weight:800">Staff</div><div class="mini">Enter my work & links (PIN protected)</div>
     </button>
     <button class="card" style="background:var(--accent2);color:#1d0c16; cursor:pointer" data-role="chief">
-      <div style="font-size:22px;font-weight:800">PAO Chief</div><div class="mini">Set goals, staff & PINs, manage templates</div>
+      <div style="font-size:22px;font-weight:800">PAO Chief</div><div class="mini">Set goals, staff & PINs</div>
     </button>
     <button class="card" style="background:var(--accent1);color:#0a141c; cursor:pointer" data-role="admin">
       <div style="font-size:22px;font-weight:800">Admin</div><div class="mini">Manage all units</div>
@@ -355,17 +355,6 @@
                 <label class="ghost btn" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px">
                   <input id="importFile" type="file" accept="application/json" class="hide" />Import JSON
                 </label>
-              </div>
-            </div>
-            <div class="card" style="background:#ffffff22;border-color:#ffffff55">
-              <h3>Templates</h3>
-              <div class="grid" style="grid-template-columns:1fr">
-                <div><label>Output Product Types</label><textarea id="tplOutputs" rows="6" class="input"></textarea></div>
-                <div><label>Outtake Types</label><textarea id="tplOuttakes" rows="6" class="input"></textarea></div>
-              </div>
-              <div style="display:flex; gap:10px; margin-top:10px">
-                <button class="cta" id="btnSaveTemplates">Save Templates</button>
-                <span class="mini">“Other” is always allowed on staff forms.</span>
               </div>
             </div>
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
@@ -655,6 +644,10 @@ function sum(o){return Object.values(o).reduce((a,b)=>a+(b||0),0)}
 function todayISO(){return new Date().toISOString().slice(0,10)}
 function parseLinks(txt){return (txt||'').split(/[\n,]/).map(s=>s.trim()).filter(Boolean)}
 function uniqByName(arr){const seen=new Set();return arr.filter(o=>{if(seen.has(o.name))return false;seen.add(o.name);return true;})}
+function goalNames(type){const names=new Set();Object.values(db.goals||{}).forEach(g=>Object.keys(g[type]||{}).forEach(n=>names.add(n)));return [...names];}
+function getOutputNames(){return [...new Set([...(def.templates.outputs||[]).map(t=>t.name),...(db.templates.outputs||[]).map(t=>t.name),...goalNames('outputs')])];}
+function getOuttakeNames(){return [...new Set([...(def.templates.outtakes||[]).map(t=>t.name),...(db.templates.outtakes||[]).map(t=>t.name),...goalNames('outtakes')])];}
+function getOutcomeNames(){return [...new Set([...defaultOutcomes.map(o=>o.name),...goalNames('outcomes')])];}
 function year(d){return d.getFullYear()}
 function monthKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
 function quarter(d){return Math.floor(d.getMonth()/3)+1}
@@ -766,7 +759,7 @@ function buildMenu(){
     {id:'brand', label:'Branding Governance', dot:'grad1', group:'Staff'},
     {id:'check', label:'Pre‑Release Checklist', dot:'grad2', group:'Staff'},
     {id:'rpie', label:'R-PIE Planner', dot:'grad1', group:'Staff'},
-    ...(role==='chief' ? [{id:'chief', label:'PAO Chief (Goals, Staff, Templates)', dot:'grad2', group:'PAO Chief'}] : []),
+    ...(role==='chief' ? [{id:'chief', label:'PAO Chief (Goals & Staff)', dot:'grad2', group:'PAO Chief'}] : []),
     ...(role==='admin' ? [{id:'admin', label:'Admin (Manage Units)', dot:'grad2', group:'Admin'}] : [])
   ];
   const groups={}; const ungrouped=[];
@@ -882,12 +875,12 @@ function buildStaff(){
   // populate pickers
   const outTemplates = uniqByName([...(def.templates.outputs||[]), ...(db.templates.outputs||[])]);
   $('#outTemplate').innerHTML = `<option value="">Select template</option>` + outTemplates.map(t=>`<option>${t.name}</option>`).join('');
-  $('#outProdType').innerHTML = [...new Set(outTemplates.map(t=>t.name).concat('Other (specify)'))].map(t=>`<option>${t}</option>`).join('');
+  $('#outProdType').innerHTML = getOutputNames().concat('Other (specify)').map(t=>`<option>${t}</option>`).join('');
   const otkTemplates = uniqByName([...(def.templates.outtakes||[]), ...(db.templates.outtakes||[])]);
   $('#otkTemplate').innerHTML = `<option value="">Select template</option>` + otkTemplates.map(t=>`<option>${t.name}</option>`).join('');
-  $('#otkType').innerHTML    = [...new Set(otkTemplates.map(t=>t.name).concat('Other (specify)'))].map(t=>`<option>${t}</option>`).join('');
+  $('#otkType').innerHTML    = getOuttakeNames().concat('Other (specify)').map(t=>`<option>${t}</option>`).join('');
   const sel=$('#ocmKey');
-  const outcomeNames = [...new Set([...defaultOutcomes.map(o=>o.name), ...Object.keys(db.goals[cur.tf].outcomes||{})])];
+  const outcomeNames = getOutcomeNames();
   sel.innerHTML = [...outcomeNames, 'Other (specify)'].map(o=>`<option>${o}</option>`).join('');
   buildTfPicker(tfStaffPick, tfStaffSel.value, key=>{cur.key=key; refreshStaff();});
 }
@@ -959,7 +952,6 @@ function refreshViewerIf(){ if(!$('#screenViewer').classList.contains('hide')) r
 const tfChiefSel=$('#tfChief'), tfChiefPick=$('#tfChiefPick');
 tfChiefSel?.addEventListener('change', ()=> buildTfPicker(tfChiefPick, tfChiefSel.value, key=>{cur.tf=tfChiefSel.value; cur.key=key; buildGoalsEditors(); refreshChiefDash();}));
 function buildChief(){
-  $('#tplOutputs').value=db.templates.outputs.map(t=>t.name).join('\n'); $('#tplOuttakes').value=db.templates.outtakes.map(t=>t.name).join('\n');
   buildTfPicker(tfChiefPick, tfChiefSel.value, key=>{cur.key=key; buildGoalsEditors(); refreshChiefDash();});
   renderStaffList();
   if(db.apiKeys){
@@ -993,13 +985,6 @@ function buildChief(){
   $('#btnSaveChiefPIN').onclick=()=>{ const p=$('#setChiefPIN').value.trim(); if(!p) return alert('Enter a PIN'); db.chiefPIN=p; save(); $('#setChiefPIN').value=''; alert('PAO PIN updated'); };
 }
   $('#btnAddStaff').onclick=()=>{ const name=$('#staffName').value.trim(), pin=$('#staffNewPIN').value.trim(); if(!name||!pin) return alert('Name & PIN required'); let rec=db.staff.find(s=>s.name.toLowerCase()===name.toLowerCase()); if(rec) rec.pin=pin; else db.staff.push({id:uid(),name,pin}); save(); $('#staffName').value=''; $('#staffNewPIN').value=''; renderStaffList(); };
-  $('#btnSaveTemplates').onclick=()=>{
-    const outMap=Object.fromEntries((db.templates.outputs||[]).map(t=>[t.name,t]));
-    db.templates.outputs=$('#tplOutputs').value.split('\n').map(s=>s.trim()).filter(Boolean).map(name=> outMap[name] || {name, qty:1, links:[]});
-    const otkMap=Object.fromEntries((db.templates.outtakes||[]).map(t=>[t.name,t]));
-    db.templates.outtakes=$('#tplOuttakes').value.split('\n').map(s=>s.trim()).filter(Boolean).map(name=> otkMap[name] || {name, qty:1, notes:''});
-    save(); alert('Templates saved');
-  };
   $('#btnExport').onclick=()=>{ const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nww_pao_metrics_export.json'; a.click(); };
   $('#importFile').onchange=(e)=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ db=JSON.parse(fr.result); save(); alert('Imported. Reloading…'); location.reload(); }catch(err){ alert('Invalid JSON'); } }; fr.readAsText(f); };
 $('#btnReset').onclick=()=>{ if(!confirm('Wipe all local data?'))return; localStorage.clear(); location.reload(); };
@@ -1057,7 +1042,7 @@ function buildGoalsEditors(){
   const g=db.goals[cur.tf];
   // Outputs setup
   const outSel=$('#outSel'), outOther=$('#outOther'), outRange=$('#outRange'), outVal=$('#outVal');
-  const outNames=[...new Set([...(def.templates.outputs||[]).map(t=>t.name), ...(db.templates.outputs||[]).map(t=>t.name)])];
+  const outNames=getOutputNames();
   outSel.innerHTML = outNames.map(n=>`<option>${n}</option>`).join('') + '<option value="__other">Other</option>';
   outSel.value=''; outOther.style.display='none';
   outSel.onchange=()=>{ outOther.style.display = outSel.value==='__other'? '' : 'none'; };
@@ -1082,7 +1067,7 @@ function buildGoalsEditors(){
 
   // Outtakes setup
   const otkSel=$('#otkSel'), otkOther=$('#otkOtherGoal'), otkRange=$('#otkRange'), otkVal=$('#otkVal');
-  const otkNames=[...new Set([...(def.templates.outtakes||[]).map(t=>t.name), ...(db.templates.outtakes||[]).map(t=>t.name)])];
+  const otkNames=getOuttakeNames();
   otkSel.innerHTML = otkNames.map(n=>`<option>${n}</option>`).join('') + '<option value="__other">Other</option>';
   otkSel.value=''; otkOther.style.display='none';
   otkSel.onchange=()=>{ otkOther.style.display = otkSel.value==='__other'? '' : 'none'; };
@@ -1107,7 +1092,7 @@ function buildGoalsEditors(){
 
   // Outcomes setup
   const ocmSel=$('#ocmSel'), ocmOther=$('#ocmOtherGoal'), ocmRange=$('#ocmRange'), ocmVal=$('#ocmVal');
-  const outcomeNames=[...new Set([...defaultOutcomes.map(o=>o.name), ...Object.keys(g.outcomes||{})])];
+  const outcomeNames=getOutcomeNames();
   ocmSel.innerHTML = outcomeNames.map(n=>`<option>${n}</option>`).join('') + '<option value="__other">Other</option>';
   ocmSel.value=''; ocmOther.style.display='none';
   ocmSel.onchange=()=>{ ocmOther.style.display = ocmSel.value==='__other'? '' : 'none'; };
@@ -1406,7 +1391,7 @@ function buildChecklist(){
       <div class="mini">Required approvals: ${approvals}</div>
       <div class="grid grid-3" style="margin-top:8px">
         <div><label>Product Title</label><input id="chkTitle" class="input" placeholder="e.g., Water Safety News Release"></div>
-          <div><label>Product Type</label><select id="chkType" class="input">${db.templates.outputs.map(t=>`<option>${t.name}</option>`).join('')}<option>Other</option></select></div>
+          <div><label>Product Type</label><select id="chkType" class="input">${getOutputNames().map(n=>`<option>${n}</option>`).join('')}<option>Other</option></select></div>
         <div><label>Links (comma or new line)</label><input id="chkLinks" class="input" placeholder="Drafts, assets, DVIDS, etc."></div>
       </div>
       <div class="grid grid-2" style="margin-top:12px">
