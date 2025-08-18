@@ -160,7 +160,6 @@
         <input id="si-email" type="email" placeholder="Email" required />
         <input id="si-pass" type="password" placeholder="Password" required />
         <button onclick="nwwSignIn()">Sign in</button>
-        <button onclick="nwwSignOut()">Sign out</button>
       </section>
 
       <pre id="status">Not signed in</pre>
@@ -1601,7 +1600,7 @@ async function callAI(){
 
   const $ = (id) => document.getElementById(id);
 
-  // Sign in / Sign out
+  // Sign in
   window.nwwSignIn = async () => {
     const email = $("si-email").value;
     const password = $("si-pass").value;
@@ -1613,11 +1612,6 @@ async function callAI(){
     $("status").textContent = error ? `Signin error: ${error.message}` : "Signed in.";
     refreshAuthUI();
     if(!error && window.role==='admin'){ buildAdmin(); show('admin'); }
-  };
-
-  window.nwwSignOut = async () => {
-    await supabase.auth.signOut();
-    refreshAuthUI();
   };
 
   async function refreshAuthUI() {
