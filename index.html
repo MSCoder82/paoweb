@@ -176,9 +176,12 @@
 
     <!-- PAO Chief PIN auth -->
     <div id="chiefAuth" class="hide">
-      <h3>Enter PAO PIN</h3>
-      <input id="chiefPINInput" type="password" class="input" placeholder="PIN" />
-      <div><button class="cta" id="btnChiefLogin" style="margin-top:8px">Continue</button></div>
+      <h3>PAO Chief Sign‑in</h3>
+      <div class="grid" style="grid-template-columns:1fr">
+        <div><label>Select PAO Chief</label><select id="chiefPick" class="input"></select></div>
+        <div><label>PIN</label><input id="chiefPINInput" type="password" class="input" placeholder="PIN" /></div>
+        <div><button class="cta" id="btnChiefLogin" style="margin-top:8px">Continue</button></div>
+      </div>
     </div>
 
     <!-- Staff PIN auth -->
@@ -465,8 +468,13 @@
       <div><label>Set Admin PIN</label><input id="setGlobalPIN" type="password" class="input" placeholder="New PIN" /></div>
       <div><button class="ghost small" id="btnSaveGlobalPIN" style="margin-top:8px">Save PIN</button></div>
       <div class="divider"></div>
-      <div><label>Reset PAO Chief PIN</label><input id="adminChiefPIN" type="password" class="input" placeholder="New Chief PIN" /></div>
-      <div><button class="ghost small" id="btnAdminSaveChiefPIN" style="margin-top:8px">Save PAO PIN</button></div>
+      <div><h4>PAO Chiefs</h4><div id="chiefAdminList" class="scroll"></div></div>
+      <div><label>Add PAO Chief</label><input id="adminNewChief" class="input" placeholder="Name" /></div>
+      <div><label>PIN</label><input id="adminNewChiefPIN" type="password" class="input" placeholder="PIN" /></div>
+      <div><button class="ghost small" id="btnAdminAddChief" style="margin-top:8px">Add PAO Chief</button></div>
+      <div class="divider"></div>
+      <div><label>Assign Chief to Unit</label><select id="adminAssignChief" class="input"></select></div>
+      <div><button class="ghost small" id="btnAdminAssignChief" style="margin-top:8px">Assign Chief</button></div>
       <div class="divider"></div>
       <div><label>Select Staff</label><select id="adminStaffSel" class="input"></select></div>
       <div><label>New Staff PIN</label><input id="adminStaffPIN" type="password" class="input" placeholder="New Staff PIN" /></div>
@@ -516,6 +524,9 @@
 const STORAGE_KEY_BASE='nww_pao_metrics_onepage_v1';
 const UNITS_KEY='nww_pao_units';
 const GLOBAL_PIN_KEY='nww_pao_global_pin';
+const CHIEFS_KEY='nww_pao_chiefs';
+function loadChiefs(){ return JSON.parse(localStorage.getItem(CHIEFS_KEY)||'[]'); }
+function saveChiefs(list){ localStorage.setItem(CHIEFS_KEY, JSON.stringify(list)); }
 let currentUnit='default';
 let STORAGE_KEY=`${STORAGE_KEY_BASE}_${currentUnit}`;
 let globalAdminPIN = localStorage.getItem(GLOBAL_PIN_KEY) || '0000';
@@ -534,7 +545,7 @@ const defaultOutcomes=[
   {name:'Stakeholder collaboration actions', desc:''}
 ];
 const def={
-  chiefPIN:'0000',
+  chiefId:null,
   staff:[], // {id,name,pin}
   templates:{
     outputs:[
@@ -626,6 +637,7 @@ function load(unit){
         data.goals[tf].outcomes=Object.fromEntries(oc.map(o=>[o.name||o, o.goal||0]));
       }
     });
+    if(data.chiefPIN && !data.chiefId){ data.chiefId=null; delete data.chiefPIN; }
     return data;
   }catch(e){
     return structuredClone(def);
@@ -705,7 +717,7 @@ function show(which){
     $('#screenRole').classList.remove('hide');
     return;
   }
-  if(which==='viewer'){ $('#screenViewer').classList.remove('hide'); return; }
+  if(which==='viewer'){ buildViewer(); $('#screenViewer').classList.remove('hide'); return; }
   if(which==='staffAuth'){
     buildStaffAuth();
     $('#screenAuth').classList.remove('hide');
@@ -715,6 +727,7 @@ function show(which){
     return;
   }
   if(which==='chiefAuth'){
+    buildChiefAuth();
     $('#screenAuth').classList.remove('hide');
     $('#chiefAuth').classList.remove('hide');
     $('#staffAuth').classList.add('hide');
@@ -982,7 +995,13 @@ function buildChief(){
     save();
     alert('AI API Keys saved');
   };
-  $('#btnSaveChiefPIN').onclick=()=>{ const p=$('#setChiefPIN').value.trim(); if(!p) return alert('Enter a PIN'); db.chiefPIN=p; save(); $('#setChiefPIN').value=''; alert('PAO PIN updated'); };
+  $('#btnSaveChiefPIN').onclick=()=>{
+    const p=$('#setChiefPIN').value.trim();
+    if(!p) return alert('Enter a PIN');
+    const chiefs=loadChiefs();
+    const rec=chiefs.find(c=>c.id===db.chiefId);
+    if(rec){ rec.pin=p; saveChiefs(chiefs); $('#setChiefPIN').value=''; alert('PIN updated'); }
+  };
 }
   $('#btnAddStaff').onclick=()=>{ const name=$('#staffName').value.trim(), pin=$('#staffNewPIN').value.trim(); if(!name||!pin) return alert('Name & PIN required'); let rec=db.staff.find(s=>s.name.toLowerCase()===name.toLowerCase()); if(rec) rec.pin=pin; else db.staff.push({id:uid(),name,pin}); save(); $('#staffName').value=''; $('#staffNewPIN').value=''; renderStaffList(); };
   $('#btnExport').onclick=()=>{ const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nww_pao_metrics_export.json'; a.click(); };
@@ -1007,6 +1026,14 @@ function buildStaffAuth(){
     o.value=s.id; o.textContent=s.name; sel.appendChild(o);
   });
 }
+function buildChiefAuth(){
+  const sel=$('#chiefPick');
+  if(!sel) return;
+  sel.innerHTML='';
+  loadChiefs().forEach(c=>{
+    const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; sel.appendChild(o);
+  });
+}
 
 $('#btnStaffLogin').onclick=()=>{
   const id=$('#staffPick').value;
@@ -1022,10 +1049,14 @@ $('#btnStaffLogin').onclick=()=>{
 };
 
 $('#btnChiefLogin').onclick=()=>{
+  const id=$('#chiefPick').value;
   const pin=$('#chiefPINInput').value.trim();
-  if(pin!==db.chiefPIN) return alert('Invalid PIN');
+  const chiefs=loadChiefs();
+  const rec=chiefs.find(c=>c.id===id);
+  if(!rec || rec.pin!==pin) return alert('Invalid PIN');
+  if(db.chiefId!==id) return alert('Not assigned to this unit');
   user={id:'chief'};
-  whoPill.textContent='PAO Chief';
+  whoPill.textContent=`PAO Chief — ${rec.name}`;
   $('#chiefPINInput').value='';
   document.body.classList.add('is-authed');
   document.body.classList.remove('is-admin');
@@ -1148,6 +1179,27 @@ function buildAdmin(){
       const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; staffSel.appendChild(o);
     });
   }
+  const chiefAssign=$('#adminAssignChief');
+  const chiefList=$('#chiefAdminList');
+  if(chiefAssign && chiefList){
+    const chiefs=loadChiefs();
+    chiefAssign.innerHTML='<option value="">-- none --</option>';
+    chiefs.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; chiefAssign.appendChild(o); });
+    chiefAssign.value=db.chiefId||'';
+    chiefList.innerHTML='';
+    chiefs.forEach(c=>{
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;';
+      row.innerHTML=`<div>${c.name}</div><div><button class="ghost small" data-reset="${c.id}">Reset PIN</button> <button class="danger small" data-del="${c.id}">Remove</button></div>`;
+      chiefList.appendChild(row);
+    });
+    chiefList.querySelectorAll('[data-reset]').forEach(b=> b.addEventListener('click', e=>{
+      const id=e.target.dataset.reset; const chiefs=loadChiefs(); const c=chiefs.find(x=>x.id===id); const np=prompt('New PIN for '+c.name); if(np){ c.pin=np; saveChiefs(chiefs); buildAdmin(); }
+    }));
+    chiefList.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{
+      const id=e.target.dataset.del; if(!confirm('Remove chief?')) return; let chiefs=loadChiefs().filter(x=>x.id!==id); saveChiefs(chiefs); if(db.chiefId===id){ db.chiefId=null; save(); } buildAdmin();
+    }));
+  }
   list.querySelectorAll('[data-edit]').forEach(b=> b.addEventListener('click', e=>{
     const old=e.target.dataset.edit;
     const neu=prompt('Rename unit', old);
@@ -1182,12 +1234,21 @@ $('#btnAdminAddUnit').onclick=()=>{
   buildAdmin(); buildUnitPicker();
 };
 $('#btnSaveGlobalPIN').onclick=()=>{ const p=$('#setGlobalPIN').value.trim(); if(!p) return alert('Enter a PIN'); globalAdminPIN=p; localStorage.setItem(GLOBAL_PIN_KEY,p); $('#setGlobalPIN').value=''; alert('Admin PIN updated'); };
-$('#btnAdminSaveChiefPIN').onclick=()=>{
+$('#btnAdminAddChief').onclick=()=>{
+  const name=$('#adminNewChief').value.trim();
+  const pin=$('#adminNewChiefPIN').value.trim();
+  if(!name||!pin) return alert('Name & PIN required');
+  const chiefs=loadChiefs();
+  chiefs.push({id:uid(), name, pin});
+  saveChiefs(chiefs);
+  $('#adminNewChief').value=''; $('#adminNewChiefPIN').value='';
+  buildAdmin();
+};
+$('#btnAdminAssignChief').onclick=()=>{
   const unit=$('#adminUnit').value;
-  const p=$('#adminChiefPIN').value.trim();
-  if(!p) return alert('Enter a PIN');
-  const data=load(unit); data.chiefPIN=p; db=data; save();
-  $('#adminChiefPIN').value=''; alert('PAO PIN updated'); buildAdmin();
+  const id=$('#adminAssignChief').value;
+  const data=load(unit); data.chiefId=id; db=data; save();
+  alert('Chief assigned'); buildAdmin();
 };
 $('#btnAdminSaveStaffPIN').onclick=()=>{
   const unit=$('#adminUnit').value;
