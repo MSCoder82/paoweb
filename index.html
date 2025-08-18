@@ -193,7 +193,7 @@
   </section>
 
   <!-- VIEWER -->
-  <section id="screenViewer" class="hide staff-only">
+  <section id="screenViewer" class="hide">
     <div class="row" style="margin-top:18px">
       <div class="col">
         <div class="card">
@@ -689,7 +689,7 @@ inputLoadProgress.addEventListener('change', e=>{
   fr.readAsText(f); inputLoadProgress.value='';
 });
 function show(which){
-  const hideHamburger=['unit','role','viewer','staffAuth','chiefAuth','adminAuth'];
+  const hideHamburger=['unit','role','viewer'];
   btnHamburger.style.display = hideHamburger.includes(which) ? 'none' : '';
   ['screenUnit','screenRole','screenAuth','screenViewer','screenStaff','screenChief','screenAdmin','modKLE','modMedia','modSocial','modBrand','modChecklist','modRpie'].forEach(id=> $('#'+id).classList.add('hide'));
   $('#askAIModule')?.classList.add('hide');
