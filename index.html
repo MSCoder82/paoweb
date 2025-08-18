@@ -1605,7 +1605,11 @@ async function callAI(){
   window.nwwSignIn = async () => {
     const email = $("si-email").value;
     const password = $("si-pass").value;
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { shouldCreateUser: false }
+    });
     $("status").textContent = error ? `Signin error: ${error.message}` : "Signed in.";
     refreshAuthUI();
     if(!error && window.role==='admin'){ buildAdmin(); show('admin'); }
