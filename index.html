@@ -169,7 +169,7 @@
       <div class="grid" style="grid-template-columns:1fr">
         <div><label>New Password</label><input id="rp-new" type="password" class="input" placeholder="New password" /></div>
         <div><label>Confirm Password</label><input id="rp-confirm" type="password" class="input" placeholder="Confirm password" /></div>
-        <div><button class="cta" id="btnAdminReset" style="margin-top:8px" onclick="finishPasswordReset()">Submit</button></div>
+        <div><button class="cta" id="btnAdminReset" style="margin-top:8px">Submit</button></div>
       </div>
     </div>
 
@@ -1694,6 +1694,7 @@ async function callAI(){
   };
 
   $("btnResetPassword").addEventListener("click", requestPasswordReset);
+  $("btnAdminReset").addEventListener("click", finishPasswordReset);
   async function refreshAuthUI() {
     const { data: { session } } = await supabase.auth.getSession();
     const authed = !!session?.user;
