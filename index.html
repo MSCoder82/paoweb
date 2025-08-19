@@ -257,14 +257,6 @@
   <section id="screenStaff" class="hide staff-only">
     <div class="row" style="margin-top:18px; flex-direction:column">
       <div class="col">
-        <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
-          <h3>My PIN</h3>
-          <div class="grid" style="grid-template-columns:1fr">
-            <div><label>Change My PIN</label><input id="staffSetPIN" type="password" class="input" placeholder="New PIN" /></div>
-            <div><button class="cta" id="btnStaffSavePIN" style="margin-top:8px">Save PIN</button></div>
-          </div>
-        </div>
-
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <h3>My Inputs</h3>
@@ -350,12 +342,7 @@
           <div class="divider"></div>
           <div class="grid" style="grid-template-columns:1fr">
             <div class="card" style="background:#ffffff22;border-color:#ffffff55">
-              <h3>PAO PIN & Staff</h3>
-              <div class="grid" style="grid-template-columns:1fr">
-                <div><label>Set PAO PIN</label><input id="setChiefPIN" type="password" class="input" placeholder="New PIN"></div>
-                <div><button class="cta" id="btnSaveChiefPIN" style="margin-top:8px">Save PIN</button></div>
-              </div>
-              <div class="divider"></div>
+              <h3>Staff</h3>
               <div class="grid" style="grid-template-columns:1fr">
                 <div><label>Staff Name</label><input id="staffName" class="input" placeholder="e.g., A. Johnson"></div>
                 <div><label>PIN</label><input id="staffNewPIN" type="password" class="input" placeholder="Set PIN"></div>
@@ -1066,13 +1053,6 @@ function buildChief(){
     save();
     alert('API Keys saved');
   };
-  $('#btnSaveChiefPIN').onclick=()=>{
-    const p=$('#setChiefPIN').value.trim();
-    if(!p) return alert('Enter a PIN');
-    const chiefs=loadChiefs();
-    const rec=chiefs.find(c=>c.id===db.chiefId);
-    if(rec){ rec.pin=p; saveChiefs(chiefs); $('#setChiefPIN').value=''; alert('PIN updated'); }
-  };
 }
   $('#btnAddStaff').onclick=()=>{ const name=$('#staffName').value.trim(), pin=$('#staffNewPIN').value.trim(); if(!name||!pin) return alert('Name & PIN required'); let rec=db.staff.find(s=>s.name.toLowerCase()===name.toLowerCase()); if(rec) rec.pin=pin; else db.staff.push({id:uid(),name,pin}); save(); $('#staffName').value=''; $('#staffNewPIN').value=''; renderStaffList(); };
   $('#btnExport').onclick=()=>{ const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nww_pao_metrics_export.json'; a.click(); };
@@ -1082,10 +1062,9 @@ function renderStaffList(){
   const box=$('#staffList'); box.innerHTML=''; if(!db.staff.length){ box.innerHTML='<div class="mini">No staff yet.</div>'; return; }
   db.staff.forEach(s=>{
     const row=document.createElement('div'); row.className='card'; row.style.cssText='background:#0e1124;border-color:#2f355e;display:flex;justify-content:space-between;align-items:center;gap:8px;';
-    row.innerHTML=`<div><strong>${s.name}</strong><div class="mini">id: ${s.id}</div></div><div><button class="ghost small" data-reset="${s.id}">Reset PIN</button> <button class="danger small" data-del="${s.id}">Remove</button></div>`;
+    row.innerHTML=`<div><strong>${s.name}</strong><div class="mini">id: ${s.id}</div></div><div><button class="danger small" data-del="${s.id}">Remove</button></div>`;
     box.appendChild(row);
   });
-  box.querySelectorAll('[data-reset]').forEach(b=> b.addEventListener('click', e=>{ const s=db.staff.find(x=>x.id===e.target.dataset.reset); const np=prompt('New PIN for '+s.name); if(np){ s.pin=np; save(); alert('PIN updated'); }}));
   box.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{ const id=e.target.dataset.del; if(!confirm('Remove staff?'))return; db.staff=db.staff.filter(x=>x.id!==id); save(); renderStaffList(); }));
 }
 
@@ -1101,12 +1080,6 @@ $('#btnChiefLogin').onclick=()=>{
   nwwSignIn(email, password);
 };
 
-$('#btnStaffSavePIN').onclick=()=>{
-  const p=$('#staffSetPIN').value.trim();
-  if(!p) return alert('Enter a PIN');
-  const rec=db.staff.find(s=>s.id===user.id);
-  if(rec){ rec.pin=p; save(); $('#staffSetPIN').value=''; alert('PIN updated'); }
-};
 function buildGoalsEditors(){
   const g=db.goals[cur.tf];
   // Outputs setup
