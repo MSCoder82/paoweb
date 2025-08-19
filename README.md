@@ -4,7 +4,7 @@ This is a self-contained web application that:
 
 ✅ Tracks staff metrics (outputs, outcomes, outtakes)  
 ✅ Stores user data and API keys **locally** in the browser (`localStorage`)  
-✅ Lets PAO chiefs enter API keys for **OpenAI, Gemini, CamoGPT, and AskSage**
+✅ Lets admins enter API keys for **OpenAI, Gemini, CamoGPT, and AskSage**
 ✅ Allows staff and PAO chiefs to **ask AI** using the selected provider
 ✅ No backend required
 
