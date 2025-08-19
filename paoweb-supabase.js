@@ -17,11 +17,42 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   }
 });
 
-let CURRENT = { session: null, profile: null, role: "viewer", unit_id: null, channel: null };
+let CURRENT = {
+  session: null,
+  profile: null,
+  role: "viewer",
+  unit_id: null,
+  unitChannel: null,
+  metaChannel: null
+};
 
 // ---------- Helpers ----------
 const $ = (s) => document.querySelector(s);
 const toInt = (v, d=0) => { const n = parseInt(v,10); return Number.isFinite(n)?n:d; };
+
+async function reloadUnits(){
+  const sel = $("#unitSel");
+  if(!sel) return;
+  try{
+    const { data, error } = await sb.rpc("list_units");
+    if(error) throw error;
+    sel.innerHTML = (data||[]).map(u=>`<option value="${u.id??u.code}">${u.name??u.unit_name??u.code}</option>`).join("");
+  }catch(err){
+    console.error("list_units failed", err);
+  }
+}
+
+async function refreshRole(){
+  try{
+    const { data, error } = await sb.rpc("my_role");
+    if(error) throw error;
+    const role = data?.role ?? data ?? "viewer";
+    CURRENT.role = role;
+    gateMenus(role);
+  }catch(err){
+    console.error("my_role failed", err);
+  }
+}
 
 // ---------- Admin sign-in (email/password) ----------
 async function adminSignIn() {
@@ -68,7 +99,7 @@ sb.auth.onAuthStateChange(async (_evt, session) => {
     await boot();
   } else {
     tearDownRealtime();
-    CURRENT = { session: null, profile: null, role: "viewer", unit_id: null, channel: null };
+    CURRENT = { session: null, profile: null, role: "viewer", unit_id: null, unitChannel: null, metaChannel: null };
     gateMenus("viewer");
   }
 });
@@ -84,17 +115,10 @@ async function boot() {
     .eq("user_id", u.user.id)
     .single();
 
-  const { data: roleRow } = await sb
-    .from("roles")
-    .select("role")
-    .eq("user_id", u.user.id)
-    .single();
-
   CURRENT.profile = profile || null;
-  CURRENT.role = roleRow?.role || "viewer";
   CURRENT.unit_id = profile?.unit_id || null;
 
-  gateMenus(CURRENT.role);
+  await refreshRole();
   await loadUnitData();
   subscribeRealtime();
 }
@@ -133,6 +157,16 @@ async function loadUnitData() {
 // ---------- Realtime ----------
 function subscribeRealtime() {
   tearDownRealtime();
+
+  const meta = sb.channel("meta_stream");
+  meta.on("postgres_changes", { event: "*", schema: "public", table: "unit" }, () => reloadUnits());
+  const uid = CURRENT.session?.user?.id || CURRENT.profile?.user_id;
+  if(uid){
+    meta.on("postgres_changes", { event: "*", schema: "public", table: "roles", filter:`user_id=eq.${uid}` }, () => refreshRole());
+  }
+  meta.subscribe();
+  CURRENT.metaChannel = meta;
+
   if (!CURRENT.unit_id) return;
 
   const ch = sb.channel("unit_stream_" + CURRENT.unit_id);
@@ -143,9 +177,12 @@ function subscribeRealtime() {
     );
   });
   ch.subscribe();
-  CURRENT.channel = ch;
+  CURRENT.unitChannel = ch;
 }
-function tearDownRealtime(){ if (CURRENT.channel){ sb.removeChannel(CURRENT.channel); CURRENT.channel=null; } }
+function tearDownRealtime(){
+  if (CURRENT.unitChannel){ sb.removeChannel(CURRENT.unitChannel); CURRENT.unitChannel=null; }
+  if (CURRENT.metaChannel){ sb.removeChannel(CURRENT.metaChannel); CURRENT.metaChannel=null; }
+}
 
 // ---------- Inserts (staff) ----------
 async function addOutput(form){
@@ -205,6 +242,9 @@ async function addTemplate(form){
 
 // ---------- Bind UI ----------
 function bindUI(){
+  window.buildUnitPicker = reloadUnits;
+  reloadUnits();
+
   // Admin sign-in
   $("#admin-signin")?.addEventListener("click", adminSignIn);
 
@@ -227,5 +267,5 @@ function bindUI(){
   $("#form-template")?.addEventListener("submit", async e=>{ e.preventDefault(); await addTemplate(e.currentTarget); e.currentTarget.reset(); });
 }
 
-window.PAOWeb = { adminSignIn, startSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate };
+window.PAOWeb = { adminSignIn, startSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits };
 document.addEventListener("DOMContentLoaded", bindUI);
