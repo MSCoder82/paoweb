@@ -820,10 +820,9 @@ function tbl(container, rows, cols){
   rows.forEach(r=>{ t.push('<tr>'); cols.forEach(c=> t.push(`<td>${c.render(r)}</td>`)); t.push('</tr>'); });
   t.push('</tbody></table>'); container.innerHTML=t.join('');
 }
-function calcProgress(tf, tfKey){
+function calcProgress(tf, tfKey, userId){
   const g=db.goals[tf];
-  const unitIds = new Set([...(db.staff||[]).map(s=>s.id), db.chiefId].filter(Boolean));
-  const entries=db.entries.filter(e=> e.tf===tf && e.tfKey===tfKey && unitIds.has(e.userId));
+  const entries=db.entries.filter(e=> e.tf===tf && e.tfKey===tfKey && (!userId || e.userId===userId));
   const outSum=entries.filter(e=>e.type==='output').reduce((m,e)=> (m[e.data.product]=(m[e.data.product]||0)+e.data.qty, m),{});
   const otkSum=entries.filter(e=>e.type==='outtake').reduce((m,e)=> (m[e.data.kind]=(m[e.data.kind]||0)+e.data.qty, m),{});
   const outGoal=g.outputs||{}, otkGoal=g.outtakes||{}, ocmGoal=g.outcomes||{};
@@ -962,7 +961,7 @@ function refreshStaff(){
   }).join('') : '<div class="mini">No outputs yet.</div>';
   $('#otkList').innerHTML = otks.length? otks.map(e=> `<div class="card" style="background:#0e1124;border-color:#2f355e"><div class="chip mono">${e.data.qty}×</div> <span class="chip">${e.data.kind}</span>${e.data.notes?'<div class="divider"></div><div class="mini">'+e.data.notes+'</div>':''}<div class="mini">${new Date(e.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No outtakes yet.</div>';
   $('#ocmList').innerHTML = ocms.length? ocms.map(e=> `<div class="card" style="background:#0e1124;border-color:#2f355e"><span class="chip">${e.data.metric}</span><div class="divider"></div><div class="mini">${clamp(e.data.pct,0,100)}% • ${new Date(e.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No outcomes yet.</div>';
-  const p=calcProgress(cur.tf, cur.key); $('#kpiOutPct').textContent=toPct(p.outPct); $('#kpiOtkPct').textContent=toPct(p.otkPct); $('#kpiOcmPct').textContent=toPct(p.ocmPct);
+  const p=calcProgress(cur.tf, cur.key, user?.id); $('#kpiOutPct').textContent=toPct(p.outPct); $('#kpiOtkPct').textContent=toPct(p.otkPct); $('#kpiOcmPct').textContent=toPct(p.ocmPct);
 }
 function refreshViewerIf(){ if(!$('#screenViewer').classList.contains('hide')) refreshViewer(); }
 
