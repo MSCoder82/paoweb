@@ -1679,9 +1679,11 @@ async function callAI(){
   window.requestPasswordReset = async () => {
     const email = $("si-email").value;
     if (!email) { alert("Enter email to reset password"); return; }
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    const { origin, pathname } = window.location;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: origin + pathname
+    });
     $("status").textContent = error ? `Reset error: ${error.message}` : "Check email for reset link";
-    if (!error) { window.show('adminReset'); }
   };
 
   window.finishPasswordReset = async () => {
