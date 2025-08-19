@@ -1779,7 +1779,7 @@ async function callAI(){
 
   // Sign in
   window.nwwSignIn = async (email, password) => {
-    email = email || $("si-email").value;
+    email = (email || $("si-email").value).trim().toLowerCase();
     password = password || $("si-pass").value;
     $("status").textContent = "Signing you in, please wait";
     const { error } = await supabase.auth.signInWithPassword({
