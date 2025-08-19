@@ -363,18 +363,6 @@
                 <button class="cta" id="btnSaveApiKeys">Save API Keys</button>
               </div>
             </div>
-            <div class="card" style="background:#ffffff22;border-color:#ffffff55">
-              <h3>AI API Keys</h3>
-              <div class="grid">
-                <div><label>OpenAI API Key</label><input id="apiKeyOpenAI" class="input" placeholder="Enter Key"></div>
-                <div><label>Gemini API Key</label><input id="apiKeyGemini" class="input" placeholder="Enter Key"></div>
-                <div><label>CamoGPT API Key</label><input id="apiKeyCamogpt" class="input" placeholder="Enter Key"></div>
-                <div><label>AskSage API Key</label><input id="apiKeyAsksage" class="input" placeholder="Enter Key"></div>
-              </div>
-              <div style="display:flex; gap:10px; margin-top:10px">
-                <button class="cta" id="btnSaveAiKeys">Save AI API Keys</button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -468,6 +456,19 @@
       <div><label>Select Staff</label><select id="adminStaffSel" class="input"></select></div>
       <div><label>New Staff PIN</label><input id="adminStaffPIN" type="password" class="input" placeholder="New Staff PIN" /></div>
       <div><button class="ghost small" id="btnAdminSaveStaffPIN" style="margin-top:8px">Save Staff PIN</button></div>
+      <div class="divider"></div>
+      <div class="card" style="background:#ffffff22;border-color:#ffffff55">
+        <h3>AI API Keys</h3>
+        <div class="grid">
+          <div><label>OpenAI API Key</label><input id="adminApiKeyOpenAI" class="input" placeholder="Enter Key"></div>
+          <div><label>Gemini API Key</label><input id="adminApiKeyGemini" class="input" placeholder="Enter Key"></div>
+          <div><label>CamoGPT API Key</label><input id="adminApiKeyCamogpt" class="input" placeholder="Enter Key"></div>
+          <div><label>AskSage API Key</label><input id="adminApiKeyAsksage" class="input" placeholder="Enter Key"></div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px">
+          <button class="cta" id="btnAdminSaveAiKeys">Save AI API Keys</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -516,6 +517,9 @@ const GLOBAL_PIN_KEY='nww_pao_global_pin';
 const CHIEFS_KEY='nww_pao_chiefs';
 function loadChiefs(){ return JSON.parse(localStorage.getItem(CHIEFS_KEY)||'[]'); }
 function saveChiefs(list){ localStorage.setItem(CHIEFS_KEY, JSON.stringify(list)); }
+const AI_KEYS_KEY='nww_pao_ai_keys';
+let aiApiKeys = JSON.parse(localStorage.getItem(AI_KEYS_KEY)||'{}');
+function saveAiApiKeys(){ localStorage.setItem(AI_KEYS_KEY, JSON.stringify(aiApiKeys)); }
 let currentUnit='default';
 let STORAGE_KEY=`${STORAGE_KEY_BASE}_${currentUnit}`;
 let globalAdminPIN = localStorage.getItem(GLOBAL_PIN_KEY) || '0000';
@@ -591,7 +595,7 @@ const def={
   social:[], // social posts
   brand:{ policy:{brandGuideUrl:'', milHost:'', approvalsRequired:['PAO Release','OPSEC II','Caption/VI','Accessibility','Records Tag']}, inventory:[] },
   checklists:[], // pre-release
-  apiKeys:{ facebook:'', instagram:'', x:'', linkedin:'', openai:'', gemini:'', camogpt:'', asksage:'' }
+  apiKeys:{ facebook:'', instagram:'', x:'', linkedin:'' }
 };
 let db = load(currentUnit);
 function ensureUnitList(unit){
@@ -818,7 +822,8 @@ function tbl(container, rows, cols){
 }
 function calcProgress(tf, tfKey){
   const g=db.goals[tf];
-  const entries=db.entries.filter(e=> e.tf===tf && e.tfKey===tfKey);
+  const unitIds = new Set([...(db.staff||[]).map(s=>s.id), db.chiefId].filter(Boolean));
+  const entries=db.entries.filter(e=> e.tf===tf && e.tfKey===tfKey && unitIds.has(e.userId));
   const outSum=entries.filter(e=>e.type==='output').reduce((m,e)=> (m[e.data.product]=(m[e.data.product]||0)+e.data.qty, m),{});
   const otkSum=entries.filter(e=>e.type==='outtake').reduce((m,e)=> (m[e.data.kind]=(m[e.data.kind]||0)+e.data.qty, m),{});
   const outGoal=g.outputs||{}, otkGoal=g.outtakes||{}, ocmGoal=g.outcomes||{};
@@ -972,10 +977,6 @@ function buildChief(){
     $('#apiKeyInstagram').value = db.apiKeys.instagram || '';
     $('#apiKeyX').value = db.apiKeys.x || '';
     $('#apiKeyLinkedin').value = db.apiKeys.linkedin || '';
-    $('#apiKeyOpenAI').value = db.apiKeys.openai || '';
-    $('#apiKeyGemini').value = db.apiKeys.gemini || '';
-    $('#apiKeyCamogpt').value = db.apiKeys.camogpt || '';
-    $('#apiKeyAsksage').value = db.apiKeys.asksage || '';
   }
   $('#btnSaveApiKeys').onclick=()=>{
     if(!db.apiKeys) db.apiKeys = {};
@@ -985,15 +986,6 @@ function buildChief(){
     db.apiKeys.linkedin = $('#apiKeyLinkedin').value.trim();
     save();
     alert('API Keys saved');
-  };
-  $('#btnSaveAiKeys').onclick=()=>{
-    if(!db.apiKeys) db.apiKeys = {};
-    db.apiKeys.openai = $('#apiKeyOpenAI').value.trim();
-    db.apiKeys.gemini = $('#apiKeyGemini').value.trim();
-    db.apiKeys.camogpt = $('#apiKeyCamogpt').value.trim();
-    db.apiKeys.asksage = $('#apiKeyAsksage').value.trim();
-    save();
-    alert('AI API Keys saved');
   };
   $('#btnSaveChiefPIN').onclick=()=>{
     const p=$('#setChiefPIN').value.trim();
@@ -1223,6 +1215,22 @@ function buildAdmin(){
     if(currentUnit===unit){ currentUnit=units[0]||'default'; db=load(currentUnit); }
     buildAdmin(); buildUnitPicker();
   }));
+
+  const aiOpen = $('#adminApiKeyOpenAI');
+  if(aiOpen){
+    aiOpen.value = aiApiKeys.openai || '';
+    $('#adminApiKeyGemini').value = aiApiKeys.gemini || '';
+    $('#adminApiKeyCamogpt').value = aiApiKeys.camogpt || '';
+    $('#adminApiKeyAsksage').value = aiApiKeys.asksage || '';
+    $('#btnAdminSaveAiKeys').onclick = () => {
+      aiApiKeys.openai = $('#adminApiKeyOpenAI').value.trim();
+      aiApiKeys.gemini = $('#adminApiKeyGemini').value.trim();
+      aiApiKeys.camogpt = $('#adminApiKeyCamogpt').value.trim();
+      aiApiKeys.asksage = $('#adminApiKeyAsksage').value.trim();
+      saveAiApiKeys();
+      alert('AI API Keys saved');
+    };
+  }
 }
 $('#btnAdminOpen').onclick=()=>{ const unit=$('#adminUnit').value; if(!unit) return alert('Select unit'); db=load(unit); role='chief'; whoPill.textContent=`PAO Chief (${unit})`; buildChief(); show('chief'); };
 $('#btnAdminAddUnit').onclick=()=>{
@@ -1539,6 +1547,18 @@ window.addEventListener('scroll',()=>{
   });
 });
 
+window.addEventListener('message', e=>{
+  if(e.data?.type==='rpieOutputs' && Array.isArray(e.data.outputs)){
+    if(!user) return;
+    e.data.outputs.forEach(prod=>{
+      db.entries.push({id:uid(), userId:user.id, type:'output', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{product:prod, qty:1, links:[]}});
+    });
+    save();
+    refreshStaff();
+    refreshViewerIf();
+  }
+});
+
 /* ================= INIT ================= */
 (function init(){
   show('unit');
@@ -1574,8 +1594,8 @@ async function callAI(){
   const prompt=aiPromptEl.value.trim();
   const provider=aiProviderEl.value;
   const providerNames={openai:'OpenAI',gemini:'Gemini',camogpt:'CamoGPT',asksage:'AskSage'};
-  const key=db.apiKeys?.[provider]?.trim();
-  if(!key) return alert(providerNames[provider]+" API key not set by PAO Chief.");
+  const key=aiApiKeys?.[provider]?.trim();
+  if(!key) return alert(providerNames[provider]+" API key not set by Admin.");
   if(!prompt) return alert('Enter a prompt first.');
   try{
     let res,data;
