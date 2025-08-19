@@ -1681,7 +1681,6 @@ async function callAI(){
     if (!email) { alert("Enter email to reset password"); return; }
     const { error } = await supabase.auth.resetPasswordForEmail(email);
     $("status").textContent = error ? `Reset error: ${error.message}` : "Check email for reset link";
-    if (!error) { window.show('adminReset'); }
   };
 
   window.finishPasswordReset = async () => {
