@@ -160,10 +160,20 @@
         <input id="si-email" type="email" placeholder="Email" required />
         <input id="si-pass" type="password" placeholder="Password" required />
         <button type="button" onclick="nwwSignIn()">Sign in</button>
+        <button type="button" onclick="requestPasswordReset()" class="mini">Reset password</button>
       </section>
-
-      <pre id="status">Not signed in</pre>
     </div>
+
+    <div id="adminReset" class="hide">
+      <h3>Reset Password</h3>
+      <div class="grid" style="grid-template-columns:1fr">
+        <div><label>New Password</label><input id="rp-new" type="password" class="input" placeholder="New password" /></div>
+        <div><label>Confirm Password</label><input id="rp-confirm" type="password" class="input" placeholder="Confirm password" /></div>
+        <div><button class="cta" id="btnAdminReset" style="margin-top:8px" onclick="finishPasswordReset()">Submit</button></div>
+      </div>
+    </div>
+
+    <pre id="status">Not signed in</pre>
 
     <!-- PAO Chief PIN auth -->
     <div id="chiefAuth" class="hide">
@@ -693,7 +703,7 @@ inputLoadProgress.addEventListener('change', e=>{
   fr.readAsText(f); inputLoadProgress.value='';
 });
 function show(which, isBack=false){
-  const hideHamburger=['unit','role','viewer','staffAuth','chiefAuth','adminAuth'];
+  const hideHamburger=['unit','role','viewer','staffAuth','chiefAuth','adminAuth','adminReset'];
   if(!isBack && currentScreen && which!==currentScreen) screenHistory.push(currentScreen);
   currentScreen=which;
   backBtn.style.display = screenHistory.length ? '' : 'none';
@@ -739,6 +749,14 @@ function show(which, isBack=false){
   if(which==='adminAuth'){
     $('#screenAuth').classList.remove('hide');
     $('#adminAuth').classList.remove('hide');
+    $('#staffAuth').classList.add('hide');
+    $('#chiefAuth').classList.add('hide');
+    return;
+  }
+  if(which==='adminReset'){
+    $('#screenAuth').classList.remove('hide');
+    $('#adminReset').classList.remove('hide');
+    $('#adminAuth').classList.add('hide');
     $('#staffAuth').classList.add('hide');
     $('#chiefAuth').classList.add('hide');
     return;
@@ -1658,6 +1676,23 @@ async function callAI(){
     if (!error && isAdmin) { buildAdmin(); window.show('admin'); }
   };
 
+  window.requestPasswordReset = async () => {
+    const email = $("si-email").value;
+    if (!email) { alert("Enter email to reset password"); return; }
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    $("status").textContent = error ? `Reset error: ${error.message}` : "Check email for reset link";
+    if (!error) { window.show('adminReset'); }
+  };
+
+  window.finishPasswordReset = async () => {
+    const pass = $("rp-new").value;
+    const confirm = $("rp-confirm").value;
+    if (pass !== confirm) { alert("Passwords do not match"); return; }
+    const { error } = await supabase.auth.updateUser({ password: pass });
+    $("status").textContent = error ? `Reset error: ${error.message}` : "Password updated";
+    if (!error) { await supabase.auth.signOut(); window.show('unit'); }
+  };
+
   async function refreshAuthUI() {
     const { data: { session } } = await supabase.auth.getSession();
     const authed = !!session?.user;
@@ -1684,7 +1719,10 @@ async function callAI(){
     return prof;
   }
 
-  supabase.auth.onAuthStateChange(() => refreshAuthUI());
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') { window.show('adminReset'); }
+    refreshAuthUI();
+  });
   refreshAuthUI();
 
   // Example: save an Output (wire to your existing buttons later)
