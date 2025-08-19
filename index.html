@@ -1745,14 +1745,19 @@ async function callAI(){
   };
 
   window.nwwSignUp = async () => {
-    const email = $("su-email").value;
+    const email = $("su-email").value.trim().toLowerCase();
     const password = $("su-pass").value;
     const confirm = $("su-confirm").value;
     if (password !== confirm) {
       $("status").textContent = "Passwords do not match";
       return;
     }
-    const { error } = await supabase.auth.signUp({ email, password });
+    const displayName = email.split('@')[0];
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { display_name: displayName, full_name: displayName } }
+    });
     $("status").textContent = error ? `Signup error: ${error.message}` : "Check email for confirmation.";
     if (!error) { await refreshAuthUI(); }
   };
