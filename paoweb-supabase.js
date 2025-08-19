@@ -120,6 +120,8 @@ async function boot() {
 
   await refreshRole();
   await loadUnitData();
+  if (typeof loadCampaigns === 'function') await loadCampaigns();
+  if (typeof refreshCampaignProgress === 'function') await refreshCampaignProgress();
   subscribeRealtime();
 }
 
@@ -170,12 +172,26 @@ function subscribeRealtime() {
   if (!CURRENT.unit_id) return;
 
   const ch = sb.channel("unit_stream_" + CURRENT.unit_id);
-  ["outputs","outtakes","outcomes","goals","templates"].forEach(tbl=>{
+  ["outputs","outtakes","outcomes","templates"].forEach(tbl=>{
     ch.on("postgres_changes",
       { event:"*", schema:"public", table: tbl, filter:`unit_id=eq.${CURRENT.unit_id}` },
       () => loadUnitData()
     );
   });
+  ch.on("postgres_changes",
+    { event:"*", schema:"public", table:"goals", filter:`unit_id=eq.${CURRENT.unit_id}` },
+    () => {
+      loadUnitData();
+      if (typeof refreshCampaignProgress === 'function') refreshCampaignProgress();
+    }
+  );
+  ch.on("postgres_changes",
+    { event:"*", schema:"public", table:"campaigns", filter:`unit_id=eq.${CURRENT.unit_id}` },
+    () => {
+      if (typeof loadCampaigns === 'function') loadCampaigns();
+      if (typeof refreshCampaignProgress === 'function') refreshCampaignProgress();
+    }
+  );
   ch.subscribe();
   CURRENT.unitChannel = ch;
 }
@@ -192,10 +208,11 @@ async function addOutput(form){
   const timeframe    = form.querySelector("[name=timeframe]").value;
   const linksRaw     = form.querySelector("[name=links]").value.trim();
   const links        = linksRaw ? linksRaw.split(/\s+/) : [];
+  const campaign_id  = form.querySelector("[name=campaign_id]")?.value || null;
   await sb.from("outputs").insert({
     unit_id: CURRENT.unit_id,
     user_id: CURRENT.profile.user_id,
-    product_type, other_label, quantity, links, timeframe
+    product_type, other_label, quantity, links, timeframe, campaign_id
   });
 }
 
@@ -205,10 +222,11 @@ async function addOuttake(form){
   const quantity     = toInt(form.querySelector("[name=quantity]").value, 1);
   const timeframe    = form.querySelector("[name=timeframe]").value;
   const notes        = form.querySelector("[name=notes]").value || null;
+  const campaign_id  = form.querySelector("[name=campaign_id]")?.value || null;
   await sb.from("outtakes").insert({
     unit_id: CURRENT.unit_id,
     user_id: CURRENT.profile.user_id,
-    outtake_type, other_label, quantity, timeframe, notes
+    outtake_type, other_label, quantity, timeframe, notes, campaign_id
   });
 }
 
@@ -217,10 +235,11 @@ async function addOutcome(form){
   const other_label   = form.querySelector("[name=other_label]").value || null;
   const percent       = Number(form.querySelector("[name=percent]").value);
   const timeframe     = form.querySelector("[name=timeframe]").value;
+  const campaign_id   = form.querySelector("[name=campaign_id]")?.value || null;
   await sb.from("outcomes").insert({
     unit_id: CURRENT.unit_id,
     user_id: CURRENT.profile.user_id,
-    outcome_label, other_label, percent, timeframe
+    outcome_label, other_label, percent, timeframe, campaign_id
   });
 }
 
