@@ -31,12 +31,13 @@ const $ = (s) => document.querySelector(s);
 const toInt = (v, d=0) => { const n = parseInt(v,10); return Number.isFinite(n)?n:d; };
 
 async function reloadUnits(){
-  const sel = $("#unitSel");
-  if(!sel) return;
+  const sels = ["#unitSel", "#su-unit"].map(s => $(s)).filter(Boolean);
+  if(!sels.length) return;
   try{
     const { data, error } = await sb.rpc("list_units");
     if(error) throw error;
-    sel.innerHTML = (data||[]).map(u=>`<option value="${u.id??u.code}">${u.name??u.unit_name??u.code}</option>`).join("");
+    const opts = (data||[]).map(u=>`<option value="${u.id??u.code}">${u.name??u.unit_name??u.code}</option>`).join("");
+    sels.forEach(sel => sel.innerHTML = opts);
   }catch(err){
     console.error("list_units failed", err);
   }
