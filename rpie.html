@@ -907,6 +907,7 @@ ${d.step10.evaluation || 'n/a'}
       try{
         status('Generating...', '');
         const data = collect();
+        parent.postMessage({type:'rpieOutputs', outputs:data.step9?.outputs || []}, '*');
         const prompt = toPrompt(data);
         const text = await callOpenAI(prompt);
         els.output.textContent = text || '(no content)';
