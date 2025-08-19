@@ -3,7 +3,8 @@
 This is a self-contained web application that:
 
 ✅ Tracks staff metrics (outputs, outcomes, outtakes)  
-✅ Stores user data and API keys **locally** in the browser (`localStorage`)  
+✅ Stores user data and API keys **locally** in the browser (`localStorage`)
+✅ Syncs entries to **Supabase** so progress is shared across devices
 ✅ Lets admins enter API keys for **OpenAI, Gemini, CamoGPT, and AskSage**
 ✅ Allows staff and PAO chiefs to **ask AI** using the selected provider
 ✅ No backend required
