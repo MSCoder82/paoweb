@@ -165,7 +165,9 @@
       <section style="margin-top:16px">
         <h3>Sign up</h3>
         <input id="su-email" type="email" placeholder="Email" required />
-        <select id="su-unit" class="input" required></select>
+        <select id="su-unit" class="input"></select>
+        <input id="su-new-unit" type="text" class="input" placeholder="New unit name (optional)" />
+        <input id="su-new-code" type="text" class="input" placeholder="Unit code (optional)" />
         <input id="su-pass" type="password" placeholder="Password" required />
         <input id="su-confirm" type="password" placeholder="Confirm password" required />
         <button type="button" onclick="nwwSignUp()">Sign up</button>
@@ -1805,21 +1807,39 @@ async function callAI(){
   window.nwwSignUp = async () => {
     const email = $("su-email").value.trim().toLowerCase();
     const unit = $("su-unit").value;
+    const newUnitName = $("su-new-unit").value.trim();
+    const newUnitCode = $("su-new-code").value.trim();
     const password = $("su-pass").value;
     const confirm = $("su-confirm").value;
     if (password !== confirm) {
       $("status").textContent = "Passwords do not match";
       return;
     }
-    if (!unit) {
-      $("status").textContent = "Select a unit";
+
+    let unitId = unit;
+    if (newUnitName) {
+      const { data: created, error: unitErr } = await supabase.functions.invoke('create-unit', {
+        body: JSON.stringify({
+          name: newUnitName,
+          code: newUnitCode || undefined
+        })
+      });
+      if (unitErr) {
+        $("status").textContent = `Unit creation error: ${unitErr.message}`;
+        return;
+      }
+      unitId = created?.id;
+    }
+
+    if (!unitId) {
+      $("status").textContent = "Select a unit or enter a new unit name";
       return;
     }
     const displayName = email.split('@')[0];
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName, full_name: displayName, unit_id: unit } }
+      options: { data: { display_name: displayName, full_name: displayName, unit_id: unitId } }
     });
     $("status").textContent = error ? `Signup error: ${error.message}` : "Check email for confirmation.";
     if (!error) { await refreshAuthUI(); }
