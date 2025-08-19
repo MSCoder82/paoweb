@@ -644,7 +644,8 @@ function populateUnitSelect(sel){
   el.innerHTML='';
   const units = JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
   units.forEach(u=>{ const o=document.createElement('option'); o.value=u; o.textContent=u; el.appendChild(o); });
-  el.value=currentUnit;
+  const defUnit='Walla Walla District';
+  el.value = el.id === 'su-unit' && units.includes(defUnit) ? defUnit : currentUnit;
 }
 function load(unit){
   currentUnit = unit;
