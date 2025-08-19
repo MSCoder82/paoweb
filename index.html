@@ -1694,7 +1694,6 @@ async function callAI(){
   };
 
   $("btnResetPassword").addEventListener("click", requestPasswordReset);
-
   async function refreshAuthUI() {
     const { data: { session } } = await supabase.auth.getSession();
     const authed = !!session?.user;
