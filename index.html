@@ -235,6 +235,7 @@
             <div class="card"><h3>Outputs by Product</h3><div id="tblOutputs" class="scroll"></div></div>
             <div class="card"><h3>Outtakes by Type</h3><div id="tblOuttakes" class="scroll"></div></div>
           </div>
+          <div class="card" style="margin-top:16px"><h3>Campaign Breakdown</h3><div id="tblCampaigns" class="scroll"></div></div>
           <div class="card" style="margin-top:16px">
             <h3>All Product Links (click to open)</h3><div class="scroll links" id="allLinks"></div>
           </div>
@@ -274,6 +275,7 @@
               <div class="grid grid-2">
                 <div><label>Template</label><select id="outTemplate" class="input"></select></div>
                 <div><label>Product Type</label><select id="outProdType" class="input"></select></div>
+                <div><label>Campaign</label><select id="outCampaign" class="input"></select></div>
                 <div id="otherProdWrap" class="hide"><label>Other (specify)</label><input id="otherProd" class="input" placeholder="e.g., Podcast episode"/></div>
                 <div><label>Quantity</label><input id="outQty" type="number" min="1" class="input" value="1"/></div>
                 <div><label>Links (comma or new line)</label><textarea id="outLinks" rows="2" class="input" placeholder="https://…"></textarea></div>
@@ -289,6 +291,7 @@
               <div class="grid grid-2">
                 <div><label>Template</label><select id="otkTemplate" class="input"></select></div>
                 <div><label>Outtake Type</label><select id="otkType" class="input"></select></div>
+                <div><label>Campaign</label><select id="otkCampaign" class="input"></select></div>
                 <div id="otkOtherWrap" class="hide"><label>Other (specify)</label><input id="otkOther" class="input" placeholder="e.g., Survey completes"/></div>
                 <div><label>Quantity</label><input id="otkQty" type="number" min="1" class="input" value="1"/></div>
                 <div><label>Notes / Links (optional)</label><textarea id="otkNotes" rows="2" class="input" placeholder="Context or URLs"></textarea></div>
@@ -304,6 +307,7 @@
             <h3>Outcomes — Objective progress</h3>
             <div class="grid" style="grid-template-columns:1fr">
               <div><label>Outcome Metric</label><select id="ocmKey" class="input"></select></div>
+              <div><label>Campaign</label><select id="ocmCampaign" class="input"></select></div>
               <div id="ocmOtherWrap" class="hide"><label>Other (specify)</label><input id="ocmOther" class="input" placeholder="e.g., Public trust"/></div>
               <div><label>My status (% toward target)</label><input id="ocmPct" type="range" min="0" max="100" value="0" /><div class="mini" id="ocmVal">0%</div></div>
               <div><button class="cta" id="btnSaveOutcome" style="margin-top:8px">Save Outcome</button></div>
@@ -366,6 +370,31 @@
               </div>
               <div style="display:flex; gap:10px; margin-top:10px">
                 <button class="cta" id="btnSaveApiKeys">Save API Keys</button>
+              </div>
+            </div>
+
+            <div class="card" style="background:#ffffff22;border-color:#ffffff55">
+              <h3>Campaigns</h3>
+              <div class="grid" style="grid-template-columns:1fr">
+                <div><label>Name</label><input id="cmpName" class="input" placeholder="Campaign name"></div>
+                <div><label>Code</label><input id="cmpCode" class="input" placeholder="Code"></div>
+                <div><label>Color</label><input id="cmpColor" type="color" class="input" value="#000000"></div>
+                <div><label>Position</label><input id="cmpPosition" type="number" class="input" value="0"></div>
+                <div><label><input type="checkbox" id="cmpActive" checked> Active</label></div>
+                <div><button class="cta" id="btnSaveCampaign" style="margin-top:8px">Save Campaign</button></div>
+              </div>
+              <div class="scroll" id="campaignList" style="margin-top:10px"></div>
+            </div>
+
+            <div class="card" style="background:#ffffff22;border-color:#ffffff55">
+              <h3>Campaign Goals</h3>
+              <div class="grid" style="grid-template-columns:1fr">
+                <div><label>Campaign</label><select id="goalCampaign" class="input"></select></div>
+                <div><label>Kind</label><select id="goalKind" class="input"><option value="output">Output</option><option value="outtake">Outtake</option><option value="outcome">Outcome</option></select></div>
+                <div><label>Label</label><input id="goalLabel" class="input" placeholder="Metric label"></div>
+                <div><label>Target</label><input id="goalTarget" type="number" class="input" value="0"></div>
+                <div><label>Timeframe</label><select id="goalTimeframe" class="input"><option value="M">Monthly</option><option value="Q">Quarterly</option><option value="Y">Annual</option></select></div>
+                <div><button class="cta" id="btnSaveCampaignGoal" style="margin-top:8px">Save Goal</button></div>
               </div>
             </div>
           </div>
@@ -529,6 +558,8 @@ let currentUnit='default';
 let STORAGE_KEY=`${STORAGE_KEY_BASE}_${currentUnit}`;
 let globalAdminPIN = localStorage.getItem(GLOBAL_PIN_KEY) || '0000';
 const ONBOARD_KEY='nww_onboard_done';
+let campaigns=[]; // loaded from Supabase
+let editCampaignId=null;
 const defaultOutcomes=[
   {name:'Awareness lift', desc:''},
   {name:'Understanding of issue/process', desc:''},
@@ -653,7 +684,8 @@ async function saveEntryToSupabase(entry){
         tf_key: entry.tfKey,
         product_type: entry.data.product,
         quantity: entry.data.qty,
-        links: entry.data.links
+        links: entry.data.links,
+        campaign_id: entry.data.campaign || null
       });
     }else if(entry.type==='outtake'){
       await supabase.from('outtakes').insert({
@@ -662,7 +694,8 @@ async function saveEntryToSupabase(entry){
         tf_key: entry.tfKey,
         outtake_type: entry.data.kind,
         quantity: entry.data.qty,
-        notes: entry.data.notes
+        notes: entry.data.notes,
+        campaign_id: entry.data.campaign || null
       });
     }else if(entry.type==='outcome'){
       await supabase.from('outcomes').insert({
@@ -670,10 +703,58 @@ async function saveEntryToSupabase(entry){
         timeframe: entry.tf,
         tf_key: entry.tfKey,
         outcome_label: entry.data.metric,
-        percent: entry.data.pct
+        percent: entry.data.pct,
+        campaign_id: entry.data.campaign || null
       });
     }
   }catch(err){ console.error('Supabase insert failed', err); }
+}
+
+async function loadCampaigns(){
+  try{
+    if(!window.supabase) return;
+    const { data } = await supabase.rpc('list_campaigns');
+    campaigns = data || [];
+    const opts = ['<option value="">(none)</option>']
+      .concat(campaigns.map(c=>`<option value="${c.id}">${c.name}</option>`)).join('');
+    ['outCampaign','otkCampaign','ocmCampaign','goalCampaign'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.innerHTML=opts;
+    });
+    renderCampaignList();
+  }catch(err){ console.error('loadCampaigns failed', err); }
+}
+
+function renderCampaignList(){
+  const list=document.getElementById('campaignList');
+  if(!list) return;
+  list.innerHTML = campaigns.map(c=>
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span>${c.name}</span><button class="ghost small" data-edit="${c.id}">Edit</button></div>`
+  ).join('');
+  list.querySelectorAll('[data-edit]').forEach(btn=> btn.addEventListener('click', e=>{
+    const id=e.target.dataset.edit;
+    const c=campaigns.find(x=>x.id==id);
+    if(!c) return;
+    editCampaignId=id;
+    $('#cmpName').value=c.name||'';
+    $('#cmpCode').value=c.code||'';
+    $('#cmpColor').value=c.color||'#000000';
+    $('#cmpPosition').value=c.position||0;
+    $('#cmpActive').checked=!!c.is_active;
+  }));
+}
+
+async function refreshCampaignProgress(){
+  try{
+    if(!window.supabase) return;
+    const tfMap={M:'monthly',Q:'quarterly',Y:'annual'};
+    const { data } = await supabase.rpc('campaign_progress', { timeframe: tfMap[cur.tf] });
+    const rows = data || [];
+    tbl($('#tblCampaigns'), rows, [
+      {label:'Campaign', render:r=>r.metric},
+      {label:'Goal', render:r=>r.goal_target||0},
+      {label:'% of Goal', render:r=> toPct((r.pct_of_goal||0)/100)}
+    ]);
+  }catch(err){ console.error('campaign_progress failed', err); }
 }
 
 async function loadEntriesFromSupabase(){
@@ -686,9 +767,9 @@ async function loadEntriesFromSupabase(){
       supabase.from('outtakes').select('*').eq('user_id', u.id),
       supabase.from('outcomes').select('*').eq('user_id', u.id)
     ]);
-    const mapOuts = (outs.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'output', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{product:o.product_type, qty:o.quantity, links:o.links||[]}}));
-    const mapOtks = (otks.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'outtake', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{kind:o.outtake_type, qty:o.quantity, notes:o.notes||''}}));
-    const mapOcms = (ocms.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'outcome', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{metric:o.outcome_label, pct:o.percent||0}}));
+    const mapOuts = (outs.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'output', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{product:o.product_type, qty:o.quantity, links:o.links||[], campaign:o.campaign_id||null}}));
+    const mapOtks = (otks.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'outtake', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{kind:o.outtake_type, qty:o.quantity, notes:o.notes||'', campaign:o.campaign_id||null}}));
+    const mapOcms = (ocms.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'outcome', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{metric:o.outcome_label, pct:o.percent||0, campaign:o.campaign_id||null}}));
     db.entries = [...mapOuts, ...mapOtks, ...mapOcms];
     save();
     refreshStaff();
@@ -947,12 +1028,14 @@ function refreshViewer(){
   db.entries.filter(e=> e.tf===cur.tf && e.tfKey===cur.key && e.type==='outcome').forEach(e=>{ byUser[e.userId]=byUser[e.userId]||{}; byUser[e.userId][e.data.metric]=Math.max(byUser[e.userId][e.data.metric]||0, e.data.pct||0); });
   const lead=Object.entries(byUser).map(([id,obj])=>{ const avg = metrics.length? metrics.reduce((a,m)=> a+(obj[m]||0),0)/metrics.length : 0; return {name:db.staff.find(s=>s.id===id)?.name||'—', avg}; }).sort((a,b)=>b.avg-a.avg).slice(0,3).map(x=> `${x.name} (${Math.round(x.avg)}%)`).join(', ') || '—';
   $('#leadersOcm').textContent=lead;
+  refreshCampaignProgress();
 }
 
 /* ===== Staff ===== */
 const tfStaffSel=$('#tfStaff'), tfStaffPick=$('#tfStaffPick');
 tfStaffSel?.addEventListener('change', ()=> buildTfPicker(tfStaffPick, tfStaffSel.value, key=>{cur.tf=tfStaffSel.value; cur.key=key; refreshStaff();}));
 function buildStaff(){
+  loadCampaigns();
   // populate pickers
   const outTemplates = uniqByName([...(def.templates.outputs||[]), ...(db.templates.outputs||[])]);
   $('#outTemplate').innerHTML = `<option value="">Select template</option>` + outTemplates.map(t=>`<option>${t.name}</option>`).join('');
@@ -996,7 +1079,8 @@ $('#btnAddOutput').addEventListener('click', ()=>{
   if(!user) return; const type=$('#outProdType').value==='Other (specify)' ? ($('#otherProd').value.trim()||'Other') : $('#outProdType').value;
   const qty=parseInt($('#outQty').value||'0',10); if(qty<=0) return alert('Quantity must be > 0');
   const links=parseLinks($('#outLinks').value);
-  const entry={id:uid(), userId:user.id, type:'output', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{product:type, qty, links}};
+  const campaign=$('#outCampaign').value||null;
+  const entry={id:uid(), userId:user.id, type:'output', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{product:type, qty, links, campaign}};
   db.entries.push(entry);
   save(); saveEntryToSupabase(entry); $('#outQty').value=1; $('#outLinks').value=''; $('#otherProd').value=''; refreshStaff(); refreshViewerIf();
 });
@@ -1005,7 +1089,8 @@ $('#btnAddOuttake').addEventListener('click', ()=>{
   if(!user) return; const type=$('#otkType').value==='Other (specify)' ? ($('#otkOther').value.trim()||'Other') : $('#otkType').value;
   const qty=parseInt($('#otkQty').value||'0',10); if(qty<=0) return alert('Quantity must be > 0');
   const notes=$('#otkNotes').value.trim();
-  const entry={id:uid(), userId:user.id, type:'outtake', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{kind:type, qty, notes}};
+  const campaign=$('#otkCampaign').value||null;
+  const entry={id:uid(), userId:user.id, type:'outtake', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{kind:type, qty, notes, campaign}};
   db.entries.push(entry);
   save(); saveEntryToSupabase(entry); $('#otkQty').value=1; $('#otkNotes').value=''; $('#otkOther').value=''; refreshStaff(); refreshViewerIf();
 });
@@ -1015,7 +1100,8 @@ $('#btnSaveOutcome').addEventListener('click', ()=>{
   const key=$('#ocmKey').value==='Other (specify)' ? ($('#ocmOther').value.trim()||'Other') : $('#ocmKey').value;
   if(!key) return alert('No outcome metric defined.');
   const pct=parseInt($('#ocmPct').value,10);
-  const entry={id:uid(), userId:user.id, type:'outcome', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{metric:key, pct}};
+  const campaign=$('#ocmCampaign').value||null;
+  const entry={id:uid(), userId:user.id, type:'outcome', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{metric:key, pct, campaign}};
   db.entries.push(entry);
   save(); saveEntryToSupabase(entry); $('#ocmOther').value=''; refreshStaff(); refreshViewerIf();
 });
@@ -1038,6 +1124,7 @@ tfChiefSel?.addEventListener('change', ()=> buildTfPicker(tfChiefPick, tfChiefSe
 function buildChief(){
   buildTfPicker(tfChiefPick, tfChiefSel.value, key=>{cur.key=key; buildGoalsEditors(); refreshChiefDash();});
   renderStaffList();
+  loadCampaigns();
   if(db.apiKeys){
     $('#apiKeyFacebook').value = db.apiKeys.facebook || '';
     $('#apiKeyInstagram').value = db.apiKeys.instagram || '';
@@ -1078,6 +1165,30 @@ $('#btnChiefLogin').onclick=()=>{
   const email=$('#chief-email').value;
   const password=$('#chief-pass').value;
   nwwSignIn(email, password);
+};
+
+$('#btnSaveCampaign').onclick=async()=>{
+  const name=$('#cmpName').value.trim();
+  const code=$('#cmpCode').value.trim();
+  const color=$('#cmpColor').value;
+  const position=parseInt($('#cmpPosition').value||'0',10);
+  const is_active=$('#cmpActive').checked;
+  const { error } = await supabase.rpc('upsert_campaign', { id: editCampaignId, name, code, color, position, is_active });
+  if(error) return alert(error.message);
+  editCampaignId=null; $('#cmpName').value=''; $('#cmpCode').value=''; $('#cmpColor').value='#000000'; $('#cmpPosition').value='0'; $('#cmpActive').checked=true;
+  loadCampaigns();
+};
+
+$('#btnSaveCampaignGoal').onclick=async()=>{
+  const campaign_code=$('#goalCampaign').value;
+  const kind=$('#goalKind').value;
+  const label=$('#goalLabel').value.trim();
+  const target=parseInt($('#goalTarget').value||'0',10);
+  const timeframe=$('#goalTimeframe').value;
+  const { error } = await supabase.rpc('upsert_goal', { campaign_code, kind, label, target, timeframe });
+  if(error) return alert(error.message);
+  $('#goalLabel').value=''; $('#goalTarget').value='0';
+  refreshCampaignProgress();
 };
 
 function buildGoalsEditors(){
