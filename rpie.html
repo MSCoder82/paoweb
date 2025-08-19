@@ -721,7 +721,7 @@ Produce a complete, structured plan with clear headings and a table for the Acti
     }
 
     async function callOpenAI(prompt){
-      const key = window.parent?.db?.apiKeys?.openai || '';
+      const key = window.parent?.aiApiKeys?.openai || '';
       if(!key){ throw new Error('API key required'); }
       const res = await fetch('https://api.openai.com/v1/chat/completions',{
         method:'POST',
