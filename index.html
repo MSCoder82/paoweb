@@ -1670,17 +1670,22 @@ async function callAI(){
   window.nwwSignIn = async () => {
     const email = $("si-email").value;
     const password = $("si-pass").value;
+    $("status").textContent = "Signing you in, please wait";
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
       options: { shouldCreateUser: false }
     });
-    $("status").textContent = error ? `Signin error: ${error.message}` : "Signed in.";
+    if (error) {
+      $("status").textContent = `Signin error: ${error.message}`;
+      return;
+    }
+    $("status").textContent = "Signed in.";
     const prof = await refreshAuthUI();
     // If the profile fetch fails, fall back to the role selected on the role
     // screen so admins can still access the admin view after signing in.
     const isAdmin = role === "admin" || prof?.role === "admin";
-    if (!error && isAdmin) { buildAdmin(); window.show('admin'); }
+    if (isAdmin) { buildAdmin(); window.show('admin'); }
   };
 
   window.nwwSignUp = async () => {
