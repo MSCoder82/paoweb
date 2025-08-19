@@ -162,6 +162,13 @@
         <button type="button" onclick="nwwSignIn()">Sign in</button>
         <button type="button" onclick="requestPasswordReset()" class="mini">Reset password</button>
       </section>
+      <section style="margin-top:16px">
+        <h3>Sign up</h3>
+        <input id="su-email" type="email" placeholder="Email" required />
+        <input id="su-pass" type="password" placeholder="Password" required />
+        <input id="su-confirm" type="password" placeholder="Confirm password" required />
+        <button type="button" onclick="nwwSignUp()">Sign up</button>
+      </section>
     </div>
 
     <div id="adminReset" class="hide">
@@ -1674,6 +1681,19 @@ async function callAI(){
     // screen so admins can still access the admin view after signing in.
     const isAdmin = role === "admin" || prof?.role === "admin";
     if (!error && isAdmin) { buildAdmin(); window.show('admin'); }
+  };
+
+  window.nwwSignUp = async () => {
+    const email = $("su-email").value;
+    const password = $("su-pass").value;
+    const confirm = $("su-confirm").value;
+    if (password !== confirm) {
+      $("status").textContent = "Passwords do not match";
+      return;
+    }
+    const { error } = await supabase.auth.signUp({ email, password });
+    $("status").textContent = error ? `Signup error: ${error.message}` : "Check email for confirmation.";
+    if (!error) { await refreshAuthUI(); }
   };
 
   window.requestPasswordReset = async () => {
