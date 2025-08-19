@@ -141,13 +141,13 @@
       <div style="font-size:22px;font-weight:800">Viewer</div><div class="mini">See progress & click product links</div>
     </button>
     <button class="card" style="background:var(--accent4);color:#041d13; cursor:pointer" data-role="staff">
-      <div style="font-size:22px;font-weight:800">Staff</div><div class="mini">Enter my work & links (PIN protected)</div>
+      <div style="font-size:22px;font-weight:800">Staff</div><div class="mini">Enter my work & links</div>
     </button>
     <button class="card" style="background:var(--accent2);color:#1d0c16; cursor:pointer" data-role="chief">
-      <div style="font-size:22px;font-weight:800">PAO Chief</div><div class="mini">Set goals, staff & PINs</div>
+      <div style="font-size:22px;font-weight:800">PAO Chief</div><div class="mini">Set goals & staff</div>
     </button>
     <button class="card" style="background:var(--accent1);color:#0a141c; cursor:pointer" data-role="admin">
-      <div style="font-size:22px;font-weight:800">Admin</div><div class="mini">Manage all units</div>
+      <div style="font-size:22px;font-weight:800">Register</div><div class="mini">Manage all units</div>
     </button>
   </section>
 
@@ -165,6 +165,7 @@
       <section style="margin-top:16px">
         <h3>Sign up</h3>
         <input id="su-email" type="email" placeholder="Email" required />
+        <input id="su-unit" type="text" placeholder="Unit" required />
         <input id="su-pass" type="password" placeholder="Password" required />
         <input id="su-confirm" type="password" placeholder="Confirm password" required />
         <button type="button" onclick="nwwSignUp()">Sign up</button>
@@ -182,23 +183,23 @@
 
     <pre id="status">Not signed in</pre>
 
-    <!-- PAO Chief PIN auth -->
+    <!-- PAO Chief email/password auth -->
     <div id="chiefAuth" class="hide">
       <h3>PAO Chief Sign‑in</h3>
       <div class="grid" style="grid-template-columns:1fr">
-        <div><label>Select PAO Chief</label><select id="chiefPick" class="input"></select></div>
-        <div><label>PIN</label><input id="chiefPINInput" type="password" class="input" placeholder="PIN" /></div>
-        <div><button class="cta" id="btnChiefLogin" style="margin-top:8px">Continue</button></div>
+        <div><label>Email</label><input id="chief-email" type="email" class="input" placeholder="Email" /></div>
+        <div><label>Password</label><input id="chief-pass" type="password" class="input" placeholder="Password" /></div>
+        <div><button class="cta" id="btnChiefLogin" style="margin-top:8px">Sign in</button></div>
       </div>
     </div>
 
-    <!-- Staff PIN auth -->
+    <!-- Staff email/password auth -->
     <div id="staffAuth" class="hide">
       <h3>Staff Sign‑in</h3>
       <div class="grid" style="grid-template-columns:1fr">
-        <div><label>Select Staff</label><select id="staffPick" class="input"></select></div>
-        <div><label>PIN</label><input id="staffPINInput" type="password" class="input" placeholder="PIN" /></div>
-        <div><button class="cta" id="btnStaffLogin" style="margin-top:8px">Continue</button></div>
+        <div><label>Email</label><input id="staff-email" type="email" class="input" placeholder="Email" /></div>
+        <div><label>Password</label><input id="staff-pass" type="password" class="input" placeholder="Password" /></div>
+        <div><button class="cta" id="btnStaffLogin" style="margin-top:8px">Sign in</button></div>
       </div>
     </div>
   </section>
@@ -450,7 +451,7 @@
 
   <!-- ADMIN (global) -->
   <section id="screenAdmin" class="card hide admin-only" style="margin-top:18px">
-    <h3>Admin Dashboard</h3>
+    <h3>Register Dashboard</h3>
     <div class="grid" style="grid-template-columns:1fr">
       <div><label>Select Unit</label><select id="adminUnit" class="input"></select></div>
       <div><button class="cta" id="btnAdminOpen" style="margin-top:8px">Open Unit</button></div>
@@ -791,7 +792,6 @@ function show(which, isBack=false){
   }
   if(which==='viewer'){ buildViewer(); $('#screenViewer').classList.remove('hide'); return; }
   if(which==='staffAuth'){
-    buildStaffAuth();
     $('#screenAuth').classList.remove('hide');
     $('#staffAuth').classList.remove('hide');
     $('#chiefAuth').classList.add('hide');
@@ -799,7 +799,6 @@ function show(which, isBack=false){
     return;
   }
   if(which==='chiefAuth'){
-    buildChiefAuth();
     $('#screenAuth').classList.remove('hide');
     $('#chiefAuth').classList.remove('hide');
     $('#staffAuth').classList.add('hide');
@@ -838,7 +837,7 @@ $('#screenRole').addEventListener('click', e=>{
   if(r==='viewer'){ role='viewer'; whoPill.textContent='Viewer'; buildViewer(); show('viewer'); }
   if(r==='staff'){ role='staff'; whoPill.textContent='Staff — sign in'; show('staffAuth'); }
   if(r==='chief'){ role='chief'; whoPill.textContent='PAO Chief — sign in'; show('chiefAuth'); }
-  if(r==='admin'){ role='admin'; whoPill.textContent='Admin — sign in'; show('adminAuth'); }
+  if(r==='admin'){ role='admin'; whoPill.textContent='Register — sign in'; show('adminAuth'); }
 });
 
 /* ================= HAMBURGER ================= */
@@ -853,7 +852,7 @@ function buildMenu(){
     {id:'check', label:'Pre‑Release Checklist', dot:'grad2', group:'Staff'},
     {id:'rpie', label:'R-PIE Planner', dot:'grad1', group:'Staff'},
     ...(role==='chief' ? [{id:'chief', label:'PAO Chief (Goals & Staff)', dot:'grad2', group:'PAO Chief'}] : []),
-    ...(role==='admin' ? [{id:'admin', label:'Admin (Manage Units)', dot:'grad2', group:'Admin'}] : []),
+    ...(role==='admin' ? [{id:'admin', label:'Register (Manage Units)', dot:'grad2', group:'Register'}] : []),
     ...(role ? [{id:'signout', label:'Sign out', dot:'grad1'}] : [])
   ];
   const groups={}; const ungrouped=[];
@@ -1090,49 +1089,16 @@ function renderStaffList(){
   box.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{ const id=e.target.dataset.del; if(!confirm('Remove staff?'))return; db.staff=db.staff.filter(x=>x.id!==id); save(); renderStaffList(); }));
 }
 
-function buildStaffAuth(){
-  const sel = $('#staffPick');
-  sel.innerHTML='';
-  db.staff.forEach(s=>{
-    const o=document.createElement('option');
-    o.value=s.id; o.textContent=s.name; sel.appendChild(o);
-  });
-}
-function buildChiefAuth(){
-  const sel=$('#chiefPick');
-  if(!sel) return;
-  sel.innerHTML='';
-  loadChiefs().forEach(c=>{
-    const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; sel.appendChild(o);
-  });
-}
-
 $('#btnStaffLogin').onclick=()=>{
-  const id=$('#staffPick').value;
-  const pin=$('#staffPINInput').value.trim();
-  const rec=db.staff.find(s=>s.id===id);
-  if(!rec || rec.pin!==pin) return alert('Invalid PIN');
-  user=rec;
-  whoPill.textContent=`Staff — ${rec.name}`;
-  $('#staffPINInput').value='';
-  document.body.classList.add('is-authed');
-  document.body.classList.remove('is-admin');
-  show('staff');
+  const email=$('#staff-email').value;
+  const password=$('#staff-pass').value;
+  nwwSignIn(email, password);
 };
 
 $('#btnChiefLogin').onclick=()=>{
-  const id=$('#chiefPick').value;
-  const pin=$('#chiefPINInput').value.trim();
-  const chiefs=loadChiefs();
-  const rec=chiefs.find(c=>c.id===id);
-  if(!rec || rec.pin!==pin) return alert('Invalid PIN');
-  if(db.chiefId!==id) return alert('Not assigned to this unit');
-  user={id:'chief'};
-  whoPill.textContent=`PAO Chief — ${rec.name}`;
-  $('#chiefPINInput').value='';
-  document.body.classList.add('is-authed');
-  document.body.classList.remove('is-admin');
-  show('chief');
+  const email=$('#chief-email').value;
+  const password=$('#chief-pass').value;
+  nwwSignIn(email, password);
 };
 
 $('#btnStaffSavePIN').onclick=()=>{
@@ -1723,9 +1689,9 @@ async function callAI(){
   ['mousemove','keydown','click','scroll'].forEach(evt=> window.addEventListener(evt, resetIdle));
 
   // Sign in
-  window.nwwSignIn = async () => {
-    const email = $("si-email").value;
-    const password = $("si-pass").value;
+  window.nwwSignIn = async (email, password) => {
+    email = email || $("si-email").value;
+    password = password || $("si-pass").value;
     $("status").textContent = "Signing you in, please wait";
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -1738,14 +1704,20 @@ async function callAI(){
     }
     $("status").textContent = "Signed in.";
     const prof = await refreshAuthUI();
-    // If the profile fetch fails, fall back to the role selected on the role
-    // screen so admins can still access the admin view after signing in.
-    const isAdmin = role === "admin" || prof?.role === "admin";
-    if (isAdmin) { buildAdmin(); window.show('admin'); }
+    const r = prof?.role || role;
+    if (prof?.email) {
+      const labelMap = { admin: 'Register', chief: 'PAO Chief', staff: 'Staff' };
+      const label = labelMap[r] || (r ? r.charAt(0).toUpperCase() + r.slice(1) : 'User');
+      whoPill.textContent = `${label} — ${prof.email}`;
+    }
+    if (r === 'admin') { buildAdmin(); window.show('admin'); }
+    else if (r === 'chief') { buildChief(); window.show('chief'); }
+    else if (r === 'staff') { buildStaff(); window.show('staff'); }
   };
 
   window.nwwSignUp = async () => {
     const email = $("su-email").value.trim().toLowerCase();
+    const unit = $("su-unit").value.trim();
     const password = $("su-pass").value;
     const confirm = $("su-confirm").value;
     if (password !== confirm) {
@@ -1756,7 +1728,7 @@ async function callAI(){
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName, full_name: displayName } }
+      options: { data: { display_name: displayName, full_name: displayName, unit_id: unit } }
     });
     $("status").textContent = error ? `Signup error: ${error.message}` : "Check email for confirmation.";
     if (!error) { await refreshAuthUI(); }
@@ -1800,9 +1772,14 @@ async function callAI(){
       .eq("id", uid)
       .single();
 
-    role = role || prof?.role;
+    role = prof?.role || role;
     document.body.classList.toggle("is-admin", role === "admin");
     $("status").textContent = `Signed in as ${prof?.email || session.user.email}`;
+    if (prof?.email) {
+      const labelMap = { admin: 'Register', chief: 'PAO Chief', staff: 'Staff' };
+      const label = labelMap[role] || (role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User');
+      whoPill.textContent = `${label} — ${prof.email}`;
+    }
     resetIdle();
     await loadEntriesFromSupabase();
     return prof;
