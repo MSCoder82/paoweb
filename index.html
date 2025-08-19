@@ -655,6 +655,59 @@ function load(unit){
 }
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); ensureUnitList(currentUnit); }
 
+async function saveEntryToSupabase(entry){
+  try{
+    if(!window.supabase) return;
+    if(entry.type==='output'){
+      await supabase.from('outputs').insert({
+        user_id: entry.userId,
+        timeframe: entry.tf,
+        tf_key: entry.tfKey,
+        product_type: entry.data.product,
+        quantity: entry.data.qty,
+        links: entry.data.links
+      });
+    }else if(entry.type==='outtake'){
+      await supabase.from('outtakes').insert({
+        user_id: entry.userId,
+        timeframe: entry.tf,
+        tf_key: entry.tfKey,
+        outtake_type: entry.data.kind,
+        quantity: entry.data.qty,
+        notes: entry.data.notes
+      });
+    }else if(entry.type==='outcome'){
+      await supabase.from('outcomes').insert({
+        user_id: entry.userId,
+        timeframe: entry.tf,
+        tf_key: entry.tfKey,
+        outcome_label: entry.data.metric,
+        percent: entry.data.pct
+      });
+    }
+  }catch(err){ console.error('Supabase insert failed', err); }
+}
+
+async function loadEntriesFromSupabase(){
+  try{
+    if(!window.supabase) return;
+    const { data: { user: u } } = await supabase.auth.getUser();
+    if(!u) return;
+    const [outs, otks, ocms] = await Promise.all([
+      supabase.from('outputs').select('*').eq('user_id', u.id),
+      supabase.from('outtakes').select('*').eq('user_id', u.id),
+      supabase.from('outcomes').select('*').eq('user_id', u.id)
+    ]);
+    const mapOuts = (outs.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'output', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{product:o.product_type, qty:o.quantity, links:o.links||[]}}));
+    const mapOtks = (otks.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'outtake', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{kind:o.outtake_type, qty:o.quantity, notes:o.notes||''}}));
+    const mapOcms = (ocms.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'outcome', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{metric:o.outcome_label, pct:o.percent||0}}));
+    db.entries = [...mapOuts, ...mapOtks, ...mapOcms];
+    save();
+    refreshStaff();
+    if(typeof refreshViewerIf==='function') refreshViewerIf();
+  }catch(err){ console.error('Supabase load failed', err); }
+}
+
 function buildUnitPicker(){ populateUnitSelect('#unitSel'); }
 
 /* ================= HELPERS ================= */
@@ -957,16 +1010,18 @@ $('#btnAddOutput').addEventListener('click', ()=>{
   if(!user) return; const type=$('#outProdType').value==='Other (specify)' ? ($('#otherProd').value.trim()||'Other') : $('#outProdType').value;
   const qty=parseInt($('#outQty').value||'0',10); if(qty<=0) return alert('Quantity must be > 0');
   const links=parseLinks($('#outLinks').value);
-  db.entries.push({id:uid(), userId:user.id, type:'output', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{product:type, qty, links}});
-  save(); $('#outQty').value=1; $('#outLinks').value=''; $('#otherProd').value=''; refreshStaff(); refreshViewerIf();
+  const entry={id:uid(), userId:user.id, type:'output', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{product:type, qty, links}};
+  db.entries.push(entry);
+  save(); saveEntryToSupabase(entry); $('#outQty').value=1; $('#outLinks').value=''; $('#otherProd').value=''; refreshStaff(); refreshViewerIf();
 });
 $('#btnClearOutput').addEventListener('click', ()=>{ $('#outQty').value=1; $('#outLinks').value=''; $('#otherProd').value=''; });
 $('#btnAddOuttake').addEventListener('click', ()=>{
   if(!user) return; const type=$('#otkType').value==='Other (specify)' ? ($('#otkOther').value.trim()||'Other') : $('#otkType').value;
   const qty=parseInt($('#otkQty').value||'0',10); if(qty<=0) return alert('Quantity must be > 0');
   const notes=$('#otkNotes').value.trim();
-  db.entries.push({id:uid(), userId:user.id, type:'outtake', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{kind:type, qty, notes}});
-  save(); $('#otkQty').value=1; $('#otkNotes').value=''; $('#otkOther').value=''; refreshStaff(); refreshViewerIf();
+  const entry={id:uid(), userId:user.id, type:'outtake', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{kind:type, qty, notes}};
+  db.entries.push(entry);
+  save(); saveEntryToSupabase(entry); $('#otkQty').value=1; $('#otkNotes').value=''; $('#otkOther').value=''; refreshStaff(); refreshViewerIf();
 });
 $('#btnClearOuttake').addEventListener('click', ()=>{ $('#otkQty').value=1; $('#otkNotes').value=''; $('#otkOther').value=''; });
 $('#btnSaveOutcome').addEventListener('click', ()=>{
@@ -974,8 +1029,9 @@ $('#btnSaveOutcome').addEventListener('click', ()=>{
   const key=$('#ocmKey').value==='Other (specify)' ? ($('#ocmOther').value.trim()||'Other') : $('#ocmKey').value;
   if(!key) return alert('No outcome metric defined.');
   const pct=parseInt($('#ocmPct').value,10);
-  db.entries.push({id:uid(), userId:user.id, type:'outcome', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{metric:key, pct}});
-  save(); $('#ocmOther').value=''; refreshStaff(); refreshViewerIf();
+  const entry={id:uid(), userId:user.id, type:'outcome', tf:cur.tf, tfKey:cur.key, ts:Date.now(), data:{metric:key, pct}};
+  db.entries.push(entry);
+  save(); saveEntryToSupabase(entry); $('#ocmOther').value=''; refreshStaff(); refreshViewerIf();
 });
 function refreshStaff(){
   const mine=db.entries.filter(e=> e.userId===user?.id && e.tf===cur.tf && e.tfKey===cur.key);
@@ -1743,6 +1799,7 @@ async function callAI(){
     document.body.classList.toggle("is-admin", role === "admin");
     $("status").textContent = `Signed in as ${prof?.email || session.user.email}`;
     resetIdle();
+    await loadEntriesFromSupabase();
     return prof;
   }
 
