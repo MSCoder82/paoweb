@@ -290,6 +290,17 @@ async function addTemplate(form){
   await sb.from("templates").insert({ unit_id: CURRENT.unit_id, template_kind, value });
 }
 
+// ---------- AI Keys ----------
+async function saveAiKey({ unit_id, provider, api_key, model, enabled }) {
+  const token = (await sb.auth.getSession()).data.session?.access_token;
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/set-ai-key`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ unit_id, provider, api_key, model, enabled })
+  });
+  if (!res.ok) throw new Error(await res.text());
+}
+
 // ---------- Bind UI ----------
 function bindUI(){
   // Populate unit selectors from Supabase when the page loads
@@ -321,5 +332,5 @@ function bindUI(){
   $("#form-template")?.addEventListener("submit", async e=>{ e.preventDefault(); await addTemplate(e.currentTarget); e.currentTarget.reset(); });
 }
 
-window.PAOWeb = { adminSignIn, startSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits };
+window.PAOWeb = { adminSignIn, startSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey };
 document.addEventListener("DOMContentLoaded", bindUI);
