@@ -59,19 +59,28 @@ async function reloadUnits(){
       }
     }
 
-    const opts = units
-      .map(u => `<option value="${u.id ?? u.code}">${u.name ?? u.unit_name ?? u.code}</option>`)
-      .join("");
-    sels.forEach(sel => {
-      sel.innerHTML = opts;
-      if (sel.id === 'su-unit') {
-        const defName = 'Walla Walla District';
-        const def = units.find(u => (u.name ?? u.unit_name ?? u.code) === defName);
-        if (def) sel.value = def.id ?? def.code;
-      }
-    });
+    if (units.length) {
+      const opts = units
+        .map(u => `<option value="${u.id ?? u.code}">${u.name ?? u.unit_name ?? u.code}</option>`)
+        .join("");
+      sels.forEach(sel => {
+        sel.innerHTML = opts;
+        if (sel.id === 'su-unit') {
+          const defName = 'Walla Walla District';
+          const def = units.find(u => (u.name ?? u.unit_name ?? u.code) === defName);
+          if (def) sel.value = def.id ?? def.code;
+        }
+      });
+    } else if (typeof populateUnitSelect === 'function') {
+      populateUnitSelect('#unitSel');
+      populateUnitSelect('#su-unit');
+    }
   }catch(err){
     console.error("load units failed", err);
+    if (typeof populateUnitSelect === 'function') {
+      populateUnitSelect('#unitSel');
+      populateUnitSelect('#su-unit');
+    }
   }
 }
 
