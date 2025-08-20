@@ -1366,13 +1366,25 @@ function buildAdmin(){
     $('#adminApiKeyGemini').value = aiApiKeys.gemini || '';
     $('#adminApiKeyCamogpt').value = aiApiKeys.camogpt || '';
     $('#adminApiKeyAsksage').value = aiApiKeys.asksage || '';
-    $('#btnAdminSaveAiKeys').onclick = () => {
+    $('#btnAdminSaveAiKeys').onclick = async () => {
       aiApiKeys.openai = $('#adminApiKeyOpenAI').value.trim();
       aiApiKeys.gemini = $('#adminApiKeyGemini').value.trim();
       aiApiKeys.camogpt = $('#adminApiKeyCamogpt').value.trim();
       aiApiKeys.asksage = $('#adminApiKeyAsksage').value.trim();
       saveAiApiKeys();
-      alert('AI API Keys saved');
+      const unit_id = CURRENT?.unit_id;
+      try {
+        await Promise.all([
+          PAOWeb.saveAiKey({ unit_id, provider:'openai', api_key: aiApiKeys.openai, model:null, enabled:!!aiApiKeys.openai }),
+          PAOWeb.saveAiKey({ unit_id, provider:'gemini', api_key: aiApiKeys.gemini, model:null, enabled:!!aiApiKeys.gemini }),
+          PAOWeb.saveAiKey({ unit_id, provider:'camogpt', api_key: aiApiKeys.camogpt, model:null, enabled:!!aiApiKeys.camogpt }),
+          PAOWeb.saveAiKey({ unit_id, provider:'asksage', api_key: aiApiKeys.asksage, model:null, enabled:!!aiApiKeys.asksage })
+        ]);
+        alert('AI API Keys saved');
+      } catch(err) {
+        console.error('Failed to save AI API Keys', err);
+        alert('Failed to save AI API Keys');
+      }
     };
   }
 }
