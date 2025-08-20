@@ -30,58 +30,47 @@ let CURRENT = {
 const $ = (s) => document.querySelector(s);
 const toInt = (v, d=0) => { const n = parseInt(v,10); return Number.isFinite(n)?n:d; };
 
+const HOME_SELECT_ID = "#unitSelectHome";
+const REG_SELECT_ID  = "#unitSelectRegister";
+const NEW_VALUE      = "__new__";
+
 async function reloadUnits(){
-  const sels = ["#unitSel", "#su-unit"].map(s => $(s)).filter(Boolean);
-  if(!sels.length) return;
-  try{
-    let units = [];
-
-    // Try RPC first; fall back to direct table queries if it fails
-    try {
-      const { data, error } = await sb.rpc("list_units");
-      if (error) throw error;
-      units = data || [];
-    } catch (_err) {
-      try {
-        const { data, error } = await sb
-          .from("unit")
-          .select("id, name, unit_name, code")
-          .order("name", { ascending: true });
-        if (error) throw error;
-        units = data || [];
-      } catch (__err) {
-        const { data, error } = await sb
-          .from("units")
-          .select("id, name, unit_name, code")
-          .order("name", { ascending: true });
-        if (error) throw error;
-        units = data || [];
-      }
-    }
-
-    if (units.length) {
-      const opts = units
-        .map(u => `<option value="${u.id ?? u.code}">${u.name ?? u.unit_name ?? u.code}</option>`)
-        .join("");
-      sels.forEach(sel => {
-        sel.innerHTML = opts;
-        if (sel.id === 'su-unit') {
-          const defName = 'Walla Walla District';
-          const def = units.find(u => (u.name ?? u.unit_name ?? u.code) === defName);
-          if (def) sel.value = def.id ?? def.code;
-        }
-      });
-    } else if (typeof populateUnitSelect === 'function') {
-      populateUnitSelect('#unitSel');
-      populateUnitSelect('#su-unit');
-    }
+  const homeSel = $(HOME_SELECT_ID);
+  const regSel  = $(REG_SELECT_ID);
+  if(!homeSel && !regSel) return;
+  try {
+    const { data, error } = await sb.rpc("list_units");
+    if (error) { console.warn("list_units error:", error.message); return; }
+    const optionsHtml = [
+      '<option value="">Select a unit…</option>',
+      ...(data || []).map(u => `<option value="${u.id ?? u.code}" data-id="${u.id}">${u.name}</option>`),
+      `<option value="${NEW_VALUE}">+ Create new unit…</option>`
+    ].join('');
+    if (homeSel) homeSel.innerHTML = optionsHtml;
+    if (regSel)  regSel.innerHTML  = optionsHtml;
   }catch(err){
     console.error("load units failed", err);
-    if (typeof populateUnitSelect === 'function') {
-      populateUnitSelect('#unitSel');
-      populateUnitSelect('#su-unit');
-    }
   }
+}
+
+function bindCreateNewHandlers() {
+  const onChange = (ev) => {
+    const isNew = ev.target.value === NEW_VALUE;
+    document.querySelectorAll('[data-new-unit-fields]').forEach(el => {
+      el.style.display = isNew ? '' : 'none';
+    });
+  };
+  [HOME_SELECT_ID, REG_SELECT_ID].forEach(id => $(id)?.addEventListener('change', onChange));
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    reloadUnits();
+    bindCreateNewHandlers();
+  });
+} else {
+  reloadUnits();
+  bindCreateNewHandlers();
 }
 
 async function refreshRole(){

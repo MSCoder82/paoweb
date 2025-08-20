@@ -130,7 +130,7 @@
   <section id="screenUnit" class="card" style="margin-top:18px">
     <h3>Choose Unit</h3>
     <div class="grid" style="grid-template-columns:1fr">
-      <div><label>Existing Units</label><select id="unitSel" class="input"></select></div>
+      <div><label>Existing Units</label><select id="unitSelectHome" class="input"></select></div>
       <div><button class="cta" id="btnUnitGo" style="margin-top:8px">Continue</button></div>
     </div>
   </section>
@@ -165,9 +165,9 @@
       <section style="margin-top:16px">
         <h3>Sign up</h3>
         <input id="su-email" type="email" placeholder="Email" required />
-        <select id="su-unit" class="input"></select>
-        <input id="su-new-unit" type="text" class="input" placeholder="New unit name (optional)" />
-        <input id="su-new-code" type="text" class="input" placeholder="Unit code (optional)" />
+        <select id="unitSelectRegister" class="input"></select>
+        <input id="su-new-unit" type="text" class="input" placeholder="New unit name (optional)" data-new-unit-fields style="display:none" />
+        <input id="su-new-code" type="text" class="input" placeholder="Unit code (optional)" data-new-unit-fields style="display:none" />
         <input id="su-pass" type="password" placeholder="Password" required />
         <input id="su-confirm" type="password" placeholder="Confirm password" required />
         <button type="button" onclick="nwwSignUp()">Sign up</button>
@@ -647,7 +647,7 @@ function populateUnitSelect(sel){
   const units = JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
   units.forEach(u=>{ const o=document.createElement('option'); o.value=u; o.textContent=u; el.appendChild(o); });
   const defUnit='Walla Walla District';
-  el.value = el.id === 'su-unit' && units.includes(defUnit) ? defUnit : currentUnit;
+  el.value = el.id === 'unitSelectRegister' && units.includes(defUnit) ? defUnit : currentUnit;
 }
 function load(unit){
   currentUnit = unit;
@@ -786,8 +786,8 @@ function buildUnitPicker(){
     reloadUnits();
   } else {
     // Fallback to local storage units (offline mode)
-    populateUnitSelect('#unitSel');
-    populateUnitSelect('#su-unit');
+    populateUnitSelect('#unitSelectHome');
+    populateUnitSelect('#unitSelectRegister');
   }
 }
 
@@ -891,7 +891,7 @@ function show(which, isBack=false){
     $('#staffAuth').classList.add('hide');
     $('#chiefAuth').classList.add('hide');
     if (typeof reloadUnits === 'function') reloadUnits();
-    else populateUnitSelect('#su-unit');
+    else populateUnitSelect('#unitSelectRegister');
     return;
   }
   if(which==='adminReset'){
@@ -908,7 +908,7 @@ function show(which, isBack=false){
   if(which.startsWith('mod')) $('#'+which).classList.remove('hide');
 }
 $('#btnUnitGo').addEventListener('click', ()=>{
-  const unit=$('#unitSel').value;
+  const unit=$('#unitSelectHome').value;
   if(!unit) return alert('Select a unit');
   db=load(unit);
   show('role');
@@ -1815,7 +1815,7 @@ async function callAI(){
 
   window.nwwSignUp = async () => {
     const email = $("su-email").value.trim().toLowerCase();
-    const unit = $("su-unit").value;
+    const unit = $("unitSelectRegister").value;
     const newUnitName = $("su-new-unit").value.trim();
     const newUnitCode = $("su-new-code").value.trim();
     const password = $("su-pass").value;
@@ -1825,7 +1825,7 @@ async function callAI(){
       return;
     }
 
-    let unitId = unit;
+    let unitId = unit === "__new__" ? null : unit;
     if (newUnitName) {
       const { data: created, error: unitErr } = await supabase.functions.invoke('create-unit', {
         body: { name: newUnitName, code: newUnitCode || undefined }
