@@ -68,6 +68,33 @@ async function refreshRole(){
   }
 }
 
+async function switchUnit(unitId) {
+  if (!unitId) return;
+  try {
+    await sb.rpc("set_active_unit", { in_unit: unitId });
+    CURRENT.unit_id = unitId;
+    tearDownRealtime?.();
+    await refreshRoleForUnit(unitId);
+    await loadUnitData();
+    subscribeRealtime?.();
+  } catch (e) {
+    console.error("switchUnit failed", e);
+    alert(e.message || "Could not switch unit");
+  }
+}
+
+async function refreshRoleForUnit(unitId) {
+  try {
+    const { data, error } = await sb.rpc("my_role", { in_unit: unitId });
+    if (error) throw error;
+    const role = data ?? "viewer";
+    CURRENT.role = role;
+    gateMenus(role);
+  } catch (e) {
+    console.error("my_role(unit) failed", e);
+  }
+}
+
 // ---------- Admin sign-in (email/password) ----------
 async function adminSignIn() {
   const email = $("#admin-email")?.value?.trim();
@@ -315,5 +342,5 @@ function bindUI(){
   $("#form-template")?.addEventListener("submit", async e=>{ e.preventDefault(); await addTemplate(e.currentTarget); e.currentTarget.reset(); });
 }
 
-window.PAOWeb = { adminSignIn, startSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey };
+window.PAOWeb = { adminSignIn, startSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, switchUnit };
 document.addEventListener("DOMContentLoaded", bindUI);
