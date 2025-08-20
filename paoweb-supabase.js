@@ -34,19 +34,47 @@ async function reloadUnits(){
   const sels = ["#unitSel", "#su-unit"].map(s => $(s)).filter(Boolean);
   if(!sels.length) return;
   try{
-    const { data, error } = await sb.rpc("list_units");
-    if(error) throw error;
-    const opts = (data||[]).map(u=>`<option value="${u.id??u.code}">${u.name??u.unit_name??u.code}</option>`).join("");
+    let units = [];
+
+    // Try RPC first; fall back to direct table queries if it fails or returns no rows
+    try {
+      const { data, error } = await sb.rpc("list_units");
+      if (error) throw error;
+      if (!Array.isArray(data) || data.length === 0) throw new Error("list_units returned no data");
+      units = data;
+    } catch (_err) {
+      console.warn("list_units RPC unavailable", _err);
+      try {
+        const { data, error } = await sb
+          .from("unit")
+          .select("id, name, unit_name, code")
+          .order("name", { ascending: true });
+        if (error) throw error;
+        units = data || [];
+      } catch (__err) {
+        console.warn("unit table lookup failed, trying units", __err);
+        const { data, error } = await sb
+          .from("units")
+          .select("id, name, unit_name, code")
+          .order("name", { ascending: true });
+        if (error) throw error;
+        units = data || [];
+      }
+    }
+
+    const opts = units
+      .map(u => `<option value="${u.id ?? u.code}">${u.name ?? u.unit_name ?? u.code}</option>`)
+      .join("");
     sels.forEach(sel => {
       sel.innerHTML = opts;
       if (sel.id === 'su-unit') {
         const defName = 'Walla Walla District';
-        const def = (data||[]).find(u => (u.name ?? u.unit_name ?? u.code) === defName);
+        const def = units.find(u => (u.name ?? u.unit_name ?? u.code) === defName);
         if (def) sel.value = def.id ?? def.code;
       }
     });
   }catch(err){
-    console.error("list_units failed", err);
+    console.error("load units failed", err);
   }
 }
 
