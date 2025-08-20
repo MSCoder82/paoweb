@@ -1819,16 +1819,14 @@ async function callAI(){
     let unitId = unit;
     if (newUnitName) {
       const { data: created, error: unitErr } = await supabase.functions.invoke('create-unit', {
-        body: JSON.stringify({
-          name: newUnitName,
-          code: newUnitCode || undefined
-        })
+        body: { name: newUnitName, code: newUnitCode || undefined }
       });
       if (unitErr) {
         $("status").textContent = `Unit creation error: ${unitErr.message}`;
         return;
       }
-      unitId = created?.id;
+      const createdUnit = Array.isArray(created) ? created[0] : created;
+      unitId = createdUnit?.id;
     }
 
     if (!unitId) {
