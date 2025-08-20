@@ -780,7 +780,15 @@ async function loadEntriesFromSupabase(){
   }catch(err){ console.error('Supabase load failed', err); }
 }
 
-function buildUnitPicker(){ populateUnitSelect('#unitSel'); }
+function buildUnitPicker(){
+  // Prefer Supabase-provided units when available
+  if (typeof reloadUnits === 'function') {
+    reloadUnits();
+  } else {
+    // Fallback to local storage units (offline mode)
+    populateUnitSelect('#unitSel');
+  }
+}
 
 /* ================= HELPERS ================= */
 const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
