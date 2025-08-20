@@ -905,10 +905,7 @@ $('#btnUnitGo').addEventListener('click', ()=>{
   const unit=$('#unitSelectHome').value;
   if(!unit) return alert('Select a unit');
   db=load(unit);
-  role='viewer';
-  whoPill.textContent='Viewer';
-  buildViewer();
-  show('viewer');
+  show('role');
 });
 $('#screenRole').addEventListener('click', e=>{
   const card=e.target.closest('[data-role]'); if(!card) return;
