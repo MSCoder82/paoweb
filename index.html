@@ -166,6 +166,12 @@
         <h3>Sign up</h3>
         <input id="su-email" type="email" placeholder="Email" required />
         <select id="unitSelectRegister" class="input"></select>
+        <select id="su-role" class="input">
+          <option value="">Select role…</option>
+          <option value="staff">Staff</option>
+          <option value="chief">PAO Chief</option>
+          <option value="admin">Admin</option>
+        </select>
         <input id="su-new-unit" type="text" class="input" placeholder="New unit name (optional)" data-new-unit-fields style="display:none" />
         <input id="su-new-code" type="text" class="input" placeholder="Unit code (optional)" data-new-unit-fields style="display:none" />
         <input id="su-pass" type="password" placeholder="Password" required />
@@ -1830,6 +1836,7 @@ async function callAI(){
     const unit = $("unitSelectRegister").value;
     const newUnitName = $("su-new-unit").value.trim();
     const newUnitCode = $("su-new-code").value.trim();
+    const roleSel = $("su-role").value;
     const password = $("su-pass").value;
     const confirm = $("su-confirm").value;
     if (password !== confirm) {
@@ -1854,11 +1861,15 @@ async function callAI(){
       $("status").textContent = "Select a unit or enter a new unit name";
       return;
     }
+    if (!roleSel) {
+      $("status").textContent = "Select a role";
+      return;
+    }
     const displayName = email.split('@')[0];
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName, full_name: displayName, unit_id: unitId } }
+      options: { data: { display_name: displayName, full_name: displayName, unit_id: unitId, role: roleSel } }
     });
     $("status").textContent = error ? `Signup error: ${error.message}` : "Check email for confirmation.";
     if (!error) { await refreshAuthUI(); }
