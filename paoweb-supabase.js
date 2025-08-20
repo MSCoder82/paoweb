@@ -31,46 +31,29 @@ const $ = (s) => document.querySelector(s);
 const toInt = (v, d=0) => { const n = parseInt(v,10); return Number.isFinite(n)?n:d; };
 
 const HOME_SELECT_ID = "#unitSelectHome";
-const REG_SELECT_ID  = "#unitSelectRegister";
-const NEW_VALUE      = "__new__";
 
 async function reloadUnits(){
   const homeSel = $(HOME_SELECT_ID);
-  const regSel  = $(REG_SELECT_ID);
-  if(!homeSel && !regSel) return;
+  if(!homeSel) return;
   try {
-    const { data, error } = await sb.rpc("list_units");
-    if (error) { console.warn("list_units error:", error.message); return; }
+    const { data, error } = await sb.from('units').select('id, name, code').order('name', { ascending: true });
+    if (error) { console.warn("units load error:", error.message); return; }
     const optionsHtml = [
       '<option value="">Select a unit…</option>',
-      ...(data || []).map(u => `<option value="${u.id ?? u.code}" data-id="${u.id}">${u.name}</option>`),
-      `<option value="${NEW_VALUE}">+ Create new unit…</option>`
+      ...(data || []).map(u => `<option value="${u.id ?? u.code}" data-id="${u.id}">${u.name}</option>`)
     ].join('');
-    if (homeSel) homeSel.innerHTML = optionsHtml;
-    if (regSel)  regSel.innerHTML  = optionsHtml;
+    homeSel.innerHTML = optionsHtml;
   }catch(err){
     console.error("load units failed", err);
   }
 }
 
-function bindCreateNewHandlers() {
-  const onChange = (ev) => {
-    const isNew = ev.target.value === NEW_VALUE;
-    document.querySelectorAll('[data-new-unit-fields]').forEach(el => {
-      el.style.display = isNew ? '' : 'none';
-    });
-  };
-  [HOME_SELECT_ID, REG_SELECT_ID].forEach(id => $(id)?.addEventListener('change', onChange));
-}
-
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     reloadUnits();
-    bindCreateNewHandlers();
   });
 } else {
   reloadUnits();
-  bindCreateNewHandlers();
 }
 
 async function refreshRole(){

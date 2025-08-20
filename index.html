@@ -165,9 +165,6 @@
       <section style="margin-top:16px">
         <h3>Sign up</h3>
         <input id="su-email" type="email" placeholder="Email" required />
-        <select id="unitSelectRegister" class="input"></select>
-        <input id="su-new-unit" type="text" class="input" placeholder="New unit name (optional)" data-new-unit-fields style="display:none" />
-        <input id="su-new-code" type="text" class="input" placeholder="Unit code (optional)" data-new-unit-fields style="display:none" />
         <input id="su-pass" type="password" placeholder="Password" required />
         <input id="su-confirm" type="password" placeholder="Confirm password" required />
         <button type="button" onclick="nwwSignUp()">Sign up</button>
@@ -646,8 +643,7 @@ function populateUnitSelect(sel){
   el.innerHTML='';
   const units = JSON.parse(localStorage.getItem(UNITS_KEY)||'[]');
   units.forEach(u=>{ const o=document.createElement('option'); o.value=u; o.textContent=u; el.appendChild(o); });
-  const defUnit='Walla Walla District';
-  el.value = el.id === 'unitSelectRegister' && units.includes(defUnit) ? defUnit : currentUnit;
+  el.value = currentUnit;
 }
 function load(unit){
   currentUnit = unit;
@@ -787,7 +783,6 @@ function buildUnitPicker(){
   } else {
     // Fallback to local storage units (offline mode)
     populateUnitSelect('#unitSelectHome');
-    populateUnitSelect('#unitSelectRegister');
   }
 }
 
@@ -891,7 +886,6 @@ function show(which, isBack=false){
     $('#staffAuth').classList.add('hide');
     $('#chiefAuth').classList.add('hide');
     if (typeof reloadUnits === 'function') reloadUnits();
-    else populateUnitSelect('#unitSelectRegister');
     return;
   }
   if(which==='adminReset'){
@@ -911,7 +905,10 @@ $('#btnUnitGo').addEventListener('click', ()=>{
   const unit=$('#unitSelectHome').value;
   if(!unit) return alert('Select a unit');
   db=load(unit);
-  show('role');
+  role='viewer';
+  whoPill.textContent='Viewer';
+  buildViewer();
+  show('viewer');
 });
 $('#screenRole').addEventListener('click', e=>{
   const card=e.target.closest('[data-role]'); if(!card) return;
@@ -1827,38 +1824,17 @@ async function callAI(){
 
   window.nwwSignUp = async () => {
     const email = $("su-email").value.trim().toLowerCase();
-    const unit = $("unitSelectRegister").value;
-    const newUnitName = $("su-new-unit").value.trim();
-    const newUnitCode = $("su-new-code").value.trim();
     const password = $("su-pass").value;
     const confirm = $("su-confirm").value;
     if (password !== confirm) {
       $("status").textContent = "Passwords do not match";
       return;
     }
-
-    let unitId = unit === "__new__" ? null : unit;
-    if (newUnitName) {
-      const { data: created, error: unitErr } = await supabase.functions.invoke('create-unit', {
-        body: { name: newUnitName, code: newUnitCode || undefined }
-      });
-      if (unitErr) {
-        $("status").textContent = `Unit creation error: ${unitErr.message}`;
-        return;
-      }
-      const createdUnit = Array.isArray(created) ? created[0] : created;
-      unitId = createdUnit?.id;
-    }
-
-    if (!unitId) {
-      $("status").textContent = "Select a unit or enter a new unit name";
-      return;
-    }
     const displayName = email.split('@')[0];
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName, full_name: displayName, unit_id: unitId } }
+      options: { data: { display_name: displayName, full_name: displayName } }
     });
     $("status").textContent = error ? `Signup error: ${error.message}` : "Check email for confirmation.";
     if (!error) { await refreshAuthUI(); }
