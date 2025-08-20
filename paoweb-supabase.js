@@ -269,8 +269,12 @@ async function addTemplate(form){
 
 // ---------- Bind UI ----------
 function bindUI(){
-  window.buildUnitPicker = reloadUnits;
-  reloadUnits();
+  // Populate unit selectors from Supabase when the page loads
+  if (typeof window.buildUnitPicker === 'function') {
+    window.buildUnitPicker();
+  } else {
+    reloadUnits();
+  }
 
   // Admin sign-in
   $("#admin-signin")?.addEventListener("click", adminSignIn);
