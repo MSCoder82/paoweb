@@ -170,7 +170,6 @@
         <select id="su-role">
           <option value="staff">Staff</option>
           <option value="chief">PAO Chief</option>
-          <option value="admin">Admin</option>
         </select>
         <button type="button" onclick="nwwSignUp()">Sign up</button>
       </section>
@@ -1828,7 +1827,7 @@ async function callAI(){
     const email = $("su-email").value.trim().toLowerCase();
     const password = $("su-pass").value;
     const confirm = $("su-confirm").value;
-    const role = $("su-role").value;
+    const role = $("su-role").value || 'staff';
     if (password !== confirm) {
       $("status").textContent = "Passwords do not match";
       return;
