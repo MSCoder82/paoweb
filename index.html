@@ -167,6 +167,11 @@
         <input id="su-email" type="email" placeholder="Email" required />
         <input id="su-pass" type="password" placeholder="Password" required />
         <input id="su-confirm" type="password" placeholder="Confirm password" required />
+        <label for="su-role">Role</label>
+        <select id="su-role" class="input">
+          <option value="staff">Staff</option>
+          <option value="chief">PAO Chief</option>
+        </select>
         <button type="button" onclick="nwwSignUp()">Sign up</button>
       </section>
     </div>
@@ -1823,18 +1828,26 @@ async function callAI(){
     const email = $("su-email").value.trim().toLowerCase();
     const password = $("su-pass").value;
     const confirm = $("su-confirm").value;
+    const role = $("su-role").value;
     if (password !== confirm) {
       $("status").textContent = "Passwords do not match";
       return;
     }
     const displayName = email.split('@')[0];
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName, full_name: displayName } }
+      options: { data: { display_name: displayName, full_name: displayName, role } }
     });
     $("status").textContent = error ? `Signup error: ${error.message}` : "Check email for confirmation.";
-    if (!error) { await refreshAuthUI(); }
+    if (!error) {
+      const userId = data.user?.id;
+      if (userId) {
+        const { error: profileError } = await supabase.from("profiles").upsert({ id: userId, role });
+        if (profileError) console.warn("Profile role set failed:", profileError.message);
+      }
+      await refreshAuthUI();
+    }
   };
 
   window.requestPasswordReset = async () => {
