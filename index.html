@@ -901,14 +901,11 @@ function show(which, isBack=false){
   if(which==='admin'){ buildAdmin(); $('#screenAdmin').classList.remove('hide'); return; }
   if(which.startsWith('mod')) $('#'+which).classList.remove('hide');
 }
-$('#btnUnitGo').addEventListener('click', e=>{
-  e.preventDefault();
-  e.stopPropagation();
+$('#btnUnitGo').addEventListener('click', ()=>{
   const unit=$('#unitSelectHome').value;
   if(!unit) return alert('Select a unit');
   db=load(unit);
-  // Slight delay avoids original click selecting Viewer automatically
-  setTimeout(() => show('role'), 100);
+  show('role');
 });
 $('#screenRole').addEventListener('click', e=>{
   const card=e.target.closest('[data-role]'); if(!card) return;
