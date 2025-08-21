@@ -109,7 +109,19 @@ async function adminSignIn() {
 async function startSignIn(email, displayName, unitCode, unitPin, chiefPin) {
   // cache for after OTP redirect
   sessionStorage.setItem("paoweb_pending_join", JSON.stringify({ unitCode, unitPin, chiefPin, displayName }));
-  await sb.auth.signInWithOtp({ email, options: { data: { display_name: displayName } } });
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: 'https://mscoder82.github.io/paoweb/',
+      data: {
+        display_name: displayName,
+        unit_code: unitCode,
+        unit_pin: unitPin,
+        chief_pin: chiefPin
+      }
+    }
+  });
+  if (error) { alert(error.message); return; }
   alert("Check your email for the sign-in link.");
 }
 
