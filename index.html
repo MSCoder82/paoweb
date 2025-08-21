@@ -907,7 +907,8 @@ $('#btnUnitGo').addEventListener('click', e=>{
   const unit=$('#unitSelectHome').value;
   if(!unit) return alert('Select a unit');
   db=load(unit);
-  setTimeout(() => show('role'), 0);
+  // Slight delay avoids original click selecting Viewer automatically
+  setTimeout(() => show('role'), 100);
 });
 $('#screenRole').addEventListener('click', e=>{
   const card=e.target.closest('[data-role]'); if(!card) return;
