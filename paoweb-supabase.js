@@ -292,6 +292,52 @@ async function saveAiKey({ unit_id, provider, api_key, model, enabled }) {
   if (!res.ok) throw new Error(await res.text());
 }
 
+// ---------- Admin: Manage User Roles ----------
+async function setUserRole(user_id, role) {
+  const { error } = await sb.from('roles').upsert({ user_id, role }, { onConflict: 'user_id' });
+  if (error) throw error;
+}
+
+async function loadAllUsers() {
+  try {
+    const { data: profiles, error: pErr } = await sb.from('profiles').select('user_id, display_name');
+    if (pErr) throw pErr;
+    const { data: roles, error: rErr } = await sb.from('roles').select('user_id, role');
+    if (rErr) throw rErr;
+    const roleMap = {};
+    (roles || []).forEach(r => { roleMap[r.user_id] = r.role; });
+    const users = (profiles || []).map(p => ({
+      id: p.user_id,
+      name: p.display_name || p.user_id,
+      role: roleMap[p.user_id] || 'viewer'
+    }));
+    const tbl = document.querySelector('#userRolesTable');
+    if (!tbl) return;
+    const rowsHtml = users.map(u => `
+      <tr><td>${u.name}</td><td><select data-uid="${u.id}">
+        <option value="viewer"${u.role==='viewer'? ' selected': ''}>Viewer</option>
+        <option value="staff"${u.role==='staff'? ' selected': ''}>Staff</option>
+        <option value="chief"${u.role==='chief'? ' selected': ''}>PAO Chief</option>
+        <option value="admin"${u.role==='admin'? ' selected': ''}>Admin</option>
+      </select></td></tr>`).join('');
+    tbl.innerHTML = `<thead><tr><th>User</th><th>Role</th></tr></thead><tbody>${rowsHtml}</tbody>`;
+    tbl.querySelectorAll('select').forEach(sel => {
+      sel.addEventListener('change', async e => {
+        const uid = e.target.getAttribute('data-uid');
+        const newRole = e.target.value;
+        try {
+          await setUserRole(uid, newRole);
+        } catch (err) {
+          console.error('setUserRole failed', err);
+          alert('Failed to update role');
+        }
+      });
+    });
+  } catch (err) {
+    console.error('loadAllUsers failed', err);
+  }
+}
+
 // ---------- Bind UI ----------
 function bindUI(){
   // Populate unit selectors from Supabase when the page loads
@@ -312,5 +358,5 @@ function bindUI(){
   $("#form-template")?.addEventListener("submit", async e=>{ e.preventDefault(); await addTemplate(e.currentTarget); e.currentTarget.reset(); });
 }
 
-window.PAOWeb = { adminSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, switchUnit };
+window.PAOWeb = { adminSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, switchUnit, loadAllUsers, setUserRole };
 document.addEventListener("DOMContentLoaded", bindUI);
