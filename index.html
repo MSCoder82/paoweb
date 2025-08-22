@@ -1016,6 +1016,7 @@ function buildTfPicker(spanEl, tf, onChange){
   if(tf==='Y'){ const y=document.createElement('input'); y.type='number'; y.className='input'; y.style.width='100px'; y.value=year(today); y.addEventListener('input', ()=>onChange(String(y.value))); spanEl.appendChild(y); onChange(String(y.value)); }
 }
 function buildViewer(){
+  loadCampaigns();
   buildTfPicker(tfViewerPick, tfViewerSel.value, key=>{cur.key=key; refreshViewer();});
 }
 function refreshViewer(){
