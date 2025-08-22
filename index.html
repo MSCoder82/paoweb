@@ -167,7 +167,8 @@
         <input id="su-email" type="email" placeholder="Email" required />
         <input id="su-pass" type="password" placeholder="Password" required />
         <input id="su-confirm" type="password" placeholder="Confirm password" required />
-        <select id="su-role">
+        <label for="su-role">Role</label>
+        <select id="su-role" class="input">
           <option value="staff">Staff</option>
           <option value="chief">PAO Chief</option>
         </select>
@@ -1821,7 +1822,8 @@ async function callAI(){
     const email = $("su-email").value.trim().toLowerCase();
     const password = $("su-pass").value;
     const confirm = $("su-confirm").value;
-    const role = $("su-role").value || 'staff';
+    let role = $("su-role").value || 'staff';
+    if (!['staff', 'chief'].includes(role)) role = 'staff';
     if (password !== confirm) {
       $("status").textContent = "Passwords do not match";
       return;
