@@ -85,6 +85,8 @@ async function switchUnit(unitId) {
     tearDownRealtime?.();
     await refreshRoleForUnit(unitId);
     await loadUnitData();
+    if (typeof loadCampaigns === 'function') await loadCampaigns();
+    if (typeof refreshCampaignProgress === 'function') await refreshCampaignProgress();
     subscribeRealtime?.();
   } catch (e) {
     console.error("switchUnit failed", e);
