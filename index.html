@@ -680,8 +680,11 @@ function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); ensureUn
 async function saveEntryToSupabase(entry){
   try{
     if(!window.supabase) return;
+    const unit_id = window.CURRENT?.unit_id;
+    if(!unit_id) return; // cannot save without a selected unit
     if(entry.type==='output'){
       await supabase.from('outputs').insert({
+        unit_id,
         user_id: entry.userId,
         timeframe: entry.tf,
         tf_key: entry.tfKey,
@@ -692,6 +695,7 @@ async function saveEntryToSupabase(entry){
       });
     }else if(entry.type==='outtake'){
       await supabase.from('outtakes').insert({
+        unit_id,
         user_id: entry.userId,
         timeframe: entry.tf,
         tf_key: entry.tfKey,
@@ -702,6 +706,7 @@ async function saveEntryToSupabase(entry){
       });
     }else if(entry.type==='outcome'){
       await supabase.from('outcomes').insert({
+        unit_id,
         user_id: entry.userId,
         timeframe: entry.tf,
         tf_key: entry.tfKey,
@@ -763,12 +768,13 @@ async function refreshCampaignProgress(){
 async function loadEntriesFromSupabase(){
   try{
     if(!window.supabase) return;
+    const unit_id = window.CURRENT?.unit_id;
     const { data: { user: u } } = await supabase.auth.getUser();
-    if(!u) return;
+    if(!u || !unit_id) return;
     const [outs, otks, ocms] = await Promise.all([
-      supabase.from('outputs').select('*').eq('user_id', u.id),
-      supabase.from('outtakes').select('*').eq('user_id', u.id),
-      supabase.from('outcomes').select('*').eq('user_id', u.id)
+      supabase.from('outputs').select('*').eq('user_id', u.id).eq('unit_id', unit_id),
+      supabase.from('outtakes').select('*').eq('user_id', u.id).eq('unit_id', unit_id),
+      supabase.from('outcomes').select('*').eq('user_id', u.id).eq('unit_id', unit_id)
     ]);
     const mapOuts = (outs.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'output', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{product:o.product_type, qty:o.quantity, links:o.links||[], campaign:o.campaign_id||null}}));
     const mapOtks = (otks.data||[]).map(o=>({id:o.id, userId:o.user_id, type:'outtake', tf:o.timeframe, tfKey:o.tf_key, ts:Date.parse(o.created_at), data:{kind:o.outtake_type, qty:o.quantity, notes:o.notes||'', campaign:o.campaign_id||null}}));

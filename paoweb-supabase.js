@@ -8,14 +8,24 @@
 const SUPABASE_URL = "https://ecgqsiysdteeagvacjna.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjZ3FzaXlzZHRlZWFndmFjam5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2OTUxMjcsImV4cCI6MjA3MTI3MTEyN30.IWgigXdAKcYlo_vrJpWljMXL3I0ySUmZo92smDEW2gs";
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    storage: window.sessionStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-  }
-});
+// Reuse an existing Supabase client if one was already created elsewhere on the
+// page.  The index.html file bootstraps a client for legacy flows, so this file
+// should gracefully adopt that instance instead of trying to create a new one.
+// If no client exists yet, fall back to creating our own.
+const sb = window.supabase?.from
+  ? window.supabase
+  : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        storage: window.sessionStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+// Expose the client globally so other scripts (like index.html) can use it and
+// so they don't attempt to spin up duplicate clients.
+window.supabase = sb;
 
 let CURRENT = {
   session: null,
