@@ -352,7 +352,6 @@
               <h3>Staff</h3>
               <div class="grid" style="grid-template-columns:1fr">
                 <div><label>Staff Name</label><input id="staffName" class="input" placeholder="e.g., A. Johnson"></div>
-                <div><label>PIN</label><input id="staffNewPIN" type="password" class="input" placeholder="Set PIN"></div>
                 <div><button class="cta" id="btnAddStaff" style="margin-top:8px">Add / Update</button></div>
               </div>
               <div class="scroll" id="staffList" style="margin-top:10px"></div>
@@ -486,13 +485,9 @@
       <div class="divider"></div>
       <div><h4>PAO Chiefs</h4><div id="chiefAdminList" class="scroll"></div></div>
       <div><label>Add PAO Chief</label><input id="adminNewChief" class="input" placeholder="Name" /></div>
-      <div><label>PIN</label><input id="adminNewChiefPIN" type="password" class="input" placeholder="PIN" /></div>
       <div><label>Assign to Unit</label><select id="adminNewChiefUnit" class="input"></select></div>
       <div><button class="ghost small" id="btnAdminAddChief" style="margin-top:8px">Add PAO Chief</button></div>
       <div class="divider"></div>
-      <div><label>Select Staff</label><select id="adminStaffSel" class="input"></select></div>
-      <div><label>New Staff PIN</label><input id="adminStaffPIN" type="password" class="input" placeholder="New Staff PIN" /></div>
-      <div><button class="ghost small" id="btnAdminSaveStaffPIN" style="margin-top:8px">Save Staff PIN</button></div>
       <div class="divider"></div>
       <div class="card" style="background:#ffffff22;border-color:#ffffff55">
         <h3>AI API Keys</h3>
@@ -578,7 +573,7 @@ const defaultOutcomes=[
 ];
 const def={
   chiefId:null,
-  staff:[], // {id,name,pin}
+  staff:[], // {id,name}
   templates:{
     outputs:[
       {name:'News release', qty:1, links:[]},
@@ -670,6 +665,9 @@ function load(unit){
       }
     });
     if(data.chiefPIN && !data.chiefId){ data.chiefId=null; delete data.chiefPIN; }
+    if(Array.isArray(data.staff)){
+      data.staff = data.staff.map(s => ({ id: s.id, name: s.name }));
+    }
     return data;
   }catch(e){
     return structuredClone(def);
@@ -1159,7 +1157,15 @@ function buildChief(){
     alert('API Keys saved');
   };
 }
-  $('#btnAddStaff').onclick=()=>{ const name=$('#staffName').value.trim(), pin=$('#staffNewPIN').value.trim(); if(!name||!pin) return alert('Name & PIN required'); let rec=db.staff.find(s=>s.name.toLowerCase()===name.toLowerCase()); if(rec) rec.pin=pin; else db.staff.push({id:uid(),name,pin}); save(); $('#staffName').value=''; $('#staffNewPIN').value=''; renderStaffList(); };
+  $('#btnAddStaff').onclick=()=>{
+    const name=$('#staffName').value.trim();
+    if(!name) return alert('Name required');
+    let rec=db.staff.find(s=>s.name.toLowerCase()===name.toLowerCase());
+    if(!rec) db.staff.push({id:uid(),name});
+    save();
+    $('#staffName').value='';
+    renderStaffList();
+  };
   $('#btnExport').onclick=()=>{ const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nww_pao_metrics_export.json'; a.click(); };
   $('#importFile').onchange=(e)=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader(); fr.onload=()=>{ try{ db=JSON.parse(fr.result); save(); alert('Imported. Reloading…'); location.reload(); }catch(err){ alert('Invalid JSON'); } }; fr.readAsText(f); };
 $('#btnReset').onclick=()=>{ if(!confirm('Wipe all local data?'))return; localStorage.clear(); location.reload(); };
@@ -1312,13 +1318,6 @@ function buildAdmin(){
   sel.value=currentUnit;
   sel.onchange=e=>{ db=load(e.target.value); buildAdmin(); };
 
-  const staffSel=$('#adminStaffSel');
-  if(staffSel){
-    staffSel.innerHTML='';
-    db.staff.forEach(s=>{
-      const o=document.createElement('option'); o.value=s.id; o.textContent=s.name; staffSel.appendChild(o);
-    });
-  }
   const newChiefUnitSel=$('#adminNewChiefUnit');
   if(newChiefUnitSel){
     newChiefUnitSel.innerHTML='';
@@ -1332,12 +1331,9 @@ function buildAdmin(){
     chiefs.forEach(c=>{
       const row=document.createElement('div');
       row.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;';
-      row.innerHTML=`<div>${c.name}</div><div><button class="ghost small" data-reset="${c.id}">Reset PIN</button> <button class="danger small" data-del="${c.id}">Remove</button></div>`;
+      row.innerHTML=`<div>${c.name}</div><div><button class="danger small" data-del="${c.id}">Remove</button></div>`;
       chiefList.appendChild(row);
     });
-    chiefList.querySelectorAll('[data-reset]').forEach(b=> b.addEventListener('click', e=>{
-      const id=e.target.dataset.reset; const chiefs=loadChiefs(); const c=chiefs.find(x=>x.id===id); const np=prompt('New PIN for '+c.name); if(np){ c.pin=np; saveChiefs(chiefs); buildAdmin(); }
-    }));
     chiefList.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', e=>{
       const id=e.target.dataset.del; if(!confirm('Remove chief?')) return; let chiefs=loadChiefs().filter(x=>x.id!==id); saveChiefs(chiefs); if(db.chiefId===id){ db.chiefId=null; save(); } buildAdmin();
     }));
@@ -1406,30 +1402,19 @@ $('#btnAdminAddUnit').onclick=()=>{
 $('#btnSaveGlobalPIN').onclick=()=>{ const p=$('#setGlobalPIN').value.trim(); if(!p) return alert('Enter a PIN'); globalAdminPIN=p; localStorage.setItem(GLOBAL_PIN_KEY,p); $('#setGlobalPIN').value=''; alert('Admin PIN updated'); };
 $('#btnAdminAddChief').onclick=()=>{
   const name=$('#adminNewChief').value.trim();
-  const pin=$('#adminNewChiefPIN').value.trim();
   const unit=$('#adminNewChiefUnit').value;
-  if(!name||!pin||!unit) return alert('Name, PIN & Unit required');
+  if(!name||!unit) return alert('Name & Unit required');
   const chiefs=loadChiefs();
   const id=uid();
-  chiefs.push({id, name, pin});
+  chiefs.push({id, name});
   saveChiefs(chiefs);
   const prevUnit=currentUnit;
   db=load(unit);
   db.chiefId=id;
   save();
   db=load(prevUnit);
-  $('#adminNewChief').value=''; $('#adminNewChiefPIN').value='';
+  $('#adminNewChief').value='';
   buildAdmin();
-};
-$('#btnAdminSaveStaffPIN').onclick=()=>{
-  const unit=$('#adminUnit').value;
-  const id=$('#adminStaffSel').value;
-  const p=$('#adminStaffPIN').value.trim();
-  if(!id||!p) return alert('Select staff and enter PIN');
-  const data=load(unit); const rec=data.staff.find(s=>s.id===id);
-  if(!rec) return alert('Staff not found');
-  rec.pin=p; db=data; save();
-  $('#adminStaffPIN').value=''; alert('Staff PIN updated'); buildAdmin();
 };
 
 /* ================= MODULES (Hamburger) ================= */
