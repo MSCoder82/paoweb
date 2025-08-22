@@ -1,7 +1,6 @@
 /* ===== paoweb-supabase.js =====
    - Uses sessionStorage for auth persistence
-   - Admin: signInWithPassword
-   - Chief/Staff: email OTP + join_unit_rpc with unit PINs
+   - Admin, Chief, and Staff: signInWithPassword
    - Role gating + basic data load hooks
 */
 
@@ -115,50 +114,10 @@ async function adminSignIn() {
   await boot(); // loads role and unit; admin menu should appear if role='admin'
 }
 
-// ---------- Staff/Chief flow: OTP + join_unit_rpc ----------
-async function startSignIn(email, displayName, unitCode, unitPin, chiefPin) {
-  // cache for after OTP redirect
-  sessionStorage.setItem("paoweb_pending_join", JSON.stringify({ unitCode, unitPin, chiefPin, displayName }));
-  const { error } = await sb.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: 'https://mscoder82.github.io/paoweb/',
-      data: {
-        display_name: displayName,
-        unit_code: unitCode,
-        unit_pin: unitPin,
-        chief_pin: chiefPin
-      }
-    }
-  });
-  if (error) { alert(error.message); return; }
-  alert("Check your email for the sign-in link.");
-}
-
 // ---------- Auth state changes ----------
 sb.auth.onAuthStateChange(async (_evt, session) => {
   CURRENT.session = session;
   if (session?.user) {
-    const pending = sessionStorage.getItem("paoweb_pending_join");
-    if (pending) {
-      const { unitCode, unitPin, chiefPin, displayName } = JSON.parse(pending);
-      sessionStorage.removeItem("paoweb_pending_join");
-
-      // Sync display name to profile for convenience
-      if (displayName) {
-        await sb.from("profiles")
-          .update({ display_name: displayName })
-          .eq("user_id", session.user.id);
-      }
-
-      // Join unit with PINs
-      const { error } = await sb.rpc("join_unit_rpc", {
-        unit_code: unitCode,
-        unit_pin: unitPin,
-        chief_pin: chiefPin || null
-      });
-      if (error) { alert("Join failed: " + error.message); }
-    }
     await boot();
   } else {
     tearDownRealtime();
@@ -345,17 +304,6 @@ function bindUI(){
   // Admin sign-in
   $("#admin-signin")?.addEventListener("click", adminSignIn);
 
-  // Staff/Chief join
-  $("#signin-btn")?.addEventListener("click", async ()=>{
-    const email       = $("#email")?.value?.trim();
-    const displayName = $("#displayName")?.value?.trim() || "User";
-    const unitCode    = $("#unitCode")?.value?.trim();
-    const unitPin     = $("#unitPin")?.value?.trim();
-    const chiefPin    = $("#chiefPin")?.value?.trim() || null;
-    if (!email || !unitCode || !unitPin) { alert("Email, unit code, and unit PIN are required."); return; }
-    await startSignIn(email, displayName, unitCode, unitPin, chiefPin);
-  });
-
   // Example form hooks (adjust IDs to your page)
   $("#form-output")?.addEventListener("submit", async e=>{ e.preventDefault(); await addOutput(e.currentTarget); e.currentTarget.reset(); });
   $("#form-outtake")?.addEventListener("submit", async e=>{ e.preventDefault(); await addOuttake(e.currentTarget); e.currentTarget.reset(); });
@@ -364,5 +312,5 @@ function bindUI(){
   $("#form-template")?.addEventListener("submit", async e=>{ e.preventDefault(); await addTemplate(e.currentTarget); e.currentTarget.reset(); });
 }
 
-window.PAOWeb = { adminSignIn, startSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, switchUnit };
+window.PAOWeb = { adminSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, switchUnit };
 document.addEventListener("DOMContentLoaded", bindUI);
