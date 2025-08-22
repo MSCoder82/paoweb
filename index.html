@@ -1890,6 +1890,11 @@ async function callAI(){
     role = prof?.role || role;
     document.body.classList.toggle("is-admin", role === "admin");
     $("status").textContent = `Signed in as ${prof?.email || session.user.email}`;
+    user = {
+      id: uid,
+      email: prof?.email || session.user.email,
+      name: prof?.full_name || prof?.email || session.user.email
+    };
     if (prof?.email) {
       const labelMap = { admin: 'Register', chief: 'PAO Chief', staff: 'Staff' };
       const label = labelMap[role] || (role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User');
@@ -1897,6 +1902,12 @@ async function callAI(){
     }
     resetIdle();
     await loadEntriesFromSupabase();
+    const authScreens = new Set(['staffAuth','chiefAuth','adminAuth','adminReset']);
+    if (authScreens.has(currentScreen)) {
+      if (role === 'admin') { buildAdmin(); window.show('admin'); }
+      else if (role === 'chief') { buildChief(); window.show('chief'); }
+      else if (role === 'staff') { buildStaff(); window.show('staff'); }
+    }
     return prof;
   }
 
