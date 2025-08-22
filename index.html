@@ -488,6 +488,7 @@
       <div><label>Assign to Unit</label><select id="adminNewChiefUnit" class="input"></select></div>
       <div><button class="ghost small" id="btnAdminAddChief" style="margin-top:8px">Add PAO Chief</button></div>
       <div class="divider"></div>
+      <div><h4>User Roles</h4><div id="adminUserTable" class="scroll"><table id="userRolesTable" class="table"></table></div></div>
       <div class="divider"></div>
       <div class="card" style="background:#ffffff22;border-color:#ffffff55">
         <h3>AI API Keys</h3>
@@ -1388,6 +1389,7 @@ function buildAdmin(){
       }
     };
   }
+  if (window.PAOWeb?.loadAllUsers) window.PAOWeb.loadAllUsers();
 }
 $('#btnAdminOpen').onclick=()=>{ const unit=$('#adminUnit').value; if(!unit) return alert('Select unit'); db=load(unit); role='chief'; whoPill.textContent=`PAO Chief (${unit})`; buildChief(); show('chief'); };
 $('#btnAdminAddUnit').onclick=()=>{
