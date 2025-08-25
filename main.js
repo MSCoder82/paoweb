@@ -39,3 +39,26 @@ async function logout() {
   await supabase.auth.signOut();
   alert("Logged out.");
 }
+
+async function loadNotesFromSupabase() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Fetch error:", error);
+    return;
+  }
+
+  if (data.length > 0) {
+    const latestNote = data[0].content;
+    const noteBox = document.querySelector("#noteArea") || document.querySelector("textarea");
+    if (noteBox) noteBox.value = latestNote;
+  }
+}
+
