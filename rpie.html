@@ -301,7 +301,7 @@
       <section class="card" id="panel-output">
         <h2>Draft output</h2>
         <div id="status" class="help">Ready.</div>
-        <div id="output" class="output" aria-live="polite"></div>
+        <div id="output" class="output" aria-live="polite" contenteditable="true"></div>
         <div class="footer-note">This draft is generated from your inputs. Refine as needed before release.</div>
       </section>
     </div>
@@ -937,6 +937,14 @@ ${d.step10.evaluation || 'n/a'}
     els.exportJson.addEventListener('click', exportJSON);
     els.exportMd.addEventListener('click', exportMarkdown);
     els.clear.addEventListener('click', clearForm);
+
+    let debounceTimer;
+    els.output.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        saveNoteToSupabase(els.output.textContent);
+      }, 1000);
+    });
 
     document.querySelectorAll('input, textarea').forEach(el=>{
       el.addEventListener('change', saveShadow);
