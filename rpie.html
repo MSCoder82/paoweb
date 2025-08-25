@@ -742,6 +742,21 @@ Produce a complete, structured plan with clear headings and a table for the Acti
 
     function status(msg, kind){ els.status.textContent = msg; els.status.className = 'help ' + (kind || ''); }
 
+    async function saveNoteToSupabase(content) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return alert("Please log in to save your note.");
+
+      const { data, error } = await supabase
+        .from("notes")
+        .insert([{ user_id: user.id, content }]);
+
+      if (error) {
+        console.error("Error saving:", error);
+      } else {
+        console.log("Note saved to Supabase:", data);
+      }
+    }
+
     const DRAFT_KEY = 'nww_rpie_draft';
     function saveDraft(){
       localStorage.setItem(DRAFT_KEY, JSON.stringify(collect()));
@@ -912,9 +927,7 @@ ${d.step10.evaluation || 'n/a'}
         const text = await callOpenAI(prompt);
         els.output.textContent = text || '(no content)';
         status('Draft ready', 'ok');
-        const saved = JSON.parse(localStorage.getItem('nww_rpie_draft') || '{}');
-        saved.generated = { at:new Date().toISOString(), model:DEFAULT_MODEL, text };
-        localStorage.setItem('nww_rpie_draft', JSON.stringify(saved));
+        await saveNoteToSupabase(text);
       } catch(err){
         status(String(err.message || err), 'err');
       }
