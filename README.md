@@ -30,6 +30,14 @@ You can host this as a static page:
 
 Enjoy!
 
+## 🔐 Supabase Auth Setup
+
+The app uses Supabase for authentication. To surface fields like a user's
+`display_name` and `role` stored in the `raw_user_meta_data` JSON column of
+`auth.users`, run the SQL in `supabase/extend_auth_users.sql` against your
+Supabase project. The migration adds generated columns so these values can be
+queried directly without JSON operators.
+
 ## 🧪 Testing
 
 ### Automated check
