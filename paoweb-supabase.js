@@ -4,8 +4,8 @@
    - Role gating + basic data load hooks
 */
 
-const SUPABASE_URL = "https://ecgqsiysdteeagvacjna.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjZ3FzaXlzZHRlZWFndmFjam5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU2OTUxMjcsImV4cCI6MjA3MTI3MTEyN30.IWgigXdAKcYlo_vrJpWljMXL3I0ySUmZo92smDEW2gs";
+const SUPABASE_URL = "https://sgccupkrrnnzorwonnhi.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY2N1cGtycm5uem9yd29ubmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyMDM1MTMsImV4cCI6MjA3MTc3OTUxM30.mqPpl24-gMomKA47VE_AiKTvN2t7FWW_7hXoEmiwFnM";
 
 // Reuse an existing Supabase client if one was already created elsewhere on the
 // page.  The index.html file bootstraps a client for legacy flows, so this file
