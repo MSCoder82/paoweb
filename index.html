@@ -272,52 +272,57 @@
               <span id="tfStaffPick"></span>
             </span>
           </div>
-          <div class="divider"></div>
-          <div class="grid" style="grid-template-columns:1fr">
-            <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
-              <h3>Outputs — Products I produced</h3>
-              <div class="grid grid-2">
-                <div><label>Template</label><select id="outTemplate" class="input"></select></div>
-                <div><label>Product Type</label><select id="outProdType" class="input"></select></div>
-                <div><label>Campaign</label><select id="outCampaign" class="input"></select></div>
-                <div id="otherProdWrap" class="hide"><label>Other (specify)</label><input id="otherProd" class="input" placeholder="e.g., Podcast episode"/></div>
-                <div><label>Quantity</label><input id="outQty" type="number" min="1" class="input" value="1"/></div>
-                <div><label>Links (comma or new line)</label><textarea id="outLinks" rows="2" class="input" placeholder="https://…"></textarea></div>
-              </div>
-              <div style="display:flex; gap:10px; margin-top:10px">
-                <button class="cta" id="btnAddOutput">Add Output</button><button class="ghost btn" id="btnClearOutput">Clear</button>
-              </div>
-              <div class="scroll" id="outList" style="margin-top:10px"></div>
-            </div>
-
-            <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
-              <h3>Outtakes — Engagements & reach</h3>
-              <div class="grid grid-2">
-                <div><label>Template</label><select id="otkTemplate" class="input"></select></div>
-                <div><label>Outtake Type</label><select id="otkType" class="input"></select></div>
-                <div><label>Campaign</label><select id="otkCampaign" class="input"></select></div>
-                <div id="otkOtherWrap" class="hide"><label>Other (specify)</label><input id="otkOther" class="input" placeholder="e.g., Survey completes"/></div>
-                <div><label>Quantity</label><input id="otkQty" type="number" min="1" class="input" value="1"/></div>
-                <div><label>Notes / Links (optional)</label><textarea id="otkNotes" rows="2" class="input" placeholder="Context or URLs"></textarea></div>
-              </div>
-              <div style="display:flex; gap:10px; margin-top:10px">
-                <button class="cta" id="btnAddOuttake">Add Outtake</button><button class="ghost btn" id="btnClearOuttake">Clear</button>
-              </div>
-              <div class="scroll" id="otkList" style="margin-top:10px"></div>
-            </div>
-          </div>
-
-          <div class="card" style="margin-top:16px;background:rgba(21,23,42,.75); border-color:#323761">
-            <h3>Outcomes — Objective progress</h3>
+            <div class="divider"></div>
             <div class="grid" style="grid-template-columns:1fr">
-              <div><label>Outcome Metric</label><select id="ocmKey" class="input"></select></div>
-              <div><label>Campaign</label><select id="ocmCampaign" class="input"></select></div>
-              <div id="ocmOtherWrap" class="hide"><label>Other (specify)</label><input id="ocmOther" class="input" placeholder="e.g., Public trust"/></div>
-              <div><label>My status (% toward target)</label><input id="ocmPct" type="range" min="0" max="100" value="0" /><div class="mini" id="ocmVal">0%</div></div>
-              <div><button class="cta" id="btnSaveOutcome" style="margin-top:8px">Save Outcome</button></div>
+              <div><label>Campaign</label><select id="staffCampaign" class="input"></select></div>
             </div>
-            <div class="scroll" id="ocmList" style="margin-top:10px"></div>
-          </div>
+            <div id="staffMetrics" style="display:none">
+              <div class="grid" style="grid-template-columns:1fr">
+                <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
+                  <h3>Outputs — Products I produced</h3>
+                  <div class="grid grid-2">
+                    <div><label>Template</label><select id="outTemplate" class="input"></select></div>
+                    <div><label>Product Type</label><select id="outProdType" class="input"></select></div>
+                    <div id="outCampaignWrap" class="hide"><label>Campaign</label><select id="outCampaign" class="input"></select></div>
+                    <div id="otherProdWrap" class="hide"><label>Other (specify)</label><input id="otherProd" class="input" placeholder="e.g., Podcast episode"/></div>
+                    <div><label>Quantity</label><input id="outQty" type="number" min="1" class="input" value="1"/></div>
+                    <div><label>Links (comma or new line)</label><textarea id="outLinks" rows="2" class="input" placeholder="https://…"></textarea></div>
+                  </div>
+                  <div style="display:flex; gap:10px; margin-top:10px">
+                    <button class="cta" id="btnAddOutput">Add Output</button><button class="ghost btn" id="btnClearOutput">Clear</button>
+                  </div>
+                  <div class="scroll" id="outList" style="margin-top:10px"></div>
+                </div>
+
+                <div class="card" style="background:rgba(21,23,42,.75); border-color:#323761">
+                  <h3>Outtakes — Engagements & reach</h3>
+                  <div class="grid grid-2">
+                    <div><label>Template</label><select id="otkTemplate" class="input"></select></div>
+                    <div><label>Outtake Type</label><select id="otkType" class="input"></select></div>
+                    <div id="otkCampaignWrap" class="hide"><label>Campaign</label><select id="otkCampaign" class="input"></select></div>
+                    <div id="otkOtherWrap" class="hide"><label>Other (specify)</label><input id="otkOther" class="input" placeholder="e.g., Survey completes"/></div>
+                    <div><label>Quantity</label><input id="otkQty" type="number" min="1" class="input" value="1"/></div>
+                    <div><label>Notes / Links (optional)</label><textarea id="otkNotes" rows="2" class="input" placeholder="Context or URLs"></textarea></div>
+                  </div>
+                  <div style="display:flex; gap:10px; margin-top:10px">
+                    <button class="cta" id="btnAddOuttake">Add Outtake</button><button class="ghost btn" id="btnClearOuttake">Clear</button>
+                  </div>
+                  <div class="scroll" id="otkList" style="margin-top:10px"></div>
+                </div>
+              </div>
+
+              <div class="card" style="margin-top:16px;background:rgba(21,23,42,.75); border-color:#323761">
+                <h3>Outcomes — Objective progress</h3>
+                <div class="grid" style="grid-template-columns:1fr">
+                  <div><label>Outcome Metric</label><select id="ocmKey" class="input"></select></div>
+                  <div id="ocmCampaignWrap" class="hide"><label>Campaign</label><select id="ocmCampaign" class="input"></select></div>
+                  <div id="ocmOtherWrap" class="hide"><label>Other (specify)</label><input id="ocmOther" class="input" placeholder="e.g., Public trust"/></div>
+                  <div><label>My status (% toward target)</label><input id="ocmPct" type="range" min="0" max="100" value="0" /><div class="mini" id="ocmVal">0%</div></div>
+                  <div><button class="cta" id="btnSaveOutcome" style="margin-top:8px">Save Outcome</button></div>
+                </div>
+                <div class="scroll" id="ocmList" style="margin-top:10px"></div>
+              </div>
+            </div>
         </div>
       </div>
       <div class="col">
@@ -725,7 +730,7 @@ async function loadCampaigns(){
     campaigns = data || [];
     const opts = ['<option value="">(none)</option>']
       .concat(campaigns.map(c=>`<option value="${c.id}">${c.name}</option>`)).join('');
-    ['outCampaign','otkCampaign','ocmCampaign','goalCampaign'].forEach(id=>{
+    ['outCampaign','otkCampaign','ocmCampaign','goalCampaign','staffCampaign'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.innerHTML=opts;
     });
     renderCampaignList();
@@ -983,9 +988,9 @@ function tbl(container, rows, cols){
   rows.forEach(r=>{ t.push('<tr>'); cols.forEach(c=> t.push(`<td>${c.render(r)}</td>`)); t.push('</tr>'); });
   t.push('</tbody></table>'); container.innerHTML=t.join('');
 }
-function calcProgress(tf, tfKey, userId){
+function calcProgress(tf, tfKey, userId, campaignId){
   const g=db.goals[tf];
-  const entries=db.entries.filter(e=> e.tf===tf && e.tfKey===tfKey && (!userId || e.userId===userId));
+  const entries=db.entries.filter(e=> e.tf===tf && e.tfKey===tfKey && (!userId || e.userId===userId) && (!campaignId || e.data.campaign===campaignId));
   const outSum=entries.filter(e=>e.type==='output').reduce((m,e)=> (m[e.data.product]=(m[e.data.product]||0)+e.data.qty, m),{});
   const otkSum=entries.filter(e=>e.type==='outtake').reduce((m,e)=> (m[e.data.kind]=(m[e.data.kind]||0)+e.data.qty, m),{});
   const outGoal=g.outputs||{}, otkGoal=g.outtakes||{}, ocmGoal=g.outcomes||{};
@@ -1053,6 +1058,13 @@ function refreshViewer(){
 /* ===== Staff ===== */
 const tfStaffSel=$('#tfStaff'), tfStaffPick=$('#tfStaffPick');
 tfStaffSel?.addEventListener('change', ()=> buildTfPicker(tfStaffPick, tfStaffSel.value, key=>{cur.tf=tfStaffSel.value; cur.key=key; refreshStaff();}));
+const staffCampaignSel=$('#staffCampaign');
+staffCampaignSel?.addEventListener('change', ()=>{
+  const val=staffCampaignSel.value;
+  ['outCampaign','otkCampaign','ocmCampaign'].forEach(id=>{ const el=$('#'+id); if(el) el.value=val; });
+  $('#staffMetrics').style.display = val ? '' : 'none';
+  refreshStaff();
+});
 function buildStaff(){
   loadCampaigns();
   // populate pickers
@@ -1066,6 +1078,7 @@ function buildStaff(){
   const outcomeNames = getOutcomeNames();
   sel.innerHTML = [...outcomeNames, 'Other (specify)'].map(o=>`<option>${o}</option>`).join('');
   buildTfPicker(tfStaffPick, tfStaffSel.value, key=>{cur.key=key; refreshStaff();});
+  if(staffCampaignSel){ staffCampaignSel.value=''; $('#staffMetrics').style.display='none'; }
 }
 $('#outProdType').addEventListener('change', ()=> $('#otherProdWrap').classList.toggle('hide', $('#outProdType').value!=='Other (specify)'));
 $('#otkType').addEventListener('change', ()=> $('#otkOtherWrap').classList.toggle('hide', $('#otkType').value!=='Other (specify)'));
@@ -1125,7 +1138,13 @@ $('#btnSaveOutcome').addEventListener('click', ()=>{
   save(); saveEntryToSupabase(entry); $('#ocmOther').value=''; refreshStaff(); refreshViewerIf();
 });
 function refreshStaff(){
-  const mine=db.entries.filter(e=> e.userId===user?.id && e.tf===cur.tf && e.tfKey===cur.key);
+  const campaign=$('#staffCampaign')?.value;
+  if(!campaign){
+    ['outList','otkList','ocmList'].forEach(id=>{ const el=$('#'+id); if(el) el.innerHTML=''; });
+    ['kpiOutPct','kpiOtkPct','kpiOcmPct'].forEach(id=>{ const el=$('#'+id); if(el) el.textContent='0%'; });
+    return;
+  }
+  const mine=db.entries.filter(e=> e.userId===user?.id && e.tf===cur.tf && e.tfKey===cur.key && e.data.campaign===campaign);
   const outs=mine.filter(e=>e.type==='output').sort((a,b)=>b.ts-a.ts), otks=mine.filter(e=>e.type==='outtake').sort((a,b)=>b.ts-a.ts), ocms=mine.filter(e=>e.type==='outcome').sort((a,b)=>b.ts-a.ts);
   $('#outList').innerHTML = outs.length? outs.map(e=> {
     const links=(e.data.links||[]).map(u=> `<a href="${u}" target="_blank" rel="noopener">${u}</a>`).join('<br>');
@@ -1133,7 +1152,7 @@ function refreshStaff(){
   }).join('') : '<div class="mini">No outputs yet.</div>';
   $('#otkList').innerHTML = otks.length? otks.map(e=> `<div class="card" style="background:#0e1124;border-color:#2f355e"><div class="chip mono">${e.data.qty}×</div> <span class="chip">${e.data.kind}</span>${e.data.notes?'<div class="divider"></div><div class="mini">'+e.data.notes+'</div>':''}<div class="mini">${new Date(e.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No outtakes yet.</div>';
   $('#ocmList').innerHTML = ocms.length? ocms.map(e=> `<div class="card" style="background:#0e1124;border-color:#2f355e"><span class="chip">${e.data.metric}</span><div class="divider"></div><div class="mini">${clamp(e.data.pct,0,100)}% • ${new Date(e.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No outcomes yet.</div>';
-  const p=calcProgress(cur.tf, cur.key, user?.id); $('#kpiOutPct').textContent=toPct(p.outPct); $('#kpiOtkPct').textContent=toPct(p.otkPct); $('#kpiOcmPct').textContent=toPct(p.ocmPct);
+  const p=calcProgress(cur.tf, cur.key, user?.id, campaign); $('#kpiOutPct').textContent=toPct(p.outPct); $('#kpiOtkPct').textContent=toPct(p.otkPct); $('#kpiOcmPct').textContent=toPct(p.ocmPct);
 }
 function refreshViewerIf(){ if(!$('#screenViewer').classList.contains('hide')) refreshViewer(); }
 
