@@ -326,7 +326,7 @@
         </div>
       </div>
       <div class="col">
-        <div class="card" style="background:var(--accent1); color:#07131a">
+        <div id="staffProgress" class="card" style="background:var(--accent1); color:#07131a">
           <h3 style="color:#111a2a">My Progress</h3>
           <div class="kpi"><h4>Outputs completion</h4><div class="big" id="kpiOutPct">0%</div></div>
           <div style="height:12px"></div>
@@ -741,7 +741,10 @@ function renderCampaignList(){
   const list=document.getElementById('campaignList');
   if(!list) return;
   list.innerHTML = campaigns.map(c=>
-    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span>${c.name}</span><button class="ghost small" data-edit="${c.id}">Edit</button></div>`
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+       <span style="display:flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:${c.color||'#000'}"></span>${c.name}</span>
+       <button class="ghost small" data-edit="${c.id}">Edit</button>
+     </div>`
   ).join('');
   list.querySelectorAll('[data-edit]').forEach(btn=> btn.addEventListener('click', e=>{
     const id=e.target.dataset.edit;
@@ -763,7 +766,11 @@ async function refreshCampaignProgress(){
     const { data } = await supabase.rpc('campaign_progress', { timeframe: tfMap[cur.tf] });
     const rows = data || [];
     tbl($('#tblCampaigns'), rows, [
-      {label:'Campaign', render:r=>r.metric},
+      {label:'Campaign', render:r=>{
+        const c=campaigns.find(x=>x.code===r.metric || x.name===r.metric);
+        const clr=c?.color||'#000';
+        return `<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:12px;height:12px;border-radius:50%;background:${clr}"></span>${r.metric}</span>`;
+      }},
       {label:'Goal', render:r=>r.goal_target||0},
       {label:'% of Goal', render:r=> toPct((r.pct_of_goal||0)/100)}
     ]);
@@ -1062,7 +1069,12 @@ const staffCampaignSel=$('#staffCampaign');
 staffCampaignSel?.addEventListener('change', ()=>{
   const val=staffCampaignSel.value;
   ['outCampaign','otkCampaign','ocmCampaign'].forEach(id=>{ const el=$('#'+id); if(el) el.value=val; });
-  $('#staffMetrics').style.display = val ? '' : 'none';
+  const metrics=$('#staffMetrics');
+  metrics.style.display = val ? '' : 'none';
+  const clr = campaigns.find(c=> c.id==val)?.color || '';
+  document.querySelectorAll('#staffMetrics .card, #staffProgress').forEach(card=>{
+    if(clr) card.style.borderColor=clr; else card.style.removeProperty('border-color');
+  });
   refreshStaff();
 });
 function buildStaff(){
@@ -1144,14 +1156,15 @@ function refreshStaff(){
     ['kpiOutPct','kpiOtkPct','kpiOcmPct'].forEach(id=>{ const el=$('#'+id); if(el) el.textContent='0%'; });
     return;
   }
+  const campClr = campaigns.find(c=> c.id==campaign)?.color || '#2f355e';
   const mine=db.entries.filter(e=> e.userId===user?.id && e.tf===cur.tf && e.tfKey===cur.key && e.data.campaign===campaign);
   const outs=mine.filter(e=>e.type==='output').sort((a,b)=>b.ts-a.ts), otks=mine.filter(e=>e.type==='outtake').sort((a,b)=>b.ts-a.ts), ocms=mine.filter(e=>e.type==='outcome').sort((a,b)=>b.ts-a.ts);
   $('#outList').innerHTML = outs.length? outs.map(e=> {
     const links=(e.data.links||[]).map(u=> `<a href="${u}" target="_blank" rel="noopener">${u}</a>`).join('<br>');
-    return `<div class="card" style="background:#0e1124;border-color:#2f355e"><div class="chip mono">${e.data.qty}×</div> <span class="chip">${e.data.product}</span>${links?'<div class="divider"></div><div class="links">'+links+'</div>':''}<div class="mini">${new Date(e.ts).toLocaleString()}</div></div>`;
+    return `<div class="card" style="background:#0e1124;border-color:${campClr}"><div class="chip mono">${e.data.qty}×</div> <span class="chip">${e.data.product}</span>${links?'<div class="divider"></div><div class="links">'+links+'</div>':''}<div class="mini">${new Date(e.ts).toLocaleString()}</div></div>`;
   }).join('') : '<div class="mini">No outputs yet.</div>';
-  $('#otkList').innerHTML = otks.length? otks.map(e=> `<div class="card" style="background:#0e1124;border-color:#2f355e"><div class="chip mono">${e.data.qty}×</div> <span class="chip">${e.data.kind}</span>${e.data.notes?'<div class="divider"></div><div class="mini">'+e.data.notes+'</div>':''}<div class="mini">${new Date(e.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No outtakes yet.</div>';
-  $('#ocmList').innerHTML = ocms.length? ocms.map(e=> `<div class="card" style="background:#0e1124;border-color:#2f355e"><span class="chip">${e.data.metric}</span><div class="divider"></div><div class="mini">${clamp(e.data.pct,0,100)}% • ${new Date(e.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No outcomes yet.</div>';
+  $('#otkList').innerHTML = otks.length? otks.map(e=> `<div class="card" style="background:#0e1124;border-color:${campClr}"><div class="chip mono">${e.data.qty}×</div> <span class="chip">${e.data.kind}</span>${e.data.notes?'<div class="divider"></div><div class="mini">'+e.data.notes+'</div>':''}<div class="mini">${new Date(e.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No outtakes yet.</div>';
+  $('#ocmList').innerHTML = ocms.length? ocms.map(e=> `<div class="card" style="background:#0e1124;border-color:${campClr}"><span class="chip">${e.data.metric}</span><div class="divider"></div><div class="mini">${clamp(e.data.pct,0,100)}% • ${new Date(e.ts).toLocaleString()}</div></div>`).join('') : '<div class="mini">No outcomes yet.</div>';
   const p=calcProgress(cur.tf, cur.key, user?.id, campaign); $('#kpiOutPct').textContent=toPct(p.outPct); $('#kpiOtkPct').textContent=toPct(p.otkPct); $('#kpiOcmPct').textContent=toPct(p.ocmPct);
 }
 function refreshViewerIf(){ if(!$('#screenViewer').classList.contains('hide')) refreshViewer(); }
