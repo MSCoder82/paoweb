@@ -7,11 +7,8 @@ const dom = new JSDOM(html);
 const select = dom.window.document.getElementById('su-role');
 const options = Array.from(select.options).map(o => o.value);
 
-if (options.includes('admin')) {
-  throw new Error('Admin role should not be present in role dropdown');
-}
-if (options.length !== 2 || !options.includes('staff') || !options.includes('chief')) {
-  throw new Error('Role dropdown must contain only staff and chief');
+if (options.length !== 3 || !options.includes('admin') || !options.includes('staff') || !options.includes('chief')) {
+  throw new Error('Role dropdown must contain admin, staff, and chief');
 }
 
-console.log('Role dropdown contains only staff and chief options');
+console.log('Role dropdown contains admin, staff, and chief options');

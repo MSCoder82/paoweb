@@ -169,6 +169,7 @@
         <input id="su-confirm" type="password" placeholder="Confirm password" required />
         <label for="su-role">Role</label>
         <select id="su-role" class="input">
+          <option value="admin">Admin</option>
           <option value="staff">Staff</option>
           <option value="chief">PAO Chief</option>
         </select>
@@ -1841,7 +1842,7 @@ async function callAI(){
     const prof = await refreshAuthUI();
     const r = prof?.role || role;
     if (prof?.email) {
-      const labelMap = { admin: 'Register', chief: 'PAO Chief', staff: 'Staff' };
+      const labelMap = { admin: 'Admin', chief: 'PAO Chief', staff: 'Staff' };
       const label = labelMap[r] || (r ? r.charAt(0).toUpperCase() + r.slice(1) : 'User');
       whoPill.textContent = `${label} — ${prof.email}`;
     }
@@ -1855,7 +1856,7 @@ async function callAI(){
     const password = $("su-pass").value;
     const confirm = $("su-confirm").value;
     let role = $("su-role").value || 'staff';
-    if (!['staff', 'chief'].includes(role)) role = 'staff';
+    if (!['staff', 'chief', 'admin'].includes(role)) role = 'staff';
     if (password !== confirm) {
       $("status").textContent = "Passwords do not match";
       return;
