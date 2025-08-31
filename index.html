@@ -159,7 +159,7 @@
         <h3>Sign in</h3>
         <input id="si-email" type="email" placeholder="Email" required />
         <input id="si-pass" type="password" placeholder="Password" required />
-        <button type="button" onclick="nwwSignIn()">Sign in</button>
+        <button type="button" id="btnAdminSignIn" onclick="nwwSignIn()">Sign in</button>
         <button type="button" onclick="requestPasswordReset()" class="mini">Reset password</button>
       </section>
       <section style="margin-top:16px">
@@ -173,7 +173,7 @@
           <option value="staff">Staff</option>
           <option value="chief">PAO Chief</option>
         </select>
-        <button type="button" onclick="nwwSignUp()">Sign up</button>
+        <button type="button" id="btnAdminSignUp" onclick="nwwSignUp()">Sign up</button>
       </section>
     </div>
 
@@ -1226,6 +1226,27 @@ $('#btnChiefLogin').onclick=()=>{
   const password=$('#chief-pass').value;
   nwwSignIn(email, password);
 };
+
+function enableEnterSubmission(inputs, btnSel){
+  const btn=$(btnSel);
+  inputs.forEach(sel=>{
+    const el=$(sel);
+    el?.addEventListener('keydown', e=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        btn?.click();
+      }
+    });
+  });
+}
+
+enableEnterSubmission(['#si-email','#si-pass'], '#btnAdminSignIn');
+enableEnterSubmission(['#su-email','#su-pass','#su-confirm'], '#btnAdminSignUp');
+enableEnterSubmission(['#chief-email','#chief-pass'], '#btnChiefLogin');
+enableEnterSubmission(['#staff-email','#staff-pass'], '#btnStaffLogin');
+enableEnterSubmission(['#outTemplate','#outProdType','#otherProd','#outQty','#outCampaign'], '#btnAddOutput');
+enableEnterSubmission(['#otkTemplate','#otkType','#otkOther','#otkQty','#otkCampaign'], '#btnAddOuttake');
+enableEnterSubmission(['#ocmKey','#ocmOther','#ocmPct','#ocmCampaign'], '#btnSaveOutcome');
 
 $('#btnSaveCampaign').onclick=async()=>{
   const name=$('#cmpName').value.trim();
