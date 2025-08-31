@@ -294,6 +294,17 @@ async function saveAiKey({ unit_id, provider, api_key, model, enabled }) {
   if (!res.ok) throw new Error(await res.text());
 }
 
+async function askAi({ provider, prompt, model }) {
+  const token = (await sb.auth.getSession()).data.session?.access_token;
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/ask-ai`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ unit_id: CURRENT.unit_id, provider, prompt, model })
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 // ---------- Admin: Manage User Roles ----------
 async function setUserRole(user_id, role) {
   const { error } = await sb.from('roles').upsert({ user_id, role }, { onConflict: 'user_id' });
@@ -360,5 +371,5 @@ function bindUI(){
   $("#form-template")?.addEventListener("submit", async e=>{ e.preventDefault(); await addTemplate(e.currentTarget); e.currentTarget.reset(); });
 }
 
-window.PAOWeb = { adminSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, switchUnit, loadAllUsers, setUserRole };
+window.PAOWeb = { adminSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, askAi, switchUnit, loadAllUsers, setUserRole };
 document.addEventListener("DOMContentLoaded", bindUI);
