@@ -1814,6 +1814,7 @@ async function callAI(){
   window.nwwSignIn = async (email, password) => {
     email = (email || $("si-email").value).trim().toLowerCase();
     password = password || $("si-pass").value;
+    const selectedRole = role;
     $("status").textContent = "Signing you in, please wait";
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -1826,7 +1827,8 @@ async function callAI(){
     }
     $("status").textContent = "Signed in.";
     const prof = await refreshAuthUI();
-    const r = prof?.role || role;
+    const r = prof?.role || selectedRole;
+    role = r;
     if (prof?.email) {
       const labelMap = { admin: 'Admin', chief: 'PAO Chief', staff: 'Staff' };
       const label = labelMap[r] || (r ? r.charAt(0).toUpperCase() + r.slice(1) : 'User');
