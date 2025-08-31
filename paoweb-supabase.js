@@ -8,23 +8,27 @@ const SUPABASE_URL = "https://sgccupkrrnnzorwonnhi.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY2N1cGtycm5uem9yd29ubmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyMDM1MTMsImV4cCI6MjA3MTc3OTUxM30.mqPpl24-gMomKA47VE_AiKTvN2t7FWW_7hXoEmiwFnM";
 
 // Reuse an existing Supabase client if one was already created elsewhere on the
-// page.  The index.html file bootstraps a client for legacy flows, so this file
-// should gracefully adopt that instance instead of trying to create a new one.
-// If no client exists yet, fall back to creating our own.
-const sb = window.supabase?.from
-  ? window.supabase
-  : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        storage: window.sessionStorage,
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    });
-
-// Expose the client globally so other scripts (like index.html) can use it and
-// so they don't attempt to spin up duplicate clients.
-window.supabase = sb;
+// page. If no client exists yet, attempt to import the library from the CDN and
+// create our own.  This is wrapped in a promise so any callers can wait until
+// initialization completes before using the client.
+const sbPromise = (async () => {
+  let lib = globalThis.supabase;
+  if (!lib?.createClient) {
+    lib = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+  }
+  const client = globalThis.supabase?.from
+    ? globalThis.supabase
+    : lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          storage: window.sessionStorage,
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+  globalThis.supabase = client;
+  return client;
+})();
 
 let CURRENT = {
   session: null,
@@ -42,6 +46,7 @@ const toInt = (v, d=0) => { const n = parseInt(v,10); return Number.isFinite(n)?
 const HOME_SELECT_ID = "#unitSelectHome";
 
 async function reloadUnits(){
+  const sb = await sbPromise;
   const homeSel = $(HOME_SELECT_ID);
   if(!homeSel) return;
   try {
@@ -66,6 +71,7 @@ if (document.readyState === 'loading') {
 }
 
 async function refreshRole(){
+  const sb = await sbPromise;
   try{
     const { data, error } = await sb.rpc("my_role");
     if(error) throw error;
@@ -79,15 +85,16 @@ async function refreshRole(){
 
 async function switchUnit(unitId) {
   if (!unitId) return;
+  const sb = await sbPromise;
   try {
     await sb.rpc("set_active_unit", { in_unit: unitId });
     CURRENT.unit_id = unitId;
-    tearDownRealtime?.();
+    await tearDownRealtime?.();
     await refreshRoleForUnit(unitId);
     await loadUnitData();
     if (typeof loadCampaigns === 'function') await loadCampaigns();
     if (typeof refreshCampaignProgress === 'function') await refreshCampaignProgress();
-    subscribeRealtime?.();
+    await subscribeRealtime?.();
   } catch (e) {
     console.error("switchUnit failed", e);
     alert(e.message || "Could not switch unit");
@@ -95,6 +102,7 @@ async function switchUnit(unitId) {
 }
 
 async function refreshRoleForUnit(unitId) {
+  const sb = await sbPromise;
   try {
     const { data, error } = await sb.rpc("my_role", { in_unit: unitId });
     if (error) throw error;
@@ -111,25 +119,29 @@ async function adminSignIn() {
   const email = $("#admin-email")?.value?.trim();
   const password = $("#admin-password")?.value;
   if (!email || !password) { alert("Enter admin email and password."); return; }
+  const sb = await sbPromise;
   const { error } = await sb.auth.signInWithPassword({ email, password });
   if (error) { alert("Admin sign-in failed: " + error.message); return; }
   await boot(); // loads role and unit; admin menu should appear if role='admin'
 }
 
 // ---------- Auth state changes ----------
-sb.auth.onAuthStateChange(async (_evt, session) => {
-  CURRENT.session = session;
-  if (session?.user) {
-    await boot();
-  } else {
-    tearDownRealtime();
-    CURRENT = { session: null, profile: null, role: "viewer", unit_id: null, unitChannel: null, metaChannel: null };
-    gateMenus("viewer");
-  }
+sbPromise.then(sb => {
+  sb.auth.onAuthStateChange(async (_evt, session) => {
+    CURRENT.session = session;
+    if (session?.user) {
+      await boot();
+    } else {
+      await tearDownRealtime();
+      CURRENT = { session: null, profile: null, role: "viewer", unit_id: null, unitChannel: null, metaChannel: null };
+      gateMenus("viewer");
+    }
+  });
 });
 
 // ---------- Load profile/role, gate menus, subscribe ----------
 async function boot() {
+  const sb = await sbPromise;
   const { data: u } = await sb.auth.getUser();
   if (!u) return;
 
@@ -146,7 +158,7 @@ async function boot() {
   await loadUnitData();
   if (typeof loadCampaigns === 'function') await loadCampaigns();
   if (typeof refreshCampaignProgress === 'function') await refreshCampaignProgress();
-  subscribeRealtime();
+  await subscribeRealtime();
 }
 
 function gateMenus(role) {
@@ -167,6 +179,7 @@ function gateMenus(role) {
 // ---------- Data fetch (plug into your renderers) ----------
 async function loadUnitData() {
   if (!CURRENT.unit_id) return;
+  const sb = await sbPromise;
 
   const [{ data: outputs }, { data: outtakes }, { data: outcomes }, { data: goals }, { data: templates }] = await Promise.all([
     sb.from("outputs").select("*").eq("unit_id", CURRENT.unit_id).order("created_at", { ascending: false }),
@@ -181,8 +194,9 @@ async function loadUnitData() {
 }
 
 // ---------- Realtime ----------
-function subscribeRealtime() {
-  tearDownRealtime();
+async function subscribeRealtime() {
+  const sb = await sbPromise;
+  await tearDownRealtime();
 
   const meta = sb.channel("meta_stream");
   meta.on("postgres_changes", { event: "*", schema: "public", table: "unit" }, () => reloadUnits());
@@ -219,13 +233,15 @@ function subscribeRealtime() {
   ch.subscribe();
   CURRENT.unitChannel = ch;
 }
-function tearDownRealtime(){
+async function tearDownRealtime(){
+  const sb = await sbPromise;
   if (CURRENT.unitChannel){ sb.removeChannel(CURRENT.unitChannel); CURRENT.unitChannel=null; }
   if (CURRENT.metaChannel){ sb.removeChannel(CURRENT.metaChannel); CURRENT.metaChannel=null; }
 }
 
 // ---------- Inserts (staff) ----------
 async function addOutput(form){
+  const sb = await sbPromise;
   const product_type = form.querySelector("[name=product_type]").value;
   const other_label  = form.querySelector("[name=other_label]").value || null;
   const quantity     = toInt(form.querySelector("[name=quantity]").value, 1);
@@ -241,6 +257,7 @@ async function addOutput(form){
 }
 
 async function addOuttake(form){
+  const sb = await sbPromise;
   const outtake_type = form.querySelector("[name=outtake_type]").value;
   const other_label  = form.querySelector("[name=other_label]").value || null;
   const quantity     = toInt(form.querySelector("[name=quantity]").value, 1);
@@ -255,6 +272,7 @@ async function addOuttake(form){
 }
 
 async function addOutcome(form){
+  const sb = await sbPromise;
   const outcome_label = form.querySelector("[name=outcome_label]").value;
   const other_label   = form.querySelector("[name=other_label]").value || null;
   const percent       = Number(form.querySelector("[name=percent]").value);
@@ -269,6 +287,7 @@ async function addOutcome(form){
 
 // ---------- Chiefs ----------
 async function setGoal(form){
+  const sb = await sbPromise;
   const kind   = form.querySelector("[name=kind]").value;
   const label  = form.querySelector("[name=label]").value;
   const target = Number(form.querySelector("[name=target]").value);
@@ -278,6 +297,7 @@ async function setGoal(form){
 }
 
 async function addTemplate(form){
+  const sb = await sbPromise;
   const template_kind = form.querySelector("[name=template_kind]").value;
   const value         = form.querySelector("[name=value]").value;
   await sb.from("templates").insert({ unit_id: CURRENT.unit_id, template_kind, value });
@@ -285,6 +305,7 @@ async function addTemplate(form){
 
 // ---------- AI Keys ----------
 async function saveAiKey({ unit_id, provider, api_key, model, enabled }) {
+  const sb = await sbPromise;
   const token = (await sb.auth.getSession()).data.session?.access_token;
   const res = await fetch(`${SUPABASE_URL}/functions/v1/set-ai-key`, {
     method: 'POST',
@@ -295,6 +316,7 @@ async function saveAiKey({ unit_id, provider, api_key, model, enabled }) {
 }
 
 async function askAi({ provider, prompt, model }) {
+  const sb = await sbPromise;
   const token = (await sb.auth.getSession()).data.session?.access_token;
   const res = await fetch(`${SUPABASE_URL}/functions/v1/ask-ai`, {
     method: 'POST',
@@ -307,11 +329,13 @@ async function askAi({ provider, prompt, model }) {
 
 // ---------- Admin: Manage User Roles ----------
 async function setUserRole(user_id, role) {
+  const sb = await sbPromise;
   const { error } = await sb.from('roles').upsert({ user_id, role }, { onConflict: 'user_id' });
   if (error) throw error;
 }
 
 async function loadAllUsers() {
+  const sb = await sbPromise;
   try {
     const { data: profiles, error: pErr } = await sb.from('profiles').select('user_id, display_name');
     if (pErr) throw pErr;
