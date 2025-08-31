@@ -1431,11 +1431,12 @@ function buildAdmin(){
       saveAiApiKeys();
       const unit_id = CURRENT?.unit_id;
       try {
+        if (!window.PAOWeb) throw new Error('PAOWeb module not loaded');
         await Promise.all([
-          PAOWeb.saveAiKey({ unit_id, provider:'openai', api_key: aiApiKeys.openai, model:null, enabled:!!aiApiKeys.openai }),
-          PAOWeb.saveAiKey({ unit_id, provider:'gemini', api_key: aiApiKeys.gemini, model:null, enabled:!!aiApiKeys.gemini }),
-          PAOWeb.saveAiKey({ unit_id, provider:'camogpt', api_key: aiApiKeys.camogpt, model:null, enabled:!!aiApiKeys.camogpt }),
-          PAOWeb.saveAiKey({ unit_id, provider:'asksage', api_key: aiApiKeys.asksage, model:null, enabled:!!aiApiKeys.asksage })
+          window.PAOWeb.saveAiKey({ unit_id, provider:'openai', api_key: aiApiKeys.openai, model:null, enabled:!!aiApiKeys.openai }),
+          window.PAOWeb.saveAiKey({ unit_id, provider:'gemini', api_key: aiApiKeys.gemini, model:null, enabled:!!aiApiKeys.gemini }),
+          window.PAOWeb.saveAiKey({ unit_id, provider:'camogpt', api_key: aiApiKeys.camogpt, model:null, enabled:!!aiApiKeys.camogpt }),
+          window.PAOWeb.saveAiKey({ unit_id, provider:'asksage', api_key: aiApiKeys.asksage, model:null, enabled:!!aiApiKeys.asksage })
         ]);
         alert('AI API Keys saved');
       } catch(err) {
@@ -1798,7 +1799,8 @@ async function callAI(){
   const provider=aiProviderEl.value;
   if(!prompt) return alert('Enter a prompt first.');
   try{
-    const data = await PAOWeb.askAi({ provider, prompt });
+    if (!window.PAOWeb) throw new Error('PAOWeb module not loaded');
+    const data = await window.PAOWeb.askAi({ provider, prompt });
     aiOutputEl.textContent =
       data.result ||
       data.answer ||
