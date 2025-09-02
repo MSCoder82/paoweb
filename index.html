@@ -1949,7 +1949,7 @@ async function callAI(){
       email: prof.email || session.user.email,
       name: prof.full_name || prof.email || session.user.email
     };
-    const labelMap = { admin: 'Register', chief: 'PAO Chief', staff: 'Staff' };
+    const labelMap = { admin: 'Admin', chief: 'PAO Chief', staff: 'Staff' };
     const label = labelMap[role] || (role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User');
     whoPill.textContent = `${label} — ${prof.email || session.user.email}`;
     resetIdle();
