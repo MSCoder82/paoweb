@@ -4,8 +4,8 @@
    - Role gating + basic data load hooks
 */
 
-const SUPABASE_URL = "https://sgccupkrrnnzorwonnhi.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnY2N1cGtycm5uem9yd29ubmhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyMDM1MTMsImV4cCI6MjA3MTc3OTUxM30.mqPpl24-gMomKA47VE_AiKTvN2t7FWW_7hXoEmiwFnM";
+const SUPABASE_URL = "https://lhzqrgqpkjdjlrwwvpqh.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoenFyZ3Fwa2pkamxyd3d2cHFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDk4NzEsImV4cCI6MjA3MjIyNTg3MX0.YKglQntWyAz5tgJMqhimeVg1n532FSi5Q2wVYru-XTc";
 
 // Reuse an existing Supabase client if one was already created elsewhere on the
 // page. If no client exists yet, attempt to import the library from the CDN and
