@@ -1824,6 +1824,7 @@ async function callAI(){
   window.supabase = supabase;
 
   const $ = (id) => document.getElementById(id);
+  const whoPill = $("whoPill");
 
   const IDLE_LIMIT = 30 * 60 * 1000;
   let idleTimer;
@@ -1837,7 +1838,7 @@ async function callAI(){
   window.nwwSignIn = async (email, password) => {
     email = (email || $("si-email").value).trim().toLowerCase();
     password = password || $("si-pass").value;
-    const selectedRole = role;
+    const selectedRole = window.role;
     $("status").textContent = "Signing you in, please wait";
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -1851,15 +1852,15 @@ async function callAI(){
     $("status").textContent = "Signed in.";
     const prof = await refreshAuthUI();
     const r = prof?.role || selectedRole;
-    role = r;
+    window.role = r;
     if (prof?.email) {
       const labelMap = { admin: 'Admin', chief: 'PAO Chief', staff: 'Staff' };
       const label = labelMap[r] || (r ? r.charAt(0).toUpperCase() + r.slice(1) : 'User');
       whoPill.textContent = `${label} — ${prof.email}`;
     }
-    if (r === 'admin') { buildAdmin(); window.show('admin'); }
-    else if (r === 'chief') { buildChief(); window.show('chief'); }
-    else if (r === 'staff') { buildStaff(); window.show('staff'); }
+    if (r === 'admin') { window.buildAdmin?.(); window.show('admin'); }
+    else if (r === 'chief') { window.buildChief?.(); window.show('chief'); }
+    else if (r === 'staff') { window.buildStaff?.(); window.show('staff'); }
   };
 
   window.nwwSignUp = async () => {
@@ -1917,7 +1918,7 @@ async function callAI(){
 
     if (!authed) {
       document.body.classList.remove("is-admin");
-      role=null;
+      window.role = null;
       $("status").textContent = "Not signed in";
       clearTimeout(idleTimer);
       return null;
@@ -1939,24 +1940,24 @@ async function callAI(){
       };
     }
 
-    role = prof.role || role;
-    document.body.classList.toggle("is-admin", role === "admin");
+    window.role = prof.role || window.role;
+    document.body.classList.toggle("is-admin", window.role === "admin");
     $("status").textContent = `Signed in as ${prof.email || session.user.email}`;
-    user = {
+    window.user = {
       id: uid,
       email: prof.email || session.user.email,
       name: prof.full_name || prof.email || session.user.email
     };
     const labelMap = { admin: 'Register', chief: 'PAO Chief', staff: 'Staff' };
-    const label = labelMap[role] || (role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User');
+    const label = labelMap[window.role] || (window.role ? window.role.charAt(0).toUpperCase() + window.role.slice(1) : 'User');
     whoPill.textContent = `${label} — ${prof.email || session.user.email}`;
     resetIdle();
-    await loadEntriesFromSupabase();
+    await window.loadEntriesFromSupabase?.();
     const authScreens = new Set(['staffAuth','chiefAuth','adminAuth','adminReset']);
-    if (authScreens.has(currentScreen)) {
-      if (role === 'admin') { buildAdmin(); window.show('admin'); }
-      else if (role === 'chief') { buildChief(); window.show('chief'); }
-      else if (role === 'staff') { buildStaff(); window.show('staff'); }
+    if (authScreens.has(window.currentScreen)) {
+      if (window.role === 'admin') { window.buildAdmin?.(); window.show('admin'); }
+      else if (window.role === 'chief') { window.buildChief?.(); window.show('chief'); }
+      else if (window.role === 'staff') { window.buildStaff?.(); window.show('staff'); }
     }
     return prof;
   }
