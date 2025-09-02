@@ -1850,7 +1850,9 @@ async function callAI(){
     }
     $("status").textContent = "Signed in.";
     const prof = await refreshAuthUI();
-    const r = prof?.role || selectedRole;
+    const { data: { session } } = await supabase.auth.getSession();
+    const metaRole = session?.user?.user_metadata?.role;
+    const r = prof?.role || selectedRole || metaRole;
     role = r;
     if (prof?.email) {
       const labelMap = { admin: 'Admin', chief: 'PAO Chief', staff: 'Staff' };
@@ -1882,7 +1884,9 @@ async function callAI(){
     if (!error) {
       const userId = data.user?.id;
       if (userId) {
-        const { error: profileError } = await supabase.from("profiles").upsert({ id: userId, role });
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .upsert({ user_id: userId, role });
         if (profileError) console.warn("Profile role set failed:", profileError.message);
       }
       await refreshAuthUI();
@@ -1922,24 +1926,32 @@ async function callAI(){
     }
 
     const uid = session.user.id;
-    const { data: prof } = await supabase.from("profiles")
+    let { data: prof } = await supabase
+      .from("profiles")
       .select("role, full_name, email")
       .eq("user_id", uid)
       .single();
 
-    role = prof?.role || role;
+    if (!prof || !prof.role) {
+      const meta = session.user.user_metadata || {};
+      prof = {
+        role: prof?.role || meta.role || null,
+        full_name: prof?.full_name || meta.full_name || meta.display_name || null,
+        email: prof?.email || session.user.email
+      };
+    }
+
+    role = prof.role || role;
     document.body.classList.toggle("is-admin", role === "admin");
-    $("status").textContent = `Signed in as ${prof?.email || session.user.email}`;
+    $("status").textContent = `Signed in as ${prof.email || session.user.email}`;
     user = {
       id: uid,
-      email: prof?.email || session.user.email,
-      name: prof?.full_name || prof?.email || session.user.email
+      email: prof.email || session.user.email,
+      name: prof.full_name || prof.email || session.user.email
     };
-    if (prof?.email) {
-      const labelMap = { admin: 'Register', chief: 'PAO Chief', staff: 'Staff' };
-      const label = labelMap[role] || (role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User');
-      whoPill.textContent = `${label} — ${prof.email}`;
-    }
+    const labelMap = { admin: 'Register', chief: 'PAO Chief', staff: 'Staff' };
+    const label = labelMap[role] || (role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User');
+    whoPill.textContent = `${label} — ${prof.email || session.user.email}`;
     resetIdle();
     await loadEntriesFromSupabase();
     const authScreens = new Set(['staffAuth','chiefAuth','adminAuth','adminReset']);
