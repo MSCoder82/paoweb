@@ -327,6 +327,19 @@ async function askAi({ provider, prompt, model }) {
   return res.json();
 }
 
+// ---------- Unit Data ----------
+async function saveUnitData(data) {
+  const sb = await sbPromise;
+  try {
+    const unit_id = CURRENT.unit_id;
+    const user_id = CURRENT.profile?.user_id || CURRENT.session?.user?.id;
+    if (!unit_id) return;
+    await sb.from('unit_data').upsert({ unit_id, user_id, data }, { onConflict: 'unit_id' });
+  } catch (err) {
+    console.error('saveUnitData failed', err);
+  }
+}
+
 // ---------- Admin: Manage User Roles ----------
 async function setUserRole(user_id, role) {
   const sb = await sbPromise;
@@ -395,5 +408,5 @@ function bindUI(){
   $("#form-template")?.addEventListener("submit", async e=>{ e.preventDefault(); await addTemplate(e.currentTarget); e.currentTarget.reset(); });
 }
 
-window.PAOWeb = { adminSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, askAi, switchUnit, loadAllUsers, setUserRole };
+window.PAOWeb = { adminSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, askAi, saveUnitData, switchUnit, loadAllUsers, setUserRole };
 document.addEventListener("DOMContentLoaded", bindUI);

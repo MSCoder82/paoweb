@@ -681,7 +681,13 @@ function load(unit){
     return structuredClone(def);
   }
 }
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); ensureUnitList(currentUnit); }
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  ensureUnitList(currentUnit);
+  if(window.PAOWeb?.saveUnitData){
+    window.PAOWeb.saveUnitData(db).catch(err=>console.error('Supabase save failed', err));
+  }
+}
 
 async function saveEntryToSupabase(entry){
   try{
