@@ -1822,11 +1822,11 @@ async function callAI(){
 <script type="module">
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-  const supabase = createClient(
-    "https://lhzqrgqpkjdjlrwwvpqh.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoenFyZ3Fwa2pkamxyd3d2cHFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDk4NzEsImV4cCI6MjA3MjIyNTg3MX0.YKglQntWyAz5tgJMqhimeVg1n532FSi5Q2wVYru-XTc",
-    { auth: { storage: sessionStorage, autoRefreshToken: true, persistSession: true } }
-  );
+    const supabase = createClient(
+      "https://yffbvijhmakqndufexdg.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlmZmJ2aWpobWFrcW5kdWZleGRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4NjY1NzAsImV4cCI6MjA3MjQ0MjU3MH0.A0lg6LyuxaP7AAbkfUlwwrkHOLZZiSHxwGaGdLhavwc",
+      { auth: { storage: sessionStorage, autoRefreshToken: true, persistSession: true } }
+    );
   window.supabase = supabase;
 
   const $ = (id) => document.getElementById(id);
