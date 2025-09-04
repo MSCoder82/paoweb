@@ -4,7 +4,7 @@
    - Role gating + basic data load hooks
 */
 
-const SUPABASE_URL = "https://yffbvijhmakqndufexdg.supabase.co";
+const SUPABASE_URL = "https://owdqokqbcjgbwnvgtsja.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlmZmJ2aWpobWFrcW5kdWZleGRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY4NjY1NzAsImV4cCI6MjA3MjQ0MjU3MH0.A0lg6LyuxaP7AAbkfUlwwrkHOLZZiSHxwGaGdLhavwc";
 
 // Reuse an existing Supabase client if one was already created elsewhere on the
