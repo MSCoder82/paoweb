@@ -1819,15 +1819,11 @@ async function callAI(){
 }
 </script>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="paoweb-supabase.js"></script>
 <script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-
-  const supabase = createClient(
-    "https://owdqokqbcjgbwnvgtsja.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93ZHFva3FiY2pnYndudmd0c2phIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcwMTg5OTEsImV4cCI6MjA3MjU5NDk5MX0.ID8PIKpVdJudqRO4t4F8fJJCLYgNk9MA6ju-oryhsy8",
-    { auth: { storage: sessionStorage, autoRefreshToken: true, persistSession: true } }
-  );
-  window.supabase = supabase;
+  await window.PAOWeb.sbPromise;
+  const supabase = window.supabase;
 
   const $ = (id) => document.getElementById(id);
   const whoPill = $("whoPill");
@@ -2001,7 +1997,5 @@ async function callAI(){
   };
 </script>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="paoweb-supabase.js"></script>
 </body>
 </html>

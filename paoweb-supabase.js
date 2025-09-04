@@ -408,5 +408,21 @@ function bindUI(){
   $("#form-template")?.addEventListener("submit", async e=>{ e.preventDefault(); await addTemplate(e.currentTarget); e.currentTarget.reset(); });
 }
 
-window.PAOWeb = { adminSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, askAi, saveUnitData, switchUnit, loadAllUsers, setUserRole };
+window.PAOWeb = {
+  adminSignIn,
+  loadUnitData,
+  addOutput,
+  addOuttake,
+  addOutcome,
+  setGoal,
+  addTemplate,
+  reloadUnits,
+  saveAiKey,
+  askAi,
+  saveUnitData,
+  switchUnit,
+  loadAllUsers,
+  setUserRole,
+  sbPromise
+};
 document.addEventListener("DOMContentLoaded", bindUI);
