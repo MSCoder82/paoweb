@@ -117,6 +117,22 @@
         <div class="notice">Complete the steps, select from curated menus, then generate a draft. Save private drafts anytime.</div>
 
         <details open>
+          <summary>Connection</summary>
+          <label for="apiKey">OpenAI API key</label>
+          <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+          <div class="row">
+            <div>
+              <label for="model">Model</label>
+              <input id="model" value="gpt-4.1-mini" />
+            </div>
+            <div>
+              <label for="temperature">Temperature</label>
+              <input id="temperature" type="number" step="0.1" min="0" max="2" value="0.2" />
+            </div>
+          </div>
+        </details>
+
+        <details open>
           <summary>Guidance</summary>
           <label for="policy">Admin guidance to include in prompt (optional)</label>
           <textarea id="policy" placeholder="Tone, style, sensitivities, risk items, do-not-mentions..."></textarea>
@@ -303,6 +319,15 @@
         <div id="status" class="help">Ready.</div>
         <div id="output" class="output" aria-live="polite" contenteditable="true"></div>
         <div class="footer-note">This draft is generated from your inputs. Refine as needed before release.</div>
+        <details style="margin-top:14px">
+          <summary>System prompt</summary>
+          <textarea id="sysPrompt" placeholder="Define the role, style, compliance notes."></textarea>
+          <div class="btnbar">
+            <button class="btn ghost" id="saveTemplate">Save template</button>
+            <button class="btn ghost" id="loadTemplate">Load template</button>
+            <button class="btn ghost" id="resetTemplate">Reset</button>
+          </div>
+        </details>
       </section>
     </div>
   </div>
@@ -418,6 +443,9 @@
 
     // ======= Grab elements =======
     const els = {
+      apiKey: document.getElementById('apiKey'),
+      model: document.getElementById('model'),
+      temperature: document.getElementById('temperature'),
       policy: document.getElementById('policy'),
 
       issue: document.getElementById('issue'),
@@ -479,7 +507,29 @@
 
       status: document.getElementById('status'),
       output: document.getElementById('output'),
+      sysPrompt: document.getElementById('sysPrompt'),
+      saveTemplate: document.getElementById('saveTemplate'),
+      loadTemplate: document.getElementById('loadTemplate'),
+      resetTemplate: document.getElementById('resetTemplate'),
     };
+
+    if(window.parent?.aiApiKeys?.openai){
+      els.apiKey.value = window.parent.aiApiKeys.openai;
+    }
+    els.sysPrompt.value = localStorage.getItem(TPL_KEY) || defaultTemplate;
+    els.saveTemplate.addEventListener('click', () => {
+      localStorage.setItem(TPL_KEY, els.sysPrompt.value);
+      status('Template saved', 'ok');
+    });
+    els.loadTemplate.addEventListener('click', () => {
+      els.sysPrompt.value = localStorage.getItem(TPL_KEY) || defaultTemplate;
+      status('Template loaded', 'ok');
+    });
+    els.resetTemplate.addEventListener('click', () => {
+      els.sysPrompt.value = defaultTemplate;
+      localStorage.setItem(TPL_KEY, defaultTemplate);
+      status('Template reset', 'ok');
+    });
 
     // Render curated lists on load
     ensureOptions('businessLinesList', OPTIONS.businessLines, []);
@@ -590,6 +640,7 @@ Only include facts provided in inputs.`;
 
     const DEFAULT_MODEL = 'gpt-4.1-mini';
     const DEFAULT_TEMP = 0.2;
+    const TPL_KEY = 'nww_rpie_template';
 
     const addAMRow = (row={date:'',action:'',resp:'',when:'',method:''})=>{
       const tr = document.createElement('tr');
@@ -614,7 +665,7 @@ Only include facts provided in inputs.`;
         return {date:tds[0].value, action:tds[1].value, responsibility:tds[2].value, when:tds[3].value, method:tds[4].value};
       }).filter(r => Object.values(r).some(v=>v));
       return {
-        connection:{ policy: els.policy.value.trim() },
+        connection:{ model: els.model.value.trim(), temperature: Number(els.temperature.value||0), policy: els.policy.value.trim() },
         step1:{ issue: els.issue.value.trim(), requirements: els.requirements.value.trim() },
         step2:{ situation: els.situation.value.trim(), swot:{S:els.swotS.value.trim(),W:els.swotW.value.trim(),O:els.swotO.value.trim(),T:els.swotT.value.trim()} },
         step3:{
@@ -641,7 +692,7 @@ Only include facts provided in inputs.`;
     }
 
     function toPrompt(data){
-      const tpl = defaultTemplate;
+      const tpl = localStorage.getItem(TPL_KEY) || els.sysPrompt.value || defaultTemplate;
       const guard = data.connection.policy ? `\nAdmin guidance:\n${data.connection.policy}\n` : '';
       const amTable = data.step7.actionMatrix.map(r=>`| ${r.date||''} | ${r.action||''} | ${r.responsibility||''} | ${r.when||''} | ${r.method||''} |`).join('\n') || '';
       const budgetLines = Object.entries(data.step6.budget).filter(([k,v])=>v).map(([k,v])=>`- ${k}: ${v}`).join('\n');
@@ -720,15 +771,15 @@ ${data.step10.evaluation}
 Produce a complete, structured plan with clear headings and a table for the Action Matrix.`;
     }
 
-    async function callOpenAI(prompt){
-      const key = window.parent?.aiApiKeys?.openai || '';
+    async function callOpenAI(prompt, model, temperature){
+      const key = els.apiKey.value.trim() || window.parent?.aiApiKeys?.openai || '';
       if(!key){ throw new Error('API key required'); }
       const res = await fetch('https://api.openai.com/v1/chat/completions',{
         method:'POST',
         headers:{ 'Content-Type':'application/json','Authorization':'Bearer ' + key },
         body: JSON.stringify({
-          model: DEFAULT_MODEL,
-          temperature: DEFAULT_TEMP,
+          model: model || DEFAULT_MODEL,
+          temperature: temperature ?? DEFAULT_TEMP,
           messages:[
             {role:'system', content:'You are a disciplined USACE public affairs planner who writes professional, concise, actionable plans aligned with Army policy.'},
             {role:'user', content: prompt}
@@ -767,6 +818,8 @@ Produce a complete, structured plan with clear headings and a table for the Acti
       if(!raw) return status('No saved draft found', 'warn');
       const d = JSON.parse(raw);
       els.policy.value = d.connection?.policy || '';
+      els.model.value = d.connection?.model || DEFAULT_MODEL;
+      els.temperature.value = d.connection?.temperature ?? DEFAULT_TEMP;
       els.issue.value = d.step1?.issue || '';
       els.requirements.value = d.step1?.requirements || '';
       els.situation.value = d.step2?.situation || '';
@@ -804,7 +857,7 @@ Produce a complete, structured plan with clear headings and a table for the Acti
     function clearForm(){
       localStorage.removeItem(DRAFT_KEY);
       document.querySelectorAll('input, textarea').forEach(el=>{
-        if(['businessLinesAdd','loeAdd','audiencesAdd','stakeholdersAdd','outputsAdd','outtakesAdd','outcomesAdd'].includes(el.id)) return;
+        if(['apiKey','model','temperature','sysPrompt','businessLinesAdd','loeAdd','audiencesAdd','stakeholdersAdd','outputsAdd','outtakesAdd','outcomesAdd'].includes(el.id)) return;
         if(el.type==='number') el.value = el.defaultValue || 0;
         else el.value = '';
       });
@@ -924,7 +977,7 @@ ${d.step10.evaluation || 'n/a'}
         const data = collect();
         parent.postMessage({type:'rpieOutputs', outputs:data.step9?.outputs || []}, '*');
         const prompt = toPrompt(data);
-        const text = await callOpenAI(prompt);
+        const text = await callOpenAI(prompt, data.connection.model || DEFAULT_MODEL, data.connection.temperature ?? DEFAULT_TEMP);
         els.output.textContent = text || '(no content)';
         status('Draft ready', 'ok');
         await saveNoteToSupabase(text);
