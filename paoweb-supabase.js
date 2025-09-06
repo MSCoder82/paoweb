@@ -40,14 +40,15 @@ let CURRENT = {
 };
 
 // ---------- Helpers ----------
-const $ = (s) => document.querySelector(s);
+// Rely on a global "$" helper if present to avoid conflicts with libraries
+// like jQuery. Fallback to basic selectors if none is defined.
 const toInt = (v, d=0) => { const n = parseInt(v,10); return Number.isFinite(n)?n:d; };
 
 const HOME_SELECT_ID = "#unitSelectHome";
 
 async function reloadUnits(){
   const sb = await sbPromise;
-  const homeSel = $(HOME_SELECT_ID);
+  const homeSel = window.$ ? window.$(HOME_SELECT_ID) : document.querySelector(HOME_SELECT_ID);
   if(!homeSel) return;
   try {
     const { data, error } = await sb.from('units').select('id, name, code').order('name', { ascending: true });
@@ -116,8 +117,8 @@ async function refreshRoleForUnit(unitId) {
 
 // ---------- Admin sign-in (email/password) ----------
 async function adminSignIn() {
-  const email = $("#admin-email")?.value?.trim();
-  const password = $("#admin-password")?.value;
+  const email = window.$("#admin-email")?.value?.trim();
+  const password = window.$("#admin-password")?.value;
   if (!email || !password) { alert("Enter admin email and password."); return; }
   const sb = await sbPromise;
   const { error } = await sb.auth.signInWithPassword({ email, password });
@@ -170,10 +171,10 @@ function gateMenus(role) {
   }[role] || new Set(["#menu-viewer"]);
 
   ["#menu-viewer","#menu-staff","#menu-chief","#menu-admin"].forEach(sel=>{
-    const el=$(sel); if (!el) return;
+    const el = window.$(sel); if (!el) return;
     el.style.display = allow.has(sel) ? "" : "none";
   });
-  const badge=$("#role-badge"); if (badge) badge.textContent = role.toUpperCase();
+  const badge = window.$("#role-badge"); if (badge) badge.textContent = role.toUpperCase();
 }
 
 // ---------- Data fetch (plug into your renderers) ----------
@@ -398,14 +399,14 @@ function bindUI(){
   }
 
   // Admin sign-in
-  $("#admin-signin")?.addEventListener("click", adminSignIn);
+  window.$("#admin-signin")?.addEventListener("click", adminSignIn);
 
   // Example form hooks (adjust IDs to your page)
-  $("#form-output")?.addEventListener("submit", async e=>{ e.preventDefault(); await addOutput(e.currentTarget); e.currentTarget.reset(); });
-  $("#form-outtake")?.addEventListener("submit", async e=>{ e.preventDefault(); await addOuttake(e.currentTarget); e.currentTarget.reset(); });
-  $("#form-outcome")?.addEventListener("submit", async e=>{ e.preventDefault(); await addOutcome(e.currentTarget); e.currentTarget.reset(); });
-  $("#form-goal")?.addEventListener("submit", async e=>{ e.preventDefault(); await setGoal(e.currentTarget); e.currentTarget.reset(); });
-  $("#form-template")?.addEventListener("submit", async e=>{ e.preventDefault(); await addTemplate(e.currentTarget); e.currentTarget.reset(); });
+  window.$("#form-output")?.addEventListener("submit", async e=>{ e.preventDefault(); await addOutput(e.currentTarget); e.currentTarget.reset(); });
+  window.$("#form-outtake")?.addEventListener("submit", async e=>{ e.preventDefault(); await addOuttake(e.currentTarget); e.currentTarget.reset(); });
+  window.$("#form-outcome")?.addEventListener("submit", async e=>{ e.preventDefault(); await addOutcome(e.currentTarget); e.currentTarget.reset(); });
+  window.$("#form-goal")?.addEventListener("submit", async e=>{ e.preventDefault(); await setGoal(e.currentTarget); e.currentTarget.reset(); });
+  window.$("#form-template")?.addEventListener("submit", async e=>{ e.preventDefault(); await addTemplate(e.currentTarget); e.currentTarget.reset(); });
 }
 
 window.PAOWeb = { adminSignIn, loadUnitData, addOutput, addOuttake, addOutcome, setGoal, addTemplate, reloadUnits, saveAiKey, askAi, saveUnitData, switchUnit, loadAllUsers, setUserRole };
