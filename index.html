@@ -1833,8 +1833,7 @@ async function callAI(){
   );
   window.supabase = supabase;
 
-  const $ = (id) => document.getElementById(id);
-  const whoPill = $("whoPill");
+  const whoPill = window.$("whoPill");
 
   const IDLE_LIMIT = 30 * 60 * 1000;
   let idleTimer;
@@ -1846,20 +1845,20 @@ async function callAI(){
 
   // Sign in
   window.nwwSignIn = async (email, password) => {
-    email = (email || $("si-email").value).trim().toLowerCase();
-    password = password || $("si-pass").value;
+    email = (email || window.$("si-email").value).trim().toLowerCase();
+    password = password || window.$("si-pass").value;
     const selectedRole = window.role;
-    $("status").textContent = "Signing you in, please wait";
+    window.$("status").textContent = "Signing you in, please wait";
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
       options: { shouldCreateUser: false }
     });
     if (error) {
-      $("status").textContent = `Signin error: ${error.message}`;
+      window.$("status").textContent = `Signin error: ${error.message}`;
       return;
     }
-    $("status").textContent = "Signed in.";
+    window.$("status").textContent = "Signed in.";
     const prof = await refreshAuthUI();
     const r = prof?.role || selectedRole;
     window.role = r;
@@ -1874,13 +1873,13 @@ async function callAI(){
   };
 
   window.nwwSignUp = async () => {
-    const email = $("su-email").value.trim().toLowerCase();
-    const password = $("su-pass").value;
-    const confirm = $("su-confirm").value;
-    let role = $("su-role").value || 'staff';
+    const email = window.$("su-email").value.trim().toLowerCase();
+    const password = window.$("su-pass").value;
+    const confirm = window.$("su-confirm").value;
+    let role = window.$("su-role").value || 'staff';
     if (!['staff', 'chief', 'admin'].includes(role)) role = 'staff';
     if (password !== confirm) {
-      $("status").textContent = "Passwords do not match";
+      window.$("status").textContent = "Passwords do not match";
       return;
     }
     const displayName = email.split('@')[0];
@@ -1889,7 +1888,7 @@ async function callAI(){
       password,
       options: { data: { display_name: displayName, full_name: displayName, role } }
     });
-    $("status").textContent = error ? `Signup error: ${error.message}` : "Check email for confirmation.";
+    window.$("status").textContent = error ? `Signup error: ${error.message}` : "Check email for confirmation.";
     if (!error) {
       const userId = data.user?.id;
       if (userId) {
@@ -1903,21 +1902,21 @@ async function callAI(){
   };
 
   window.requestPasswordReset = async () => {
-    const email = $("si-email").value;
+    const email = window.$("si-email").value;
     if (!email) { alert("Enter email to reset password"); return; }
     const { origin, pathname } = window.location;
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: origin + pathname
     });
-    $("status").textContent = error ? `Reset error: ${error.message}` : "Check email for reset link";
+    window.$("status").textContent = error ? `Reset error: ${error.message}` : "Check email for reset link";
   };
 
   window.finishPasswordReset = async () => {
-    const pass = $("rp-new").value;
-    const confirm = $("rp-confirm").value;
+    const pass = window.$("rp-new").value;
+    const confirm = window.$("rp-confirm").value;
     if (pass !== confirm) { alert("Passwords do not match"); return; }
     const { error } = await supabase.auth.updateUser({ password: pass });
-    $("status").textContent = error ? `Reset error: ${error.message}` : "Password updated";
+    window.$("status").textContent = error ? `Reset error: ${error.message}` : "Password updated";
     if (!error) { await supabase.auth.signOut(); window.show('unit'); }
   };
 
@@ -1929,7 +1928,7 @@ async function callAI(){
     if (!authed) {
       document.body.classList.remove("is-admin");
       window.role = null;
-      $("status").textContent = "Not signed in";
+      window.$("status").textContent = "Not signed in";
       clearTimeout(idleTimer);
       return null;
     }
@@ -1952,7 +1951,7 @@ async function callAI(){
 
     window.role = prof.role || window.role;
     document.body.classList.toggle("is-admin", window.role === "admin");
-    $("status").textContent = `Signed in as ${prof.email || session.user.email}`;
+    window.$("status").textContent = `Signed in as ${prof.email || session.user.email}`;
     window.user = {
       id: uid,
       email: prof.email || session.user.email,
