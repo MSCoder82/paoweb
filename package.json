@@ -4,10 +4,11 @@
   "description": "This is a self-contained web application that:",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test:tooltip && npm run test:drawer && npm run test:role",
+    "test": "npm run test:tooltip && npm run test:drawer && npm run test:role && npm run test:normalizeRole",
     "test:tooltip": "node tests/tooltip.test.js",
     "test:drawer": "node tests/drawer-close.test.js",
-    "test:role": "node tests/role-dropdown.test.js"
+    "test:role": "node tests/role-dropdown.test.js",
+    "test:normalizeRole": "node tests/normalize-role.test.js"
   },
   "keywords": [],
   "author": "",
