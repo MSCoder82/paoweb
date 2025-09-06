@@ -1833,6 +1833,15 @@ async function callAI(){
   const $ = (id) => document.getElementById(id);
   const whoPill = $("whoPill");
 
+  function normalizeRole(role){
+    if(!role) return null;
+    const r=role.toLowerCase().replace(/\s+/g,'');
+    if(r.includes('chief')) return 'chief';
+    if(r.includes('admin')) return 'admin';
+    if(r.includes('staff')) return 'staff';
+    return r;
+  }
+
   const IDLE_LIMIT = 30 * 60 * 1000;
   let idleTimer;
   function resetIdle(){
@@ -1845,7 +1854,7 @@ async function callAI(){
   window.nwwSignIn = async (email, password) => {
     email = (email || $("si-email").value).trim().toLowerCase();
     password = password || $("si-pass").value;
-    const selectedRole = window.role;
+    const selectedRole = normalizeRole(window.role);
     $("status").textContent = "Signing you in, please wait";
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -1858,7 +1867,7 @@ async function callAI(){
     }
     $("status").textContent = "Signed in.";
     const prof = await refreshAuthUI();
-    const r = prof?.role || selectedRole;
+    const r = normalizeRole(prof?.role) || selectedRole;
     window.role = r;
     if (prof?.email) {
       const labelMap = { admin: 'Admin', chief: 'PAO Chief', staff: 'Staff' };
@@ -1874,7 +1883,7 @@ async function callAI(){
     const email = $("su-email").value.trim().toLowerCase();
     const password = $("su-pass").value;
     const confirm = $("su-confirm").value;
-    let role = $("su-role").value || 'staff';
+    let role = normalizeRole($("su-role").value || 'staff');
     if (!['staff', 'chief', 'admin'].includes(role)) role = 'staff';
     if (password !== confirm) {
       $("status").textContent = "Passwords do not match";
@@ -1947,7 +1956,9 @@ async function callAI(){
       };
     }
 
-    window.role = prof.role || window.role;
+    const normalizedRole = normalizeRole(prof.role);
+    window.role = normalizedRole || window.role;
+    prof.role = normalizedRole;
     document.body.classList.toggle("is-admin", window.role === "admin");
     $("status").textContent = `Signed in as ${prof.email || session.user.email}`;
     window.user = {
